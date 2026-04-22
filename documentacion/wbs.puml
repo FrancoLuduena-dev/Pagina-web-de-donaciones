@@ -1,0 +1,53 @@
+
+@startwbs
+* Plataforma Web de Donaciones
+** Análisis de Requisitos
+*** Definición de Roles y Funcionalidades
+**** Usuario: Publicar donaciones, editar propias, solicitar, gestionar estados
+**** Moderador: Supervisar, eliminar, bloquear, resolver conflictos
+*** Estados de Donaciones y Solicitudes
+**** Donaciones: Disponible, Reservada, Entregada
+**** Solicitudes: Pendiente, Aceptada, Rechazada
+*** Búsqueda y Filtros
+**** Por categoría y estado
+*** Reportes y Logs
+**** Cantidad de donaciones, solicitudes, porcentaje entregas
+**** Registro de logs para trazabilidad
+** Diseño del Sistema
+*** Arquitectura General
+**** Backend (API REST)
+**** Frontend (Web App)
+**** Base de Datos
+*** Diseño de Base de Datos
+**** Tablas: Usuarios, Donaciones, Solicitudes, Logs, Categorías
+*** Diseño de Interfaz de Usuario
+**** Páginas: Inicio, Publicar Donación, Lista de Donaciones, Solicitudes, Panel Moderador
+** Desarrollo
+*** Desarrollo Backend
+**** Autenticación y Autorización
+**** API para Donaciones (CRUD)
+**** API para Solicitudes
+**** API para Moderación
+**** Implementación de Logs
+*** Desarrollo Frontend
+**** Componentes para Publicación
+**** Componentes para Solicitud
+**** Búsqueda y Filtros
+**** Panel de Reportes
+*** Desarrollo Base de Datos
+**** Creación de Esquemas
+**** Migraciones y Seeds
+** Pruebas
+*** Pruebas Unitarias
+**** Backend y Frontend
+*** Pruebas de Integración
+**** Flujos completos
+*** Pruebas de Aceptación
+**** Validación de requisitos
+** Despliegue y Mantenimiento
+*** Configuración del Entorno
+**** Servidor, Base de Datos
+*** Despliegue de la Aplicación
+*** Documentación
+**** Manual de Usuario, Técnico
+@endwbs
