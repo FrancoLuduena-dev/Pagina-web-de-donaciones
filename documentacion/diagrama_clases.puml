@@ -1,5 +1,5 @@
 @startuml Web Donaciones
-left to right direction
+'left to right direction
 
 
 class Usuario {
@@ -7,13 +7,14 @@ class Usuario {
     - nombreCompleto: string
     - nombreUsuario: string
     - email: string
-    - contraseña: hash
+    - password: hash
     - numeroTelefono: string
     - rolUsuario: string
     - estadoCuenta: EstadoCuenta
+    .. Solo moderadores ..
+    - cantidadPublicacionesBloqueadas: int
     - razonBloqueo: string
     - idBloqueador: UUID
-    - cantidadPublicacionesBloqueadas: int
     + getters()
     + setters()
 }
@@ -22,13 +23,15 @@ class Usuario {
 'lios setters y getters solo se consumen en dto y services
 
 class UsuarioService {
-    + bloquearUsuarios (user: id_usuario, mod:id_moderador)
-    + resetearContraseñaUsuario (user: id_usuario, datos:actualizar_contraseña_dto)
+    .. Usuarios ..
+    + crearUsuario (datos: CrearUsuarioDTO)
+    + eliminarUsuario (user: idUsuario)
+    + resetearPasswordUsuario (user: idUsuario, datos: ActualizarPasswordDto)
+    + actualizarPerfil (user: idUsuario, datos: ActualizarPerfilDto)
+    .. Solo moderadores ..
     + listarUsuarios()
-    + actualizarPerfil (user: id_usuario, datos: actualizar_perfil_dto)
-    + crearUsuario (datos: crear_usuario_dto)
-    + cambiarRolUsuario (user: usuario, id: usuario_id, nuevo_rol: RolUsuario)
-    + eliminarUsuario (user: id_usuario)
+    + cambiarRolUsuario (user: usuario, id: idUsuario, rolNuevo: RolUsuario)
+    + bloquearUsuarios (user: idUsuario, mod:idUsuario)
 }
 'el bloqueo de usuariose hace automatico cuando tiene 3 publicaciones bloqueadas
 
@@ -51,16 +54,59 @@ class Publicacion {
 
 class PublicacionService {
     + crearPublicacion (user: usuario, datos: CrearPublicacionDto)
-    + eliminarPublicacion (user: usuario, id: publicacion_id, datos: EliminarPublicacionDto)
-    + editarPublicacion (user: usuario, id: publicacion_id, datos: EditarPublicacionDto)
-    + bloquearPublicacion (user: usuario, id: publiacion_id, datos: BloquearPublicacionDto)
-    + pausarPublicacion (user: usuario, id: publiacion_id, datos: PausarPublicacionDto)
-    + activarPublicacion (user: usuario, id: publiacion_id, datos: ActivarPublicacionDto)
-    + cancelarPublicacion (user: usuario, id: publiacion_id, datos: CancelarPublicacionDto)
-    + reservarPublicacion (user: usuario, id: publiacion_id, datos: ReservarPublicacionDto)
-    + finalizarPublicacion (user: usuario, id: publiacion_id, datos: FinalizarPublicacionDto)
-    + denunciarPublicacion (user: usuario, id: publiacion_id, datos: DenunciarPublicacionDto)
-    + abrirPublicacion (user: usuario, id: publiacion_id)
+    + abrirPublicacion (user: usuario, id: idPublicacion)
+    .. solo creador de publicacion ..
+    + editarPublicacion (user: usuario, id: idPublicacion, datos: EditarPublicacionDto)
+    + activarPublicacion (user: usuario, id: idPublicacion, datos: ActivarPublicacionDto)
+    + cancelarPublicacion (user: usuario, id: idPublicacion, datos: CancelarPublicacionDto)
+    + finalizarPublicacion (user: usuario, id: idPublicacion, datos: FinalizarPublicacionDto)
+    + pausarPublicacion (user: usuario, id: idPublicacion, datos: PausarPublicacionDto)
+    + reservarPublicacion (user: usuario, id: idPublicacion, datos: ReservarPublicacionDto)
+    + eliminarPublicacion (user: usuario, id: idPublicacion, datos: EliminarPublicacionDto)
+    .. Todos los usuarios ..
+    .. Solo Usuarios no creadores de la publicacion ..
+    + denunciarPublicacion (user: usuario, id: idPublicacion, datos: DenunciarPublicacionDto)
+    .. Solo moderadores..
+    + bloquearPublicacion (user: usuario, id: idPublicacion, datos: BloquearPublicacionDto)
+
+}
+' para mi, pausarPublicacion, activarPublicacion, cancelarPublicacion, reservarPublicacion y finalizarPublicacion deberian condensarse en una sola cambiarEstadoPublicacion() porque todos los dtos son iguales, y todos estos metodos harian lo mismo, cambiar el publicacion.estadoPublicacion a otro parametro del enum
+
+class Solicitud{
+    - idSolicitud: UUID
+    - idSolicitante: UUID
+    - idPublicacionSolicitada: UUID
+    - idCreadorPublicacion: UUID
+    - estadoSolicitud: EstadoSolicitud
+    - datosSolicitud: string
+}
+
+class SolicitudService {
+    + crearSolicitud ( user: usuario, id: idPublicacionSolicitada, datos: crearSolicitudDto, SolicitudResponseDto)
+    + cancelarSolicitud (user: usuario, id: idSolicitud, datos: cancelarSolicitudDto, SolicitudResponseDto)
+    + listarSolicitudesPendientesPorUsuario (user: usuario, datos: SolicitudResponseDto)
+    + listarSolicitudesRecibidasPorUsuario (solicita: usuario, datos: SolicitudResponseDto)
+    + listarSolicitudesRealizadasPorUsuario (user: usuario, datos: SolicitudResponseDto)
+    .. Solo creador publicacion..
+    + listarSolicitudesPorPublicacion (user: usuario, idPublicacion, datos: SolicitudResponseDto)
+    ..Solo creador publicacion..
+    + aceptarSolicitud (user: usuario, id: idPublicacion, datos: AceptarSolicitudDTO, SolicitudResponseDto)
+    ' al ser aceptada, rechaza todas las otras solicitudes pendientes automaticamente
+    + rechazarSolicitud (user: usuario, id: idPublicacion, datos: RechazarSolicitudDto, SolicitudResponseDto)
+}
+
+class Denuncia {
+    - idDenuncia: UUID
+    - idPublicacion : UUID
+    - idUsuario: UUID
+    - estadoDenuncia: EstadoDenuncia
+}
+
+class DenunciaService {
+    - crearDenuncia(usuario: idUsuario, publicacion: idPublicacion)
+    .. Solo Moderadores ..
+    - resolverDenuncia( denuncia: idDenuncia, publicacion: id.publicacion, estado: estadoDenuncia)
+    - ListarDenuncias()
 }
 
 class Buscador{
@@ -69,132 +115,6 @@ class Buscador{
     + busquedaEstadoPublicacion (publicacion: publicacion[], estado: EstadoPublicacion)
     + busquedaEntrega (publicacion: publicacion[], entrega: TipoEntrega)
 }
-
-
-class Solicitud{
-    - idSolicitud: UUID
-    - idSolicitante: UUID
-    - idPublicacionSolicitada: UUID
-    - idCreadorPublicacion: UUID
-    - estadoPublicacion: EstadoPublicacion
-    - datosSolicitud: string
-}
-
-class Solicitud_Service {
-    + crearSolicitud ( user: usuario, id: idPublicacion_solicitada, datos: crear_solicitud_dto, solicitud_response_dto)
-    + aceptarSolicitud (user: usuario, id: id_solicitud, datos: aceptar_solicitud_dto, solicitud_response_dto)
-    ' al ser aceptada, rechaza todas las otras solicitudes pendientes automaticamente
-    + rechazarSolicitud (user: usuario, id: id_solicitud, datos: rechazar_solicitud_dto, solicitud_response_dto)
-    + cancelarSolicitud (user: usuario, id: id_solicitud, datos: cancelar_solicitud_dto, solicitud_response_dto)
-    + listarSolicitudesPendientes_por_usuario (user: usuario, datos: solicitud_response_dto)
-    + listarSolicitudesRecibidasPorUsuario (user: usuario, datos: solicitud_response_dto)
-    + listarSolicitudesRealizadasPorUsuario (user: usuario, datos: solicitud_response_dto)
-    + listarSolicitudesPorPublicacion (user: usuario, publicacion_id, datos: solicitud_response_dto)
-}
-
-class Denuncia{
-    - idDenuncia: UUID
-    - idPublicacion : UUID
-    - idUsuario: UUID
-    - estadoDenuncia: EstadoDenuncia
-}
-
-class ActualizarContraseñaDto <<DTO>> {
-    - usuarioId: UUID
-    - contraseñaNueva: hash
-    - contraseñaActual: hash
-}
-
-class ActualizarPerfilDto <<DTO>>{
-    - nombreCompleto: string
-    - email: string
-    - numeroTelefono: string
-}
-
-class CrearUsuarioDto <<DTO>>{
-    - nombreUsuario: string
-    - email: string
-    - password: hash
-}
-
-class CrearPublicacionDto <<DTO>>{
-    - idCreador: UUID
-    - tituloPublicacion: string
-    - descripcionPublicacion: string
-    - url_foto: string
-    - categoria: CategoriaPublicacion
-    - zonaRetiro: string
-    - entrega: TipoEntrega
-    - estadoDonacion: EstadoDonacion
-}
-
-class EliminarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-}
-
-class  EditarPublicacionDto <<DTO>>{
-    - idCreador: UUID
-    - tituloPublicacion: string
-    - descripcionPublicacion: string
-    - urlFoto: string
-    - categoria: CategoriaPublicacion
-    - zonaRetiro: string
-    - entrega: TipoEntrega
-    - estadoDonacion: EstadoDonacion
-}
-
-class BloquearPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idBloqueador: UUID
-    - motivoBloqueo: string
-    - estadoDenuncia: EstadoDenuncia
-}
-
-class PausarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
-}
-
-class ActivarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
-}
-class CancelarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
-}
-class ReservarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
-}
-
-class FinalizarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
-}
-
-class DenunciarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-}
-
-class SolicitudResponseDto <<DTO>>{
-    - idSolicitud: UUID
-    - idPublicacion: UUID
-    - tituloPublicacion: string
-    - idSolicitante: UUID
-    - nombreUsuarioSolicitante: string
-    - mensajeSolicitud: string
-    - EstadoSolicitud: EstadoSolicitud
-    - fechaCreacionSolicitud: Date
-    - fechaActualizacionSolicitud: Date
-}
-
 
 class Estadisticas {
     logCantidadDonaciones
@@ -208,6 +128,141 @@ class Estadisticas {
 }
 'todavia no estoy seguro si estos logs no deberia ser una clase log, con diferentes datos, y con atributos, opcionales, que pueda dar esta info.
 
+'--- DTOS ---
+    ' --- DTOS UsuarioService ---
+
+class CrearUsuarioDto <<DTO>>{
+    - nombreUsuario: string
+    - email: string
+    - password: hash
+}
+
+class ActualizarPerfilDto <<DTO>>{
+    - nombreCompleto: string
+    - email: string
+    - numeroTelefono: string
+}
+
+class ActualizarPasswordDto <<DTO>> {
+    - idUsuario: UUID
+    - passwordNueva: hash
+    - passwordActual: hash
+}
+
+    ' --- DTOS PublicacionService ---
+
+
+class CrearPublicacionDto <<DTO>>{
+    - idCreador: UUID
+    - tituloPublicacion: string
+    - descripcionPublicacion: string
+    - urlFoto: string
+    - categoria: CategoriaPublicacion
+    - zonaRetiro: string
+    - entrega: TipoEntrega
+    - estadoDonacion: EstadoDonacion
+}
+
+class  EditarPublicacionDto <<DTO>>{
+    - idCreador: UUID
+    - tituloPublicacion: string
+    - descripcionPublicacion: string
+    - urlFoto: string
+    - categoria: CategoriaPublicacion
+    - zonaRetiro: string
+    - entrega: TipoEntrega
+    - estadoDonacion: EstadoDonacion
+}
+
+
+class EliminarPublicacionDto <<DTO>>{
+    - idPublicacion: UUID
+    - idCreador: UUID
+}
+
+
+class ActivarPublicacionDto <<DTO>>{
+    - idPublicacion: UUID
+    - idCreador: UUID
+    - estadoPublicacion: EstadoPublicacion
+}
+
+class CancelarPublicacionDto <<DTO>>{
+    - idPublicacion: UUID
+    - idCreador: UUID
+    - estadoPublicacion: EstadoPublicacion
+}
+
+class FinalizarPublicacionDto <<DTO>>{
+    - idPublicacion: UUID
+    - idCreador: UUID
+    - estadoPublicacion: EstadoPublicacion
+}
+
+
+class PausarPublicacionDto <<DTO>>{
+    - idPublicacion: UUID
+    - idCreador: UUID
+    - estadoPublicacion: EstadoPublicacion
+}
+
+class ReservarPublicacionDto <<DTO>>{
+    - idPublicacion: UUID
+    - idCreador: UUID
+    - estadoPublicacion: EstadoPublicacion
+}
+
+
+class DenunciarPublicacionDto <<DTO>>{
+    - idPublicacion: UUID
+}
+
+
+class BloquearPublicacionDto <<DTO>>{
+    - idPublicacion: UUID
+    - idBloqueador: UUID
+    - motivoBloqueo: string
+    - estadoDenuncia: EstadoDenuncia
+}
+
+    ' --- DTOS SolicitudService
+
+class SolicitudResponseDto <<DTO>>{
+    - idSolicitud: UUID
+    - idPublicacion: UUID
+    - tituloPublicacion: string
+    - idSolicitante: UUID
+    - nombreUsuarioSolicitante: string
+    - mensajeSolicitud: string
+    - EstadoSolicitud: EstadoSolicitud
+    - fechaCreacionSolicitud: Date
+    - fechaActualizacionSolicitud: Date
+}
+
+class CrearSolicitudDto <<DTO>> {
+    - idUsuario: UUID
+    - idPublicacion: UUID
+    - idCreadorPublicacion: UUID
+    - datosSolicitud: string
+}
+
+class AceptarSolicitudDTO <<DTO>> {
+    - idUsuario: UUID
+    - idPublicacion: UUID
+}
+
+class RechazarSolicitudDto<<DTO>> {
+    - idUsuario: UUID
+    - idPublicacion: UUID
+}
+
+class CancelarSolicitudDto <<DTO>> {
+    - idUsuario: UUID
+    - idPublicacion: UUID
+}
+
+'-- ENUMS -- 
+    '--- ENUMS Usuario --- 
 
 enum RolUsuario <<enum>>{
     COMUN
@@ -215,27 +270,12 @@ enum RolUsuario <<enum>>{
     ADMIN
 }
 
-
-enum EstadoPublicacion <<enum>>{
-    DISPONIBLE
-    RESERVADO
-    ENTREGADO
-    PAUSADO
-    ELIMINADO
+enum EstadoCuenta <<enum>>{
+    ACTIVA
+    BLOQUEADA
 }
 
-enum EstadoSolicitud <<enum>>{
-    PENDIENTE
-    ACEPTADA
-    RECHAZADA
-}
-
-
-enum EstadoDenuncia <<enum>>{
-    PENDIENTE
-    EN_REVISION
-    RESUELTA
-}
+    '--- ENUMS Publicacion ---
 
 enum CategoriaPublicacion <<enum>>{
     INDUMENTARIA
@@ -245,10 +285,17 @@ enum CategoriaPublicacion <<enum>>{
 }
 
 enum TipoEntrega <<enum>>{
-
     RETIRO
     ENTREGA
-    RETIRO/ENTREGA
+    RETIRO_O_ENTREGA
+}
+
+enum EstadoPublicacion <<enum>>{
+    DISPONIBLE
+    RESERVADO
+    ENTREGADO
+    PAUSADO
+    ELIMINADO
 }
 
 enum EstadoDonacion <<enum>>{
@@ -256,41 +303,56 @@ enum EstadoDonacion <<enum>>{
     USADO
 }
 
-enum EstadoCuenta <<enum>>{
-    ACTIVA
-    BLOQUEADA
+    ' --- ENUMS Solicitud ---
+
+enum EstadoSolicitud <<enum>>{
+    PENDIENTE
+    ACEPTADA
+    RECHAZADA
+}
+    ' --- ENUMS Denuncia ---
+enum EstadoDenuncia <<enum>>{
+    PENDIENTE
+    EN_REVISION
+    RESUELTA
 }
 
-' --- Conexiones de Dependencia (Uso de DTOs en Services) ---
-UsuarioService ..> ActualizarContraseñaDto : usa
-UsuarioService ..> ActualizarPerfilDto : usa
+' --- Uso de DTOs en Services ---
+
 UsuarioService ..> CrearUsuarioDto : usa
+UsuarioService ..> ActualizarPerfilDto : usa
+UsuarioService ..> ActualizarPasswordDto : usa
 
 PublicacionService ..> CrearPublicacionDto : usa
+PublicacionService ...> EditarPublicacionDto : usa
 PublicacionService ..> EliminarPublicacionDto : usa
-PublicacionService ..> EditarPublicacionDto : usa
-PublicacionService ..> BloquearPublicacionDto : usa
-PublicacionService ..> PausarPublicacionDto : usa
-PublicacionService ..> ActivarPublicacionDto : usa
+PublicacionService ...> ActivarPublicacionDto : usa
 PublicacionService ..> CancelarPublicacionDto : usa
-PublicacionService ..> ReservarPublicacionDto : usa
-PublicacionService ..> FinalizarPublicacionDto : usa
+PublicacionService ...> FinalizarPublicacionDto : usa
+PublicacionService ..> PausarPublicacionDto : usa
+PublicacionService ...> ReservarPublicacionDto : usa
 PublicacionService ..> DenunciarPublicacionDto : usa
+PublicacionService ...> BloquearPublicacionDto : usa
 
-Solicitud_Service ..> SolicitudResponseDto : usa
+SolicitudService ..> SolicitudResponseDto : usa
+SolicitudService ..> CrearSolicitudDto: usa
+SolicitudService ..> AceptarSolicitudDTO: usa
+SolicitudService ..> RechazarSolicitudDto: usa
+SolicitudService ..> CancelarSolicitudDto: usa
 
-' --- Conexiones de Servicios (Gestión de Entidades) ---
-UsuarioService --> Usuario : gestiona >
+' --- Gestión de Entidades ---
+UsuarioService -u-> Usuario : gestiona >
 PublicacionService --> Publicacion : gestiona >
-Solicitud_Service --> Solicitud : gestiona >
+SolicitudService --> Solicitud : gestiona >
+DenunciaService -u-> Denuncia : gestiona >
 
 ' --- Conexiones de Asociación (Lógica de Negocio) ---
 Usuario "1" -- "*" Publicacion : crea >
 Usuario "1" -- "*" Solicitud : realiza >
 Usuario "1" -- "*" Denuncia : reporta >
 
-Publicacion "1" -- "*" Solicitud : recibe >
-Publicacion "1" -- "*" Denuncia : tiene >
+Publicacion "1" ---- "*" Solicitud : recibe >
+Publicacion "1" ---- "*" Denuncia : tiene >
 
 ' --- Relaciones con Enums ---
 Usuario --> RolUsuario
@@ -299,13 +361,13 @@ Publicacion --> CategoriaPublicacion
 Publicacion --> TipoEntrega
 Publicacion --> EstadoPublicacion
 Publicacion --> EstadoDonacion
-Solicitud --> EstadoSolicitud
-Denuncia --> EstadoDenuncia
+Solicitud---> EstadoSolicitud
+Denuncia -r-> EstadoDenuncia
 
 ' --- Otros ---
-Buscador ..> Publicacion : busca en >
-Estadisticas ..> Usuario : trackea >
-Estadisticas ..> Publicacion : trackea >
+Buscador .u....> Publicacion : busca en >
+Estadisticas .u....> Usuario : trackea >
+Estadisticas .u....> Publicacion : trackea >
 
 
 ' --- Diseño ---
