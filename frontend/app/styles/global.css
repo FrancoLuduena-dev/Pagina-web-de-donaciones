@@ -1,0 +1,15 @@
+:root{
+    --color-primario: #0EA5A4;
+    --color-primario-hover: #0F766E;
+    --color-primario-highlight: #CCFBF1;
+    --color-secundario: #F59E0B;
+    --color-secundario-highlight: #FEF3C7; 
+    --color-fondo: #FAFAF9;
+    --color-tarjeta: #FFFFFF;
+    --color-texto-principal: #292524;
+    --color-texto-secundario: #78716C;
+    --color-exito: #14B8A6;
+    --color-alertas: #DC2626;
+    --color-warning: #F59E0B;
+    --color-borde: #E7E5E4;
+}
