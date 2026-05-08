@@ -9,9 +9,9 @@ import {
     Body,
     Param
 } from "@nestjs/common";
-import Usuario_Service from './usuario.service';
-import Crear_Usuario_DTO from './usuario.dto';
-import usuario from './usuario';
+import Usuario_Service from '../service/usuario.service';
+import Crear_Usuario_DTO from '../dtos/usuario.dto';
+import usuario from '../models/usuario';
 
 @Controller('usuario')
 export default class Usuario_Controller {

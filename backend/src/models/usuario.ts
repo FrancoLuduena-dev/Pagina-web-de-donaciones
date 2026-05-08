@@ -1,6 +1,6 @@
 
-import { estados_usuario } from './enums/estados_usuario.enum';
-import { rol_usuario } from './enums/rol_usuario.enum';
+import { estados_usuario } from '../enums/estados_usuario.enum';
+import { rol_usuario } from '../enums/rol_usuario.enum';
 
 export default interface Usuario {
     id: number;

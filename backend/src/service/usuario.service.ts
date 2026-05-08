@@ -1,5 +1,5 @@
-import usuario from "./usuario";
-import Crear_Usuario_DTO from "./usuario.dto";
+import usuario from "../models/usuario";
+import Crear_Usuario_DTO from "../dtos/usuario.dto";
 
 export default class Usuario_Service {
     /*
