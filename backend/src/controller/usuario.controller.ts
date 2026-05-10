@@ -11,7 +11,11 @@ import {
 } from "@nestjs/common";
 import Usuario_Service from '../service/usuario.service';
 import Crear_Usuario_DTO from '../dtos/usuario.dto';
-import usuario from '../models/usuario';
+import usuario from '../models/usuario.entity';
+
+/*
+ to do: validar para cada uno de los datos basicos que el formato escrito sea el correcto, y que no se repitan datos unicos como el correo o el nombre de usuario
+*/
 
 @Controller('usuario')
 export default class Usuario_Controller {

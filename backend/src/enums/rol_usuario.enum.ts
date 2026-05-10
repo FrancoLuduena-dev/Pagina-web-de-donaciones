@@ -1,4 +1,4 @@
-export enum rol_usuario {
+export enum rolUsuario {
     USUARIO_MODERADOR = 'USUARIO_MODERADOR',
     USUARIO_NORMAL = 'USUARIO_NORMAL',
     USUARIO_ADMINISTRADOR = 'USUARIO_ADMINISTRADOR',

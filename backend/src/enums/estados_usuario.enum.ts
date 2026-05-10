@@ -1,4 +1,4 @@
-export enum estados_usuario {
+export enum estadosUsuario {
     ACTIVO = 'ACTIVO',
     BLOQUEADO = 'BLOQUEADO',
 }
