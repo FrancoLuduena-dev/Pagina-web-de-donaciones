@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { loginRequest, persistSession } from "@/lib/auth";
+import UnloggedNavbar from "@/components/UnloggedNavbar";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,6 +33,8 @@ export default function LoginPage() {
   }
 
   return (
+    <>
+    <UnloggedNavbar />
     <main className="flex min-h-full flex-1 flex-col items-center justify-center bg-[var(--color-fondo)] px-4 py-16">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
@@ -106,5 +109,6 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+    </>
   );
 }
