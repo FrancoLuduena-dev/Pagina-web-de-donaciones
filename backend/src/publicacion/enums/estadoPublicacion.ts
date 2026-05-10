@@ -1,0 +1,7 @@
+export enum EstadoPublicacionNombre {
+  DISPONIBLE = 'DISPONIBLE',
+  RESERVADA = 'RESERVADA',
+  ENTREGADA = 'ENTREGADA',
+  PAUSADA = 'PAUSADA',
+  ELIMINADA = 'ELIMINADA',
+}
