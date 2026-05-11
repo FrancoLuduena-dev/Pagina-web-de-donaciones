@@ -55,11 +55,4 @@ export default class Usuario_Controller {
     async bloquearUsuario(@Param('id') id: number, @Body('id_moderador') id_moderador: number, @Body('razon_bloqueo') razon_bloqueo: string) {
         return this.service.Bloquear_Usuario(id, id_moderador, razon_bloqueo);
     }
-
-    @Patch(':id/desbloquear_usuario')
-    async desbloquearUsuario(@Param('id') id: number) {
-        return this.service.Desbloquear_Usuario(id);
-    }
-
-    
 }
