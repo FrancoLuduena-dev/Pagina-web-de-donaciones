@@ -2,6 +2,15 @@ import Link from "next/link";
 import { tituloPagina } from "@/constants/site";
 import styles from "./Footer.module.css";
 
+/**
+ * Footer de la aplicación.
+ *
+ * Contiene:
+ * - Nombre del sitio
+ * - Copyright
+ * - Link Contacto y Sobre Nosotros
+ */
+
 export default function Footer() {
   return (
     <footer className={styles.footer}>

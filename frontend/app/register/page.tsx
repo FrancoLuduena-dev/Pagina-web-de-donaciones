@@ -1,6 +1,6 @@
 import Link from "next/link";
 import UnloggedNavbar from "@/components/UnloggedNavbar";
-import Footer from "@/components/footer";
+import Footer from "@/components/Footer";
 
 export default function LoginPage() {
 

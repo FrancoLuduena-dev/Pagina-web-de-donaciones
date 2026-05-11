@@ -2,6 +2,16 @@ import Link from "next/link";
 import { tituloPagina } from "@/constants/site";
 import styles from "./Navbar.module.css";
 
+
+/**
+ * Navbar principal para usuarios logueados.
+ *
+ * Contiene:
+ * - Nombre/logo del sitio
+ * - Links a publicaciones, como funciona y home
+ * - Acceso al perfil del usuario
+ */
+
 export default function Navbar() {
   return (
     <nav className={styles.navbar}>
