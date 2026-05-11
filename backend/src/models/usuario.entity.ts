@@ -3,9 +3,9 @@ import { rolUsuario } from "../enums/rol_usuario.enum"
 import { estadosUsuario } from "../enums/estados_usuario.enum"
 
 @Entity()
-export class Usuario {
-    @PrimaryGeneratedColumn()
-    idUsuario: number
+export default class Usuario {
+    @PrimaryGeneratedColumn('increment')
+    id: number
 
     @Column({ length: 100 })
     nombreCompleto: string
@@ -37,10 +37,13 @@ export class Usuario {
     estado: estadosUsuario
 
     @Column({ nullable: true })
-    idBloqueador: number
+    idBloqueador: number | null
 
     @Column({ nullable: true })
-    razonBloqueo: string
+    razonBloqueo: string | null
+
+    @Column({ nullable: true})
+    cantidadPublicacionesBloqueadas: number | null
 }
 
 /*
