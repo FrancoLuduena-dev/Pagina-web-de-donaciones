@@ -10,15 +10,19 @@
 
 .seccionIzquierda {
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+  align-items: center;
+  gap: 1rem;
 }
 
-.nombreSitio {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-texto-principal);
+.logo {
+  font-size: 1.25rem;
+  font-weight: bold;
+
+  color: var(--color-primario);
+
+  text-decoration: none;
 }
+
 
 .copyright {
   font-size: 0.85rem;

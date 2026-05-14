@@ -15,7 +15,7 @@ export default function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.seccionIzquierda}>
-        <p className={styles.nombreSitio}>
+        <p className={styles.logo}>
           {tituloPagina}
         </p>
 
