@@ -7,10 +7,11 @@ import {
   DeleteDateColumn,
   VersionColumn,
 } from 'typeorm';
-
+import { BadRequestException } from '@nestjs/common';
 import { CondicionObjeto } from '../enums/condicionObjeto';
-import { EstadoPublicacionNombre } from '../enums/estadoPublicacion';
-import { IEstadoPublicacion } from '../interfaces/iEstadoPublicacion';
+import { EstadoPublicacion } from '../enums/estadoPublicacion';
+import { TRANSICIONES_PUBLICACION } from '../interfaces/transicionesPublicacion';
+import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
 
 @Entity('publicacion')
 export class Publicacion {
@@ -42,12 +43,11 @@ export class Publicacion {
   imagenUrl!: string;
 
   @Column({
-    name: 'estado',
-    type: 'varchar',
-    default: 'DISPONIBLE',
+    type: 'enum',
+    enum: EstadoPublicacion,
+    default: EstadoPublicacion.DISPONIBLE,
   })
-  private estado!: EstadoPublicacionNombre;
-  estadoInterno!: IEstadoPublicacion;
+  estado!: EstadoPublicacion;
 
   @VersionColumn()
   version!: number;
@@ -60,4 +60,74 @@ export class Publicacion {
 
   @DeleteDateColumn({ nullable: true })
   deletedAt!: Date;
+
+  transicionarA(nuevoEstado: EstadoPublicacion): void {
+    const permitidos = TRANSICIONES_PUBLICACION[this.estado];
+
+    if (!permitidos.includes(nuevoEstado)) {
+      throw new BadRequestException(
+        `No se puede pasar de ${this.estado} a ${nuevoEstado}`,
+      );
+    }
+
+    this.estado = nuevoEstado;
+  }
+  reservar(): void {
+    this.transicionarA(EstadoPublicacion.RESERVADA);
+  }
+
+  pausar(): void {
+    this.transicionarA(EstadoPublicacion.PAUSADA);
+  }
+
+  reactivar(): void {
+    this.transicionarA(EstadoPublicacion.DISPONIBLE);
+  }
+
+  entregar(): void {
+    this.transicionarA(EstadoPublicacion.ENTREGADA);
+  }
+
+  eliminar(): void {
+    this.transicionarA(EstadoPublicacion.ELIMINADA);
+
+    this.deletedAt = new Date();
+  }
+
+  cancelarReserva(): void {
+    this.transicionarA(EstadoPublicacion.DISPONIBLE);
+  }
+
+  puedeEditar(): boolean {
+    return (
+      this.estado === EstadoPublicacion.DISPONIBLE ||
+      this.estado === EstadoPublicacion.PAUSADA
+    );
+  }
+
+  editar(datos: EditarPublicacionDto): void {
+    if (!this.puedeEditar()) {
+      throw new BadRequestException(
+        'La publicación no puede editarse en su estado actual',
+      );
+    }
+
+    if (datos.titulo !== undefined) {
+      this.titulo = datos.titulo;
+    }
+
+    if (datos.descripcion !== undefined) {
+      this.descripcion = datos.descripcion;
+    }
+
+    if (datos.imagenUrl !== undefined) {
+      this.imagenUrl = datos.imagenUrl;
+    }
+
+    if (datos.condicion !== undefined) {
+      this.condicion = datos.condicion;
+    }
+
+    this.updatedAt = new Date();
+  }
 }

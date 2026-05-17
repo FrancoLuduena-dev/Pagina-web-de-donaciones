@@ -1,4 +1,4 @@
-export enum EstadoPublicacionNombre {
+export enum EstadoPublicacion {
   DISPONIBLE = 'DISPONIBLE',
   RESERVADA = 'RESERVADA',
   ENTREGADA = 'ENTREGADA',
