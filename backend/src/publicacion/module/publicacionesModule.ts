@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { PublicacionController } from '../controllers/publicacionController';
-import { Publicacion } from '../entities/publicacionEntity';
-import { PublicacionRepository } from '../repositories/publicacionRepository';
-import { PublicacionService } from '../services/publicacionService';
+import { PublicacionController } from '../controller/publicacionController';
+import { Publicacion } from '../entity/publicacionEntity';
+import { PublicacionRepository } from '../repository/publicacionRepository';
+import { PublicacionService } from '../service/publicacionService';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Publicacion])],

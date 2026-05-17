@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { Publicacion } from '../entities/publicacionEntity';
-import { PublicacionRepository } from '../repositories/publicacionRepository';
+import { Publicacion } from '../entity/publicacionEntity';
+import { PublicacionRepository } from '../repository/publicacionRepository';
 import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
 import { Rol } from 'src/enum';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';

@@ -10,10 +10,10 @@ import {
   Delete,
 } from '@nestjs/common';
 
-import { PublicacionService } from '../services/publicacionService';
+import { PublicacionService } from '../service/publicacionService';
 import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
 import { RolesGuard } from 'src/compartidos/guards/rolesGuard';
-import { Publicacion } from '../entities/publicacionEntity';
+import { Publicacion } from '../entity/publicacionEntity';
 import { Rol } from 'src/enum';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { Roles } from 'src/compartidos/decorators/decoratorRol';

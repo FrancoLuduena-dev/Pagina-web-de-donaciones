@@ -7,7 +7,7 @@ import {
   type ConfigModuleOptions,
 } from '@nestjs/config';
 
-import { PublicacionesModule } from './publicacion/modules/publicaciones.module';
+import { PublicacionesModule } from './publicacion/module/publicacionesModule';
 
 const configModuleOptions: ConfigModuleOptions = {
   isGlobal: true,
