@@ -10,3 +10,15 @@
 
   min-height: 100%;
 }
+
+.footer {
+  grid-area: footer;
+}
+
+.header{
+  grid-area: navbar;
+}
+
+.main{
+  grid-area: body
+}

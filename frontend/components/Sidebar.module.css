@@ -1,31 +1,20 @@
-/* Sidebar.module.css */
-
 .sidebar {
   width: 240px;
   min-width: 240px;
   height: 100%;
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-
+  gap: 2rem;
   padding: 1.5rem 1rem;
-
   border-right: 1px solid var(--color-borde);
-
   background-color: #f8fafc;
 }
 
-.topSection {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
 
 .title {
   font-size: 1rem;
   font-weight: 700;
-
   color: var(--color-texto-principal);
 }
 
@@ -33,20 +22,19 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  list-style: none;
+  padding: 0;
 }
 
 .link {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-
   padding: 0.85rem 1rem;
-
   border-radius: 0.75rem;
-
   color: var(--color-texto-principal);
   text-decoration: none;
-
   font-size: 0.95rem;
   font-weight: 500;
 
@@ -61,7 +49,6 @@
 
 .active {
   background-color: var(--color-primario);
-
   color: white;
 }
 
@@ -69,40 +56,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: 1rem;
 }
 
-.bottomCard {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  padding: 1rem;
-
-  border: 1px solid var(--color-borde);
-  border-radius: 0.85rem;
-
-  background-color: white;
-}
-
-.bottomTitle {
-  font-size: 0.85rem;
-  font-weight: 700;
-
-  color: var(--color-texto-principal);
-}
-
-.bottomCategory {
-  font-size: 1rem;
-  font-weight: 600;
-
-  color: var(--color-texto-principal);
-}
-
-.bottomDescription {
-  font-size: 0.85rem;
-  line-height: 1.5;
-
-  color: var(--color-texto-secundario);
+/*media query para celular*/
+@media screen and (max-width: 480px) {
+  .sidebar {
+    flex-direction: row;
+  }
 }

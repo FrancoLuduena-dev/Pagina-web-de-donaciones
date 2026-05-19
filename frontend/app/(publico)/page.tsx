@@ -12,8 +12,7 @@ export default function HomePage() {
         </h1>
 
         <p className={styles.description}>
-          Sumá tu granito de arena. Pronto vas a poder explorar campañas y donar
-          desde acá.
+          Sumá tu granito de arena. Pronto vas a poder explorar campañas y donar desde acá.
         </p>
 
         <div className={styles.actions}>

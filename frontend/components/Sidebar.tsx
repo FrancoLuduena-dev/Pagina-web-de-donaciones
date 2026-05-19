@@ -13,7 +13,6 @@ export default function Sidebar() {
 
   return (
     <nav className={styles.sidebar}>
-      <div className={styles.topSection}>
         <h2 className={styles.title}>
           Categorías
         </h2>
@@ -85,7 +84,6 @@ export default function Sidebar() {
             </Link>
           </li>
         </ul>
-      </div>
 
     </nav>
   );

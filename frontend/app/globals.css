@@ -1,25 +1,24 @@
 :root{
-    --color-primario: #0EA5A4;
-    --color-primario-hover: #0F766E;
-    --color-primario-highlight: #CCFBF1;
-    --color-secundario: #F59E0B;
-    --color-secundario-highlight: #FEF3C7; 
-    --color-fondo: #FAFAF9;
-    --color-tarjeta: #FFFFFF;
-    --color-texto-principal: #292524;
-    --color-texto-secundario: #78716C;
-    --color-exito: #14B8A6;
-    --color-alertas: #DC2626;
-    --color-warning: #F59E0B;
-    --color-borde: #E7E5E4;
+  --color-primario: #0EA5A4;
+  --color-primario-hover: #0F766E;
+  --color-primario-highlight: #CCFBF1;
+  --color-secundario: #F59E0B;
+  --color-secundario-highlight: #FEF3C7; 
+  --color-fondo: #FAFAF9;
+  --color-tarjeta: #FFFFFF;
+  --color-texto-principal: #292524;
+  --color-texto-secundario: #78716C;
+  --color-exito: #14B8A6;
+  --color-alertas: #DC2626;
+  --color-warning: #F59E0B;
+  --color-borde: #E7E5E4;
 }
 
 * {
   box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -36,18 +35,11 @@ body {
   min-height: 100vh;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-ul,
-ol,
-figure,
-blockquote,
-dl,
-dd {
+h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote, dl, dd {
   margin: 0;
+}
+
+a, a:visited, a:hover, a:active {
+  color: inherit;
+  text-decoration: none;
 }
