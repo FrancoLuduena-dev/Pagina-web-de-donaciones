@@ -11,16 +11,9 @@ export default class Usuario_Service {
     private repo = new UsuarioRepository();
 
     /*
-    metodos:
--bloquear_usuarios (no accesible por usuario comun) [id_usuario, id_moderador]
--resetear_contraseña_usuario [id_usuario, datos: actualizar_contraseña_dto]
--listar_usuarios
--actualizar_perfil [id_usuario, datos: actualizar_perfil_dto]
--crear_usuario [datos: crear_usuario_dto]
--cambiar_rol [actor: usuario, usuario_id, nuevo_rol]
--eliminar_usuario [id_usuario]
 
- to do: validar todas las reglas de negocio basicas del sistema de creacion de usuarios
+ to do: ver especificamente las excepciones en base a que error salio en la ejecucion de cada metodo.
+        tal vez crear excepciones personalizadas para cada caso.
      */
 
 
@@ -69,7 +62,7 @@ public async Eliminar_Usuario_Admin(id_usuario: number, id_admin: number): Promi
         throw new ConflictException(`Admin con id ${id_admin} no encontrado`);
     }
 
-    if (usuarioAdmin.rol !== 'USUARIO_ADMINISTRADOR') {
+    if (usuarioAdmin.rol !== rolUsuario.USUARIO_ADMINISTRADOR) {
         throw new ConflictException(`El usuario con id ${id_admin} no tiene permisos de administrador para eliminar un usuario`);
     }
 
@@ -126,7 +119,7 @@ public async Cambiar_Rol_Usuario(id_usuario: number, id_admin: number, nuevo_rol
         throw new ConflictException(`Admin con id ${id_admin} no encontrado`);
     }
 
-    if (usuarioAdmin.rol !== 'USUARIO_ADMINISTRADOR') {
+    if (usuarioAdmin.rol !== rolUsuario.USUARIO_ADMINISTRADOR) {
         throw new ConflictException(`El usuario con id ${id_admin} no tiene permisos de administrador para cambiar el rol de un usuario`);
     }
 
@@ -164,7 +157,7 @@ public async Bloquear_Usuario(id_usuario: number, id_moderador: number, razon_bl
     const usuarioModerador = await this.obtenerUsuarioPorId(id_moderador);
     if (!usuarioModerador) { throw new ConflictException(`Usuario moderador con id ${id_moderador} no encontrado`); }
 
-    if ( usuarioModerador.rol !== 'USUARIO_MODERADOR' && usuarioModerador.rol !== 'USUARIO_ADMINISTRADOR') {
+    if ( usuarioModerador.rol !== rolUsuario.USUARIO_MODERADOR && usuarioModerador.rol !== rolUsuario.USUARIO_ADMINISTRADOR) {
         throw new ConflictException(`El usuario con id ${id_moderador} no tiene permisos de moderador o administrador para bloquear un usuario`);
     }
 

@@ -14,7 +14,7 @@ import Crear_Usuario_DTO from '../dtos/usuario.dto';
 import usuario from '../models/usuario.entity';
 
 /*
- to do: validar para cada uno de los datos basicos que el formato escrito sea el correcto, y que no se repitan datos unicos como el correo o el nombre de usuario
+ to do: quitar del body el id_usuario en los endpoints que lo requieran y obtenerlo del token de autenticacion.
 */
 
 @Controller('usuario')
