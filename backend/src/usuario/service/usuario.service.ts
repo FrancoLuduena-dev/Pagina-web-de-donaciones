@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import Usuario from '../models/usuario.entity';
 import Crear_Usuario_DTO from "../dtos/usuario.dto";
-import { AppDataSource } from '..';
+import { AppDataSource } from '../..';
 import UsuarioRepository from '../repository/usuario.repository';
 import { rolUsuario } from '../enums/rol_usuario.enum';
 

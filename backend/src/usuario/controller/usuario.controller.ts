@@ -15,6 +15,7 @@ import usuario from '../models/usuario.entity';
 
 /*
  to do: quitar del body el id_usuario en los endpoints que lo requieran y obtenerlo del token de autenticacion.
+       usar el ward de nest para validar el rol de usuario para la ejecucion de metodos con privilegios de admin o moderador.
 */
 
 @Controller('usuario')
