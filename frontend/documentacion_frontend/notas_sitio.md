@@ -60,19 +60,20 @@ aca esta la jerarquia de carpetas, para que sepan donde poner cada pagina (si un
 			- **crear/** &emsp;&emsp;&emsp; (carpeta para form de creacion de publicacion de donaciones)
 				- page.tsx  
 		- **usuario/** &emsp;&emsp;&emsp; (carpeta para elementos generales de perfil de usuario)
-			- page.tsx
+			- page.tsx  &emsp;&emsp;&emsp; (resumen perfil - publicaciones activas, notificaciones nuevas, links a partes del perfil)
 			- **editar/** &emsp;&emsp;&emsp; (carpeta para form de edicion de usuario)
 				- page.tsx
 			- **publicaciones/** &emsp;&emsp;&emsp; (carpeta para pagina de publicaicones propias del usuario)
 				- page.tsx
-			- **notificaciones/**
+			- **notificaciones/** &emsp;&emsp;&emsp; (todas las notificaciones (solicitudes hcehas aprobadas o rechazadas))
 				- page.tsx
+			- **solicitudes/** &emsp;&emsp;&emsp; (solicitudes de tus publicaciones que recibis, con marcado de leido, filtro para notificaciones por publicacion)
 	- **(general/)**
 		- **about/**
 			- page.tsx &emsp;&emsp;&emsp; 
 		- **contacto/** 
 		- layout.tsx
-- **componentes** &emsp;&emsp;&emsp;&emsp; (aca van pedazos reutilizables de la aplicacion, como navbar, sidebar, footer)
+- **components** &emsp;&emsp;&emsp;&emsp; (aca van pedazos reutilizables de la aplicacion, como navbar, sidebar, footer)
 	- Footer.tsx 
 	- Navbar.tsx
 	- unloggedNavbar.tsx
@@ -81,7 +82,7 @@ aca esta la jerarquia de carpetas, para que sepan donde poner cada pagina (si un
 - **constants** &emsp;&emsp;&emsp;&emsp; (constantes a utilizar en la aplicacion)
 	- site.ts &emsp;&emsp;&emsp; (constante con el nombre de la pagina para poder cambiarlo rapido en todos lados)
 - **types** &emsp;&emsp;&emsp;&emsp; (aca van basicamente los enums seleccionables para busqueda y filtro)
-	- CategoriaPublicacion.ys &emsp;&emsp;&emsp; (para usar el filtro del sidebar de donaciones)
+	- CategoriaPublicacion.ts &emsp;&emsp;&emsp; (para usar el filtro del sidebar de donaciones)
 
 las carpetas entre parentesis dejarlas con el parentesis, eso hace que no se vean en la barra de direcciones del sitio
 

@@ -1,5 +1,12 @@
 import styles from "./como_funciona.module.css";
 
+/**
+ * Página informativa sobre el funcionamiento de la plataforma.
+ *
+ * Explica el objetivo y uso general del sistema de donaciones.
+ *
+ * @returns Página "Cómo funciona".
+ */
 export default function ComoFuncionaPage() {
   return (
     <main className={styles.main}>

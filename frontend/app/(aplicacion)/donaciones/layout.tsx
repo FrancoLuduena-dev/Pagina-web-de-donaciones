@@ -1,6 +1,14 @@
 import Sidebar from "@/components/Sidebar";
 import styles from "./donaciones.module.css"
 
+/**
+ * Layout de la sección de donaciones.
+ *
+ * Incluye la barra lateral de categorías.
+ *
+ * @param children - Contenido renderizado dentro del layout.
+ * @returns Estructura base de la sección de donaciones.
+ */
 export default function PublicoLayout({
   children,
 }: {

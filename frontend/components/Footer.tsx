@@ -1,10 +1,7 @@
 import Link from "next/link";
 import styles from "./Footer.module.css";
 
-/**
- * Footer de la aplicación.
- * Contiene nombre del sitio, copyright, link de Contacto y Sobre Nosotros
- */
+/** Footer de la aplicación. */
 
 export default function Footer() {
   return (

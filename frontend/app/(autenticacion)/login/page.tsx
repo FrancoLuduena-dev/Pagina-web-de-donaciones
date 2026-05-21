@@ -6,6 +6,13 @@ import { FormEvent, useState } from "react";
 import { loginRequest, persistSession } from "@/lib/auth";
 import styles from "./login.module.css";
 
+/**
+ * Página de inicio de sesión.
+ *
+ * Permite autenticar usuarios y guardar la sesión activa.
+ *
+ * @returns Formulario de login.
+ */
 export default function LoginPage() {
   const router = useRouter();
 
@@ -14,6 +21,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  /**
+ * Maneja el envío del formulario de login.
+ *
+ * Autentica al usuario y redirige al inicio si el acceso es exitoso.
+ *
+ * @param e - Evento de envío del formulario.
+ */
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 

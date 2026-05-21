@@ -62,22 +62,38 @@
     display: grid;
     width: 100%;
     max-width: 100%;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr auto;
     grid-template-areas:
       "titulo usuario"
       "links links";
-    gap: 1rem;
-    padding: 1rem 1rem;
+    row-gap: 0.45rem;
+    column-gap: 0.75rem;
+    padding: 0.55rem 0.75rem;
     justify-items: center;
   }
 
   .logo {
-    margin-left: 20px;
+    margin-left: 0;
     justify-self: left;
+    font-size: clamp(1rem, 4.2vw, 1.15rem);
+  }
+
+  .links {
+    width: 100%;
+    justify-content: center;
+    gap: 0.65rem;
   }
 
   .links a {
-    font-size: clamp(1.5vw, 2vw);
+    font-size: clamp(0.78rem, 3.2vw, 0.9rem);
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .botonUsuario {
+    padding: 0.45rem 0.7rem;
+    font-size: clamp(0.78rem, 3vw, 0.88rem);
+    max-height: none;
   }
 }
 /*media query para celular apaisado o tablet*/
@@ -98,10 +114,20 @@
   .logo {
     margin-left: 20px;
     justify-self: left;
-    font-size: clamp(1.5rem, 2vw, 3vw);
+    font-size: clamp(1.15rem, 3.5vw, 1.45rem);
   }
 
   .links a {
-    font-size: 3vw;
+    font-size: clamp(0.9rem, 2.4vw, 1.05rem);
+  }
+
+  .links {
+    width: 100%;
+    justify-content: center;
+    gap: clamp(1rem, 6vw, 3rem);
+  }
+
+  .botonUsuario {
+    font-size: clamp(0.85rem, 2.2vw, 1rem);
   }
 }

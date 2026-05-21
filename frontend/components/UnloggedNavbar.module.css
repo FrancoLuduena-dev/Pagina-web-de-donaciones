@@ -14,6 +14,11 @@
   text-decoration: none;
 }
 
+.logo:visited,
+.logo:active {
+  color: var(--color-primario);
+}
+
 .links {
   display: flex;
   align-items: center;
@@ -26,6 +31,11 @@
   font-size: 0.95rem;
   font-weight: 600;
   transition: color 0.2s ease;
+}
+
+.link:visited,
+.link:active {
+  color: var(--color-primario);
 }
 
 .link:hover {
@@ -42,6 +52,12 @@
   font-weight: 500;
 
   transition: background-color 0.2s ease;
+}
+
+.botonRegistro:visited,
+.botonRegistro:hover,
+.botonRegistro:active {
+  color: white;
 }
 
 .botonRegistro:hover {
@@ -81,6 +97,13 @@
   }
 }
 
+
+  .links a {
+    font-size: clamp(0.78rem, 3.2vw, 0.9rem);
+    line-height: 1.2;
+    text-align: center;
+  }
+
 /*media query para celular apaisado o tablet*/
 @media screen and (min-width: 481px) and (max-width: 768px) {
   .navbar {
@@ -114,6 +137,10 @@
   .link{
   font-size: clamp(1rem, 3vw, 3vw);
   margin-left: 2rem;
+  }
+
+  .links a {
+    font-size: clamp(0.9rem, 2.5vw, 3vw);
   }
 
   .botonRegistro{

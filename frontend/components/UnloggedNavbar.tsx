@@ -3,12 +3,10 @@ import { tituloPagina } from "@/constants/site";
 import styles from "./UnloggedNavbar.module.css";
 
 /**
- * Navbar para visitantes no autenticados.
+ * Barra de navegación para usuarios no autenticados.
  *
- * Contiene:
- * - Nombre/logo del sitio
- * - Link a log in
- * - Link a registro
+ * Muestra el nombre o logo del sitio y accesos
+ * a inicio de sesión y registro.
  */
 
 export default function UnloggedNavbar() {

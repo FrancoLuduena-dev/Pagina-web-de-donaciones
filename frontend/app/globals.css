@@ -1,7 +1,7 @@
 :root{
   --color-primario: #0EA5A4;
   --color-primario-hover: #0F766E;
-  --color-primario-highlight: #CCFBF1;
+  --color-primario-highlight: #56d1c1;
   --color-secundario: #F59E0B;
   --color-secundario-highlight: #FEF3C7; 
   --color-fondo: #FAFAF9;
@@ -39,7 +39,7 @@ h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote, dl, dd {
   margin: 0;
 }
 
-a, a:visited, a:hover, a:active {
+:where(a) {
   color: inherit;
   text-decoration: none;
 }
