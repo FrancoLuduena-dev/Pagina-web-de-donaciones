@@ -10,37 +10,37 @@ import {
   IsNumber 
 } from 'class-validator';
 
-export default class Crear_Usuario_Dto {
+export default class CrearUsuarioDto {
 
   @IsNumber()
   id?: number;
 
   @IsString()
-  @IsNotEmpty({ message: 'El nombre completo es obligatorio' })
-  nombreCompleto: string;
+  @IsNotEmpty()
+  nombreCompleto!: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'El nombre de usuario es obligatorio' })
-  nombreUsuario: string;
+  @IsNotEmpty()
+  nombreUsuario!: string;
 
-  @IsEmail({ message: 'El correo ingresado no es válido' })
-  @IsNotEmpty({ message: 'El correo es obligatorio' })
-  correo: string;
+  @IsEmail()
+  @IsNotEmpty()
+  correo!: string;
 
   @IsString()
   @MinLength(6)
-  @IsNotEmpty({ message: 'La contraseña es obligatoria' })
-  contraseña: string;
+  @IsNotEmpty()
+  contraseña!: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'El número de teléfono es obligatorio' })
-  numeroTelefono: string;
+  @IsNotEmpty()
+  numeroTelefono!: string;
 
   @IsEnum(rolUsuario)
-  rol: rolUsuario;
+  rol!: rolUsuario;
 
   @IsEnum(estadosUsuario)
-  estado: estadosUsuario;
+  estado!: estadosUsuario;
 
   @IsNumber()
   @IsOptional()

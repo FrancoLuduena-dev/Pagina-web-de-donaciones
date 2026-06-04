@@ -2,10 +2,13 @@ import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import Usuario from '../models/usuario.entity';
-import Crear_Usuario_DTO from "../dtos/usuario.dto";
+import CrearUsuarioDTO from "../dtos/usuario.dto";
 import { AppDataSource } from '../..';
 import UsuarioRepository from '../repository/usuario.repository';
 import { rolUsuario } from '../enums/rol_usuario.enum';
+import actualizarUsuarioDTO from '../dtos/update.usuario.dto';
+import { CambiarRolDTO } from '../dtos/cambiarRol.dto';
+import { BloquearUsuarioDTO } from '../dtos/bloquearUsuario.dto';
 
 export default class Usuario_Service {
     private repo = new UsuarioRepository();
@@ -17,7 +20,7 @@ export default class Usuario_Service {
      */
 
 
-    public async Crear_Usuario(usuario: Crear_Usuario_DTO): Promise<Usuario> {
+    public async Crear_Usuario(usuario: CrearUsuarioDTO): Promise<Usuario> {
         /*
         validar nombre usuario unico
         validar correo unico
@@ -70,7 +73,7 @@ public async Eliminar_Usuario_Admin(id_usuario: number, id_admin: number): Promi
 
 }
 
-public async Actualizar_Usuario(id_usuario: number, datos: Partial<Crear_Usuario_DTO>): Promise<void> {
+public async Actualizar_Usuario(id_usuario: number, datos: actualizarUsuarioDTO): Promise<void> {
     /*
     validar que el usuario exista
     validar que el correo sea unico si se esta actualizando
@@ -80,7 +83,7 @@ public async Actualizar_Usuario(id_usuario: number, datos: Partial<Crear_Usuario
    const usuario = await this.obtenerUsuarioPorId(id_usuario);
    
    if (!usuario) {
-       throw new ConflictException(`Usuario con id ${id_usuario} no encontrado`);
+       throw new Error(`Usuario con id ${id_usuario} no encontrado`);
    }
 
    const existeCorreo = await this.repo.buscarPorEmail(usuario.correo);
@@ -100,11 +103,23 @@ public async Actualizar_Usuario(id_usuario: number, datos: Partial<Crear_Usuario
     await this.repo.actualizarUsuario(id_usuario, datos);
 }
 
-private async obtenerUsuarioPorId(id_usuario: number): Promise<Usuario | null> {
+public async obtenerUsuarioPorId(id_usuario: number): Promise<Usuario | null> {
+    const usuario = await this.repo.buscarPorId(id_usuario);
+    if (!usuario) {
+        throw new Error(`Usuario con id ${id_usuario} no encontrado`);
+    }
     return await this.repo.buscarPorId(id_usuario);
 }
 
-public async Cambiar_Rol_Usuario(id_usuario: number, id_admin: number, nuevo_rol: rolUsuario): Promise<void> {
+public async ObtenerUsuarioPorNombreUsuario(nombreUsuario: string): Promise<Usuario | null> {
+    return await this.repo.buscarPorUsername(nombreUsuario);
+}
+
+public async ObtenerUsuarioPorCorreo(correo: string): Promise<Usuario | null> {
+    return await this.repo.buscarPorEmail(correo);
+}
+
+public async Cambiar_Rol_Usuario(id_usuario: number, id_admin: number, datos: CambiarRolDTO): Promise<void> {
     /* verfifcar que el usuario tenga rol admin
     validar que el rol actual no sea el de admin  
     */ 
@@ -123,7 +138,7 @@ public async Cambiar_Rol_Usuario(id_usuario: number, id_admin: number, nuevo_rol
         throw new ConflictException(`El usuario con id ${id_admin} no tiene permisos de administrador para cambiar el rol de un usuario`);
     }
 
-    await this.repo.cambiarRolUsuario(id_usuario, nuevo_rol);
+    await this.repo.cambiarRolUsuario(id_usuario, datos.rol);
 }
 
 public async Resetear_Contraseña_Usuario(id_usuario: number, contraseña_actual: string, contraseña_nueva: string): Promise<void> { 
@@ -146,7 +161,7 @@ public async Resetear_Contraseña_Usuario(id_usuario: number, contraseña_actual
 
 }
 
-public async Bloquear_Usuario(id_usuario: number, id_moderador: number, razon_bloqueo: string): Promise<void> {
+public async Bloquear_Usuario(id_usuario: number, id_moderador: number, datos: BloquearUsuarioDTO): Promise<void> {
     /* verfifcar que el usuario tenga rol mod o admin
     verificar que el usuario bloqueador no sea el mismo que el bloqueado
     validar que el usuario bloqueado no este ya bloqueado
@@ -169,11 +184,11 @@ public async Bloquear_Usuario(id_usuario: number, id_moderador: number, razon_bl
         throw new ConflictException(`El usuario con id ${id_usuario} ya se encuentra bloqueado`);
     }
 
-    if (razon_bloqueo === null || razon_bloqueo === '') {
+    if (datos.razonBloqueo === null || datos.razonBloqueo === '') {
         throw new ConflictException(`La razón de bloqueo no puede estar vacía`);
     }
 
-    await this.repo.bloquearUsuario(id_usuario, id_moderador, razon_bloqueo);
+    await this.repo.bloquearUsuario(id_usuario, id_moderador, datos.razonBloqueo);
 }
 
 public async Listar_Usuarios(): Promise<Array<Usuario>> {

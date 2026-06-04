@@ -5,45 +5,45 @@ import { estadosUsuario } from "../enums/estados_usuario.enum"
 @Entity()
 export default class Usuario {
     @PrimaryGeneratedColumn('increment')
-    id: number
+    id!: number
 
     @Column({ length: 100 })
-    nombreCompleto: string
+    nombreCompleto!: string
 
     @Column({ unique: true, length: 50 })
-    nombreUsuario: string
+    nombreUsuario!: string
 
     @Column({ unique: true, length: 100 })
-    correo: string
+    correo!: string
 
     @Column({ length: 255 })
-    contraseña: string
+    contraseña!: string
 
     @Column({ length: 20 })
-    numeroTelefono: string
+    numeroTelefono!: string
 
     @Column({
         type: 'enum',
         enum: rolUsuario,
         default: rolUsuario.USUARIO_NORMAL
     })
-    rol: rolUsuario
+    rol!: rolUsuario
 
     @Column({
         type: 'enum',
         enum: estadosUsuario,
         default: estadosUsuario.ACTIVO
     })
-    estado: estadosUsuario
+    estado!: estadosUsuario
 
     @Column({ nullable: true })
-    idBloqueador: number | null
+    idBloqueador!: number | null
 
     @Column({ nullable: true })
-    razonBloqueo: string | null
+    razonBloqueo!: string | null
 
     @Column({ nullable: true})
-    cantidadPublicacionesBloqueadas: number | null
+    cantidadPublicacionesBloqueadas!: number | null
 }
 
 /*

@@ -14,9 +14,11 @@ export const AppDataSource = new DataSource({
     logging: true,
 });
 
-try {
-    await AppDataSource.initialize();
-} catch (error) {
+AppDataSource.initialize()
+  .then(() => {
+    console.log('Data source initialized successfully');
+  })
+  .catch((error) => {
     console.log(error);
-}
+  });
 
