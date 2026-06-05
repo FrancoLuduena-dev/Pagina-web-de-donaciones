@@ -9,6 +9,7 @@ import { rolUsuario } from '../enums/rol_usuario.enum';
 import actualizarUsuarioDTO from '../dtos/update.usuario.dto';
 import { CambiarRolDTO } from '../dtos/cambiarRol.dto';
 import { BloquearUsuarioDTO } from '../dtos/bloquearUsuario.dto';
+import bcrypt from 'bcrypt';
 
 export default class Usuario_Service {
     private repo = new UsuarioRepository();
@@ -20,7 +21,7 @@ export default class Usuario_Service {
      */
 
 
-    public async Crear_Usuario(usuario: CrearUsuarioDTO): Promise<Usuario> {
+    public async CrearUsuario(usuario: CrearUsuarioDTO): Promise<Usuario> {
         /*
         validar nombre usuario unico
         validar correo unico
@@ -38,7 +39,7 @@ export default class Usuario_Service {
         return await this.repo.crearUsuario(usuario);
     }
 
-public async Eliminar_Usuario(id_usuario: number, contraseña: string): Promise<void> {
+public async EliminarUsuario(id_usuario: number, contraseña: string): Promise<void> {
     /* validar que el usuario exista */
     /* pedirle que confirme la contraseña al usuario*/ 
     const usuario = await this.obtenerUsuarioPorId(id_usuario);
@@ -46,14 +47,15 @@ public async Eliminar_Usuario(id_usuario: number, contraseña: string): Promise<
         throw new ConflictException(`Usuario con id ${id_usuario} no encontrado`);
     }
 
-    if (usuario.contraseña !== contraseña) {
+    const isValid = await bcrypt.compare(contraseña, usuario.contraseña);
+    if (!isValid) {
         throw new ConflictException('La contraseña es incorrecta');
     }
 
     await this.repo.eliminarUsuario(id_usuario);
 }
 
-public async Eliminar_Usuario_Admin(id_usuario: number, id_admin: number): Promise<void> { 
+public async EliminarUsuarioAdmin(id_usuario: number, id_admin: number): Promise<void> { 
     /* validar que el usuario exista */
     const usuario = await this.obtenerUsuarioPorId(id_usuario);
     const usuarioAdmin = await this.obtenerUsuarioPorId(id_admin);
@@ -65,15 +67,11 @@ public async Eliminar_Usuario_Admin(id_usuario: number, id_admin: number): Promi
         throw new ConflictException(`Admin con id ${id_admin} no encontrado`);
     }
 
-    if (usuarioAdmin.rol !== rolUsuario.USUARIO_ADMINISTRADOR) {
-        throw new ConflictException(`El usuario con id ${id_admin} no tiene permisos de administrador para eliminar un usuario`);
-    }
-
     await this.repo.eliminarUsuario(id_usuario);
 
 }
 
-public async Actualizar_Usuario(id_usuario: number, datos: actualizarUsuarioDTO): Promise<void> {
+public async ActualizarUsuario(id_usuario: number, datos: actualizarUsuarioDTO): Promise<void> {
     /*
     validar que el usuario exista
     validar que el correo sea unico si se esta actualizando
@@ -119,7 +117,7 @@ public async ObtenerUsuarioPorCorreo(correo: string): Promise<Usuario | null> {
     return await this.repo.buscarPorEmail(correo);
 }
 
-public async Cambiar_Rol_Usuario(id_usuario: number, id_admin: number, datos: CambiarRolDTO): Promise<void> {
+public async CambiarRolUsuario(id_usuario: number, id_admin: number, datos: CambiarRolDTO): Promise<void> {
     /* verfifcar que el usuario tenga rol admin
     validar que el rol actual no sea el de admin  
     */ 
@@ -134,14 +132,10 @@ public async Cambiar_Rol_Usuario(id_usuario: number, id_admin: number, datos: Ca
         throw new ConflictException(`Admin con id ${id_admin} no encontrado`);
     }
 
-    if (usuarioAdmin.rol !== rolUsuario.USUARIO_ADMINISTRADOR) {
-        throw new ConflictException(`El usuario con id ${id_admin} no tiene permisos de administrador para cambiar el rol de un usuario`);
-    }
-
     await this.repo.cambiarRolUsuario(id_usuario, datos.rol);
 }
 
-public async Resetear_Contraseña_Usuario(id_usuario: number, contraseña_actual: string, contraseña_nueva: string): Promise<void> { 
+public async ResetearContraseñaUsuario(id_usuario: number, contraseña_actual: string, contraseña_nueva: string): Promise<void> { 
     /* verfifcar que el usuario exista 
     verificar que la contraseña actual sea correcta
     validar que la contraseña nueva no sea igual a la actual
@@ -161,7 +155,7 @@ public async Resetear_Contraseña_Usuario(id_usuario: number, contraseña_actual
 
 }
 
-public async Bloquear_Usuario(id_usuario: number, id_moderador: number, datos: BloquearUsuarioDTO): Promise<void> {
+public async BloquearUsuario(id_usuario: number, id_moderador: number, datos: BloquearUsuarioDTO): Promise<void> {
     /* verfifcar que el usuario tenga rol mod o admin
     verificar que el usuario bloqueador no sea el mismo que el bloqueado
     validar que el usuario bloqueado no este ya bloqueado
@@ -171,14 +165,6 @@ public async Bloquear_Usuario(id_usuario: number, id_moderador: number, datos: B
     if (!usuario) { throw new ConflictException(`Usuario con id ${id_usuario} no encontrado`); }
     const usuarioModerador = await this.obtenerUsuarioPorId(id_moderador);
     if (!usuarioModerador) { throw new ConflictException(`Usuario moderador con id ${id_moderador} no encontrado`); }
-
-    if ( usuarioModerador.rol !== rolUsuario.USUARIO_MODERADOR && usuarioModerador.rol !== rolUsuario.USUARIO_ADMINISTRADOR) {
-        throw new ConflictException(`El usuario con id ${id_moderador} no tiene permisos de moderador o administrador para bloquear un usuario`);
-    }
-
-    if( usuarioModerador.rol === 'USUARIO_MODERADOR' && usuario.rol === 'USUARIO_ADMINISTRADOR' || usuario.rol === 'USUARIO_MODERADOR') { 
-        throw new ConflictException(`El usuario con id ${id_moderador} no tiene permisos para bloquear a un usuario con rol de moderador o administrador`);
-    }
 
     if (usuario.estado === 'BLOQUEADO') {
         throw new ConflictException(`El usuario con id ${id_usuario} ya se encuentra bloqueado`);
@@ -191,7 +177,7 @@ public async Bloquear_Usuario(id_usuario: number, id_moderador: number, datos: B
     await this.repo.bloquearUsuario(id_usuario, id_moderador, datos.razonBloqueo);
 }
 
-public async Listar_Usuarios(): Promise<Array<Usuario>> {
+public async ListarUsuarios(): Promise<Array<Usuario>> {
     return await this.repo.listarUsuarios();
 }
 

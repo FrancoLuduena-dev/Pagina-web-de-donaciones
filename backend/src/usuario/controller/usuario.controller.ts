@@ -18,6 +18,8 @@ import actualizarUsuarioDTO from '../dtos/update.usuario.dto';
 import { CambiarRolDTO } from '../dtos/cambiarRol.dto';
 import logearUsuarioDTO from '../dtos/logearUsuario.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from "../auth/auth.guard.roles";
+import { Roles } from "../auth/auth.roles.decorator";
 
 /*
  to do: quitar del body el id_usuario en los endpoints que lo requieran y obtenerlo del token de autenticacion.
@@ -42,7 +44,7 @@ export default class Usuario_Controller {
     @UseGuards(AuthGuard)
     @Get()
     async listarUsuarios(): Promise<Array<usuario>> {
-        return this.service.Listar_Usuarios();
+        return this.service.ListarUsuarios();
     }
 
     @UseGuards(AuthGuard)
@@ -61,31 +63,39 @@ export default class Usuario_Controller {
     @UseGuards(AuthGuard)
     @Delete(':id')
     async borrarUsuario(@Param('id') id: number, @Body('contraseña') contraseña: string) {
-        return this.service.Eliminar_Usuario(id, contraseña);
+        return this.service.EliminarUsuario(id, contraseña);
     }
 
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles ('ADMIN')
+    @Delete(':id')
+    async borrarUsuarioAdmin(@Param('id') id: number, @Body('id_admin') id_admin: number) {
+        return this.service.EliminarUsuarioAdmin(id, id_admin);
+    }
+
     @UseGuards(AuthGuard)
     @Patch(':id')
     async actualizarUsuario(@Param('id') id: number, @Body() datos: actualizarUsuarioDTO) {
-        return this.service.Actualizar_Usuario(id, datos);
+        return this.service.ActualizarUsuario(id, datos);
     }
 
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles ('ADMIN')
     @Patch(':id/rol')
     async cambiarRolUsuario(@Param('id') id: number, @Body('id_admin') id_admin: number, @Body() datos: CambiarRolDTO) {
-        return this.service.Cambiar_Rol_Usuario(id, id_admin, datos);
+        return this.service.CambiarRolUsuario(id, id_admin, datos);
     }
 
     @UseGuards(AuthGuard)
     @Patch(':id/resetear_contraseña')
     async resetearContraseña(@Param('id') id: number, @Body('contraseña_actual') contraseña_actual: string, @Body('contraseña_nueva') contraseña_nueva: string) {
-        return this.service.Resetear_Contraseña_Usuario(id, contraseña_actual, contraseña_nueva)
+        return this.service.ResetearContraseñaUsuario(id, contraseña_actual, contraseña_nueva)
     }
 
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, RolesGuard)
+    @Roles ('MODERADOR', 'ADMIN')
     @Patch(':id/bloquear_usuario')
     async bloquearUsuario(@Param('id') id: number, @Body('id_moderador') id_moderador: number, @Body() datos: BloquearUsuarioDTO) {
-        return this.service.Bloquear_Usuario(id, id_moderador, datos);
+        return this.service.BloquearUsuario(id, id_moderador, datos);
     }
 }

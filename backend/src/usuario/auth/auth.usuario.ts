@@ -13,7 +13,7 @@ export default class autenticacionUsuario {
   async registrarUsuario(usuario: crearUsuarioDTO) {
     const hashedPassword = await bcrypt.hash(usuario.contraseña, 10);
 
-    const newUser = await this.service.Crear_Usuario({
+    const newUser = await this.service.CrearUsuario({
       ...usuario,
       contraseña: hashedPassword,
     });
