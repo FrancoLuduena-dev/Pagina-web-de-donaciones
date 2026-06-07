@@ -17,9 +17,7 @@ export default function PublicoLayout({
   return (
     <div className={styles.layout}>
       <Sidebar />
-
-      {children}
-
+      <main className={styles.main}>{children}</main>
     </div>
   );
 }

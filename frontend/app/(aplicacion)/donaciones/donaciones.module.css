@@ -1,19 +1,15 @@
 .layout {
   display: grid;
-  grid-template-areas:
-    "header header"
-    "sidebar main"
-    "footer footer";
-  grid-template-columns: 1fr 5fr;
-  min-height: 100%;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  align-items: stretch;
+  gap: 1.5rem;
+  background-color: var(--color-fondo);
 }
 
 .main {
   display: grid;
-  grid-template-areas:
-    "card1" "card2"
-    "card3" "card4"
-    "card5" "card6";
+  gap: 1rem;
 }
 
 

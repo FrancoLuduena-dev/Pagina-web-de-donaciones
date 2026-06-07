@@ -4,8 +4,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 2rem;
+  justify-content: flex-start;
+  gap: 1.5rem;
   padding: 1.5rem 1rem;
   border-right: 1px solid var(--color-borde);
   background-color: var(--color-fondo);
