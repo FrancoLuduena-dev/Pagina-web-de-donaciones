@@ -1,0 +1,167 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import styles from "./usuario.module.css";
+import TarjetaResumen from "@/components/ui/cards/TarjetaResumen/TarjetaResumen";
+
+/* REVISAR CON BACKEND
+import { getToken, logout } from "@/lib/auth";
+*/
+
+type Usuario = {
+  nombre: string;
+  correo: string;
+  publicacionesActivas?: number;
+  solicitudesPendientes?: number;
+  notificaciones?: number;
+};
+
+// Pagina principal del usuario autenticado.
+export default function UsuarioPage() {
+  const router = useRouter();
+
+  // Estado del usuario
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+
+  // Estado de carga
+  const [loading, setLoading] = useState(true);
+
+  // Estado de error
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function cargarUsuario() {
+      try {
+        /* REVISAR CON BACKEND
+                // Obtener JWT
+                const token = getToken();
+
+                // Si no existe token
+                if (!token) {
+                    router.push("/login");
+                    return;
+                }
+
+                // Request al backend
+                const response = await fetch(
+                    "http://localhost:3000/api/usuario/me",
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type":
+                                "application/json",
+                        },
+                    }
+                );
+
+                // Token invalido o expirado
+                if (!response.ok) {
+                    logout();
+                    router.push("/login");
+                    return;
+                }
+
+                // Datos del usuario
+                const data = await response.json();
+                setUsuario(data);
+                */
+
+        // Simular carga
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Usuario mock
+        const data = {
+          nombre: "Marcelo",
+          correo: "marcelo@gmail.com",
+          publicacionesActivas: 5,
+          solicitudesPendientes: 2,
+          notificaciones: 7,
+        };
+
+        setUsuario(data);
+      } catch {
+        setError("Ocurrio un error al cargar el perfil.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    cargarUsuario();
+  }, [router]);
+
+  // Pantalla de carga
+  if (loading) {
+    return (
+      <main className={styles.main}>
+        <p>Cargando perfil...</p>
+      </main>
+    );
+  }
+
+  // Pantalla de error
+  if (error) {
+    return (
+      <main className={styles.main}>
+        <p>{error}</p>
+      </main>
+    );
+  }
+
+  // Seguridad extra
+  if (!usuario) {
+    return null;
+  }
+
+  return (
+    <main className={styles.main}>
+      <div className={styles.container}>
+        <section className={styles.header}>
+          <div className={styles.avatar}>{usuario.nombre.charAt(0)}</div>
+          <div>
+            <h1 className={styles.title}>Hola, {usuario.nombre}</h1>
+            <p className={styles.email}>{usuario.correo}</p>
+          </div>
+        </section>
+        <section className={styles.summaryGrid}>
+          <TarjetaResumen
+            titulo="Publicaciones activas"
+            valor={usuario.publicacionesActivas ?? 0}
+          />
+
+          <TarjetaResumen
+            titulo="Solicitudes pendientes"
+            valor={usuario.solicitudesPendientes ?? 0}
+          />
+
+          <TarjetaResumen
+            titulo="Notificaciones nuevas"
+            valor={usuario.notificaciones ?? 0}
+          />
+        </section>
+
+        <section className={styles.actions}>
+          <h2>Accesos rapidos</h2>
+          <div className={styles.buttonGrid}>
+            <Link href="/usuario/editar" className={styles.button}>
+              Editar perfil
+            </Link>
+
+            <Link href="/usuario/publicaciones" className={styles.button}>
+              Mis publicaciones
+            </Link>
+            <Link href="/usuario/notificaciones" className={styles.button}>
+              Notificaciones
+            </Link>
+            <Link href="/donaciones/crear" className={styles.button}>
+              Crear donacion
+            </Link>
+
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
