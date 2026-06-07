@@ -1,5 +1,5 @@
-import { estadosUsuario } from "../enums/estados_usuario.enum";
-import { rolUsuario } from "../enums/rol_usuario.enum";
+import { estadosUsuario } from "../enums/estadosUsuario.enum";
+import { rolUsuario } from "../enums/rolUsuario.enum";
 import { 
   IsString, 
   IsEmail, 

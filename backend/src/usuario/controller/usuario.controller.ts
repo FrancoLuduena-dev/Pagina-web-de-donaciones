@@ -9,8 +9,8 @@ import {
     Param,
     UseGuards,
 } from "@nestjs/common";
-import Usuario_Service from '../service/usuario.service';
-import Crear_Usuario_DTO from '../dtos/usuario.dto';
+import UsuarioService from '../service/usuario.service';
+import CrearUsuarioDTO from '../dtos/usuario.dto';
 import usuario from '../models/usuario.entity';
 import autenticacionUsuario from "../auth/auth.usuario";
 import { BloquearUsuarioDTO } from "../dtos/bloquearUsuario.dto";
@@ -27,11 +27,11 @@ import { Roles } from "../auth/auth.roles.decorator";
 */
 
 @Controller('usuario')
-export default class Usuario_Controller {
-    constructor(private service: Usuario_Service, private authService: autenticacionUsuario) { }
+export default class UsuarioController {
+    constructor(private service: UsuarioService, private authService: autenticacionUsuario) { }
 
     @Post()
-    async crearUsuario(@Body() usuario: Crear_Usuario_DTO): Promise<usuario> {
+    async crearUsuario(@Body() usuario: CrearUsuarioDTO): Promise<usuario> {
         return this.authService.registrarUsuario(usuario);
     }
 

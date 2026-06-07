@@ -5,7 +5,7 @@ import Usuario from '../models/usuario.entity';
 import CrearUsuarioDTO from "../dtos/usuario.dto";
 import { AppDataSource } from '../..';
 import UsuarioRepository from '../repository/usuario.repository';
-import { rolUsuario } from '../enums/rol_usuario.enum';
+import { rolUsuario } from '../enums/rolUsuario.enum';
 import actualizarUsuarioDTO from '../dtos/update.usuario.dto';
 import { CambiarRolDTO } from '../dtos/cambiarRol.dto';
 import { BloquearUsuarioDTO } from '../dtos/bloquearUsuario.dto';

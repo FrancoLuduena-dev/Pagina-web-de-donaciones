@@ -1,8 +1,8 @@
 import Usuario from "../models/usuario.entity";
 import { DataSource } from "typeorm";
 import { AppDataSource } from "../../index";
-import { rolUsuario } from "../enums/rol_usuario.enum";
-import { estadosUsuario } from "../enums/estados_usuario.enum";
+import { rolUsuario } from "../enums/rolUsuario.enum";
+import { estadosUsuario } from "../enums/estadosUsuario.enum";
 
 
 

@@ -7,7 +7,7 @@ import {
   IsEnum, 
   IsNumber 
 } from 'class-validator';
-import { estadosUsuario } from '../enums/estados_usuario.enum';
+import { estadosUsuario } from '../enums/estadosUsuario.enum';
 
 export class BloquearUsuarioDTO {
     @IsEnum(estadosUsuario)
