@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./usuario.module.css";
+import TarjetaResumen from "@/components/ui/cards/TarjetaResumen/TarjetaResumen";
 
 /* REVISAR CON BACKEND
 import { getToken, logout } from "@/lib/auth";
@@ -45,7 +46,7 @@ export default function UsuarioPage() {
 
                 // Request al backend
                 const response = await fetch(
-                    "http://localhost:8080/api/usuario/me",
+                    "http://localhost:3000/api/usuario/me",
                     {
                         method: "GET",
                         headers: {
@@ -125,24 +126,20 @@ export default function UsuarioPage() {
           </div>
         </section>
         <section className={styles.summaryGrid}>
-          <article className={styles.card}>
-            <h2>Publicaciones activas</h2>
-            <p className={styles.number}>{usuario.publicacionesActivas ?? 0}</p>
-          </article>
+          <TarjetaResumen
+            titulo="Publicaciones activas"
+            valor={usuario.publicacionesActivas ?? 0}
+          />
 
-          <article className={styles.card}>
-            <h2>Solicitudes pendientes</h2>
+          <TarjetaResumen
+            titulo="Solicitudes pendientes"
+            valor={usuario.solicitudesPendientes ?? 0}
+          />
 
-            <p className={styles.number}>
-              {usuario.solicitudesPendientes ?? 0}
-            </p>
-          </article>
-
-          <article className={styles.card}>
-            <h2>Notificaciones nuevas</h2>
-
-            <p className={styles.number}>{usuario.notificaciones ?? 0}</p>
-          </article>
+          <TarjetaResumen
+            titulo="Notificaciones nuevas"
+            valor={usuario.notificaciones ?? 0}
+          />
         </section>
 
         <section className={styles.actions}>
