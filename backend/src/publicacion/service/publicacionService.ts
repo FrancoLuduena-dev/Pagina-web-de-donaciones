@@ -13,7 +13,7 @@ import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
 
 @Injectable()
 export class PublicacionService {
-  constructor(private readonly publicacionRepository: PublicacionRepository) { }
+  constructor(private readonly publicacionRepository: PublicacionRepository) {}
 
   async crearPublicacion(dto: CrearPublicacionDto): Promise<Publicacion> {
     const nuevaPublicacion = this.publicacionRepository.crear({
