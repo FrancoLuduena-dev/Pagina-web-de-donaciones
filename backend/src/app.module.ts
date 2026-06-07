@@ -8,7 +8,7 @@ import {
 } from '@nestjs/config';
 
 import { PublicacionesModule } from './publicacion/module/publicacionesModule';
-
+import { SolicitudesModule } from './solicitudes/module/solicitudModule';
 const configModuleOptions: ConfigModuleOptions = {
   isGlobal: true,
 };
@@ -38,6 +38,7 @@ const configModuleOptions: ConfigModuleOptions = {
     }),
 
     PublicacionesModule,
+    SolicitudesModule,
   ],
 })
 export class AppModule {}

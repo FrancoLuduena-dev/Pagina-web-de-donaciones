@@ -25,7 +25,7 @@ const ROL_PRUEBA = Rol.MODERADOR;
 @UseGuards(RolesGuard)
 @Controller('publicaciones')
 export class PublicacionController {
-  constructor(private readonly publicacionService: PublicacionService) { }
+  constructor(private readonly publicacionService: PublicacionService) {}
 
   @Post()
   crearPublicacion(@Body() dto: CrearPublicacionDto): Promise<Publicacion> {

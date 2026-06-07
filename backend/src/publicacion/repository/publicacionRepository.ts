@@ -10,7 +10,7 @@ export class PublicacionRepository {
   constructor(
     @InjectRepository(Publicacion)
     private readonly repository: Repository<Publicacion>,
-  ) { }
+  ) {}
 
   crear(publicacion: Partial<Publicacion>): Publicacion {
     return this.repository.create(publicacion);

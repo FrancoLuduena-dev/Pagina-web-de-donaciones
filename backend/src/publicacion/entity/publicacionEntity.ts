@@ -6,12 +6,15 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   VersionColumn,
+  OneToMany,
 } from 'typeorm';
+
 import { BadRequestException } from '@nestjs/common';
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { TRANSICIONES_PUBLICACION } from '../interfaces/transicionesPublicacion';
 import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
+import { TRANSICIONES_PUBLICACION } from '../constante/transicionesPublicacion';
+import { Solicitud } from '../../solicitudes/entity/solicitudEntity';
 
 @Entity('publicacion')
 export class Publicacion {
@@ -61,6 +64,9 @@ export class Publicacion {
   @DeleteDateColumn({ nullable: true })
   deletedAt!: Date;
 
+  @OneToMany(() => Solicitud, (solicitud) => solicitud.publicacion)
+  solicitudes!: Solicitud[];
+
   transicionarA(nuevoEstado: EstadoPublicacion): void {
     const permitidos = TRANSICIONES_PUBLICACION[this.estado];
 
@@ -72,6 +78,7 @@ export class Publicacion {
 
     this.estado = nuevoEstado;
   }
+
   reservar(): void {
     this.transicionarA(EstadoPublicacion.RESERVADA);
   }

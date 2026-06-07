@@ -11,5 +11,6 @@ import { PublicacionService } from '../service/publicacionService';
   imports: [TypeOrmModule.forFeature([Publicacion])],
   controllers: [PublicacionController],
   providers: [PublicacionService, PublicacionRepository],
+  exports: [PublicacionService, PublicacionRepository],
 })
 export class PublicacionesModule {}
