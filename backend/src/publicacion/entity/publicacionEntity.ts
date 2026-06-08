@@ -10,8 +10,8 @@ import {
 import { BadRequestException } from '@nestjs/common';
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { TRANSICIONES_PUBLICACION } from '../interfaces/transicionesPublicacion';
-import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
+import { TRANSICIONES_PUBLICACION } from '../constante/transicionesPublicacion';
 
 @Entity('publicacion')
 export class Publicacion {

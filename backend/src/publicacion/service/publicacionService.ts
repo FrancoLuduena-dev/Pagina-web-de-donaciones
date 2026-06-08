@@ -6,16 +6,19 @@ import {
 
 import { Publicacion } from '../entity/publicacionEntity';
 import { PublicacionRepository } from '../repository/publicacionRepository';
-import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
-import { Rol } from 'src/enum';
+import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
+import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 
 @Injectable()
 export class PublicacionService {
-  constructor(private readonly publicacionRepository: PublicacionRepository) { }
+  constructor(private readonly publicacionRepository: PublicacionRepository) {}
 
-  async crearPublicacion(dto: CrearPublicacionDto): Promise<Publicacion> {
+  async crearPublicacion(
+    dto: CrearPublicacionDto,
+    creadorId: string,
+  ): Promise<Publicacion> {
     const nuevaPublicacion = this.publicacionRepository.crear({
       titulo: dto.titulo,
       descripcion: dto.descripcion,
@@ -23,7 +26,7 @@ export class PublicacionService {
       localidadId: dto.localidadId,
       condicion: dto.condicion,
       imagenUrl: dto.imagenUrl,
-      creadorId: '550e8400-e29b-41d4-a716-446655440003',
+      creadorId,
     });
 
     return this.publicacionRepository.guardar(nuevaPublicacion);
@@ -95,15 +98,15 @@ export class PublicacionService {
   async pausar(
     id: string,
     usuarioId: string,
-    usuarioRol: Rol,
+    usuarioRol: rolUsuario,
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
     const esCreador = publicacion.creadorId === usuarioId;
-    const esModerador = usuarioRol === Rol.MODERADOR;
-    const esSuperusuario = usuarioRol === Rol.SUPERUSUARIO;
+    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
+    const esAdministrador = usuarioRol === rolUsuario.usuarioAdministrador;
 
-    if (!esCreador && !esModerador && !esSuperusuario) {
+    if (!esCreador && !esModerador && !esAdministrador) {
       throw new ForbiddenException(
         'Solo el creador, un moderador o un superusuario puede pausar la publicación',
       );
@@ -117,15 +120,15 @@ export class PublicacionService {
   async reactivar(
     id: string,
     usuarioId: string,
-    usuarioRol: Rol,
+    usuarioRol: rolUsuario,
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
     const esCreador = publicacion.creadorId === usuarioId;
-    const esModerador = usuarioRol === Rol.MODERADOR;
-    const esSuperusuario = usuarioRol === Rol.SUPERUSUARIO;
+    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
+    const esAdministrador = usuarioRol === rolUsuario.usuarioAdministrador;
 
-    if (!esCreador && !esModerador && !esSuperusuario) {
+    if (!esCreador && !esModerador && !esAdministrador) {
       throw new ForbiddenException(
         'Solo el creador, un moderador o un superusuario puede reactivar la publicación',
       );
@@ -153,13 +156,13 @@ export class PublicacionService {
   async eliminar(
     id: string,
     usuarioId: string,
-    usuarioRol: Rol,
+    usuarioRol: rolUsuario,
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
     const esCreador = publicacion.creadorId === usuarioId;
-    const esModerador = usuarioRol === Rol.MODERADOR;
-    const esSuperUsuario = usuarioRol === Rol.SUPERUSUARIO;
+    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
+    const esSuperUsuario = usuarioRol === rolUsuario.usuarioAdministrador;
 
     if (!esCreador && !esModerador && !esSuperUsuario) {
       throw new ForbiddenException(
