@@ -8,6 +8,7 @@ import {
 } from '@nestjs/config';
 
 import { PublicacionesModule } from './publicacion/module/publicacionesModule';
+import { UsuarioModule } from './usuario/module/usuarioModule';
 
 const configModuleOptions: ConfigModuleOptions = {
   isGlobal: true,
@@ -37,6 +38,7 @@ const configModuleOptions: ConfigModuleOptions = {
       }),
     }),
 
+    UsuarioModule,
     PublicacionesModule,
   ],
 })

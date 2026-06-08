@@ -1,19 +1,18 @@
-import { estadosUsuario } from "../enums/estadosUsuario.enum";
-import { rolUsuario } from "../enums/rolUsuario.enum";
-import { 
-  IsString, 
-  IsEmail, 
-  IsNotEmpty, 
-  MinLength, 
-  IsOptional, 
-  IsEnum, 
-  IsNumber 
+import { estadosUsuario } from '../enums/estadosUsuario';
+import { rolUsuario } from '../enums/rolUsuario';
+import {
+  IsString,
+  IsEmail,
+  IsNotEmpty,
+  MinLength,
+  IsOptional,
+  IsEnum,
+  IsNumber,
 } from 'class-validator';
 
 export default class CrearUsuarioDto {
-
-  @IsNumber()
-  id?: number;
+  @IsString()
+  id?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -30,7 +29,7 @@ export default class CrearUsuarioDto {
   @IsString()
   @MinLength(6)
   @IsNotEmpty()
-  contraseña!: string;
+  contrasenia!: string;
 
   @IsString()
   @IsNotEmpty()
