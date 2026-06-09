@@ -1,5 +1,5 @@
 import Sidebar from "@/components/Sidebar";
-import styles from "./donaciones.module.css"
+import styles from "./publicaciones.module.css"
 
 /**
  * Layout de la sección de donaciones.
