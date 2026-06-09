@@ -1,0 +1,20 @@
+.layout {
+  display: grid;
+
+  grid-template-areas:
+    "header"
+    "main"
+    "footer";
+
+  grid-template-rows: auto 1fr auto;
+  
+
+  min-height: 100%;
+}   
+
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+

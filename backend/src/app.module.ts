@@ -9,6 +9,8 @@ import {
 
 import { PublicacionesModule } from './publicacion/module/publicacionesModule';
 import { SolicitudesModule } from './solicitudes/module/solicitudModule';
+import { UsuarioModule } from './usuario/module/usuarioModule';
+
 const configModuleOptions: ConfigModuleOptions = {
   isGlobal: true,
 };
@@ -37,6 +39,7 @@ const configModuleOptions: ConfigModuleOptions = {
       }),
     }),
 
+    UsuarioModule,
     PublicacionesModule,
     SolicitudesModule,
   ],

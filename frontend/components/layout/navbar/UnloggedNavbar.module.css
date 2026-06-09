@@ -1,0 +1,150 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: var(--color-tarjeta);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--color-primario);
+  text-decoration: none;
+}
+
+.logo:visited,
+.logo:active {
+  color: var(--color-primario);
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.link {
+  color: var(--color-primario);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.link:visited,
+.link:active {
+  color: var(--color-primario);
+}
+
+.link:hover {
+  color: var(--color-primario-hover);
+}
+
+.botonRegistro {
+  background-color: var(--color-primario);
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  transition: background-color 0.2s ease;
+}
+
+.botonRegistro:visited,
+.botonRegistro:hover,
+.botonRegistro:active {
+  color: white;
+}
+
+.botonRegistro:hover {
+  background-color: var(--color-primario-hover);
+}
+
+
+/*media query para celular*/
+@media screen and (max-width: 480px) {
+  .navbar {
+    display: grid;
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copyright"
+      "links";
+    gap: 1rem;
+    padding: 1rem 1rem;
+    justify-items: center;
+    align-items: center;
+  }
+
+  .logo {
+    font-size: 1.7rem;
+    text-align: center;
+    width: 100%;
+  }
+
+  .links {
+    grid-area: links;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 3rem;
+  }
+}
+
+
+  .links a {
+    font-size: clamp(0.78rem, 3.2vw, 0.9rem);
+    line-height: 1.2;
+    text-align: center;
+  }
+
+/*media query para celular apaisado o tablet*/
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .navbar {
+    display: grid;
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copyright"
+      "links";
+    gap: 1rem;
+    padding: 1rem 1rem;
+    justify-items: center;
+    align-items: center;
+  }
+
+  .logo {
+    font-size: 6vw;
+    text-align: center;
+    width: 100%;
+  }
+
+  .links {
+    grid-area: links;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .link{
+  font-size: clamp(1rem, 3vw, 3vw);
+  margin-left: 2rem;
+  }
+
+  .links a {
+    font-size: clamp(0.9rem, 2.5vw, 3vw);
+  }
+
+  .botonRegistro{
+  font-size: clamp(1rem, 3vw, 3vw);
+  margin-right: 2rem;
+  }
+}
