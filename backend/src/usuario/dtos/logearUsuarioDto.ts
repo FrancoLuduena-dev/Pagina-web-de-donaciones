@@ -1,9 +1,10 @@
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, IsEmail } from 'class-validator';
 
 export default class logearUsuarioDTO {
   @IsString()
+  @IsEmail()
   @IsNotEmpty()
-  nombreUsuario!: string;
+  correo!: string;
 
   @IsString()
   @IsNotEmpty()

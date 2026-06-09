@@ -59,6 +59,12 @@ export default class UsuarioController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('mi')
+  async obtenerMiUsuario(@Req() req: RequestConUsuario): Promise<Usuario> {
+    return this.service.obtenerUsuarioPorId(req.user.id);
+  }
+
+  @UseGuards(AuthGuard)
   @Get('nombre/:nombreUsuario')
   async obtenerUsuarioPorNombreUsuario(
     @Param('nombreUsuario') nombreUsuario: string,

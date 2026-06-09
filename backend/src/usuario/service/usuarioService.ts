@@ -154,17 +154,10 @@ export default class UsuarioService {
     idAdmin: string,
     datos: CambiarRolDTO,
   ): Promise<void> {
-    /* verfifcar que el usuario tenga rol admin
-    validar que el rol actual no sea el de admin
-    */
 
     await this.obtenerUsuarioPorId(idUsuario);
 
     const usuarioAdmin = await this.obtenerUsuarioPorId(idAdmin);
-
-    if (usuarioAdmin.rol !== rolUsuario.usuarioAdministrador) {
-      throw new ForbiddenException('Solo un administrador puede cambiar roles');
-    }
 
     await this.repo.cambiarRolUsuario(idUsuario, datos.rol);
   }
