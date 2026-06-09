@@ -1,5 +1,5 @@
-import Footer from "@/components/Footer";
-import UnloggedNavbar from "@/components/UnloggedNavbar";
+import Footer from "@/components/layout/footer/Footer";
+import UnloggedNavbar from "@/components/layout/navbar/UnloggedNavbar";
 import styles from "./publico.module.css";
 
 /**

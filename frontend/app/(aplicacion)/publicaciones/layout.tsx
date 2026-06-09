@@ -1,4 +1,4 @@
-import Sidebar from "@/components/Sidebar";
+import Sidebar from "@/components/layout/sidebar/Sidebar";
 import styles from "./publicaciones.module.css"
 
 /**

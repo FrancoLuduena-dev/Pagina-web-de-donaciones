@@ -1,4 +1,4 @@
-import UnloggedNavbar from "@/components/UnloggedNavbar";
+import UnloggedNavbar from "@/components/layout/navbar/UnloggedNavbar";
 import styles from "./autenticacion.module.css";
 
 /**

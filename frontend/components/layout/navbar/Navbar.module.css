@@ -6,6 +6,7 @@
   background-color: var(--color-tarjeta);
   border-bottom: 1px solid var(--color-borde);
   align-items: center;
+  overflow: visible;
 }
 
 .logo {
@@ -39,21 +40,10 @@
 
 .botonUsuario {
   grid-area: usuario;
-  background-color: var(--color-primario);
-  color: white;
-  padding: 0.6rem 1rem;
-  border-radius: 0.5rem;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  max-height: 40px;
-  max-width: 125px;
-  text-align: center;
-}
-
-.botonUsuario:hover {
-  background-color: var(--color-primario-hover);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
 }
 
 /*media query para celular*/

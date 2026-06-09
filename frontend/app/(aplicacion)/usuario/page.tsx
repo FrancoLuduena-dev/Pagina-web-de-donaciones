@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./usuario.module.css";
-import TarjetaResumen from "@/components/ui/cards/TarjetaResumen/TarjetaResumen";
+import TarjetaResumen from "@/components/usuarios/cards/TarjetaResumen/TarjetaResumen";
+import BotonLink from "@/components/usuarios/botones/BotonLink";
 
 /* REVISAR CON BACKEND
 import { getToken, logout } from "@/lib/auth";
@@ -178,19 +178,14 @@ export default function UsuarioPage() {
         <section className={styles.actions}>
           <h2>Accesos rapidos</h2>
           <div className={styles.buttonGrid}>
-            <Link href="/usuario/editar" className={styles.button}>
-              Editar perfil
-            </Link>
+            <BotonLink href="/usuario/editar" texto="Editar perfil" />
 
-            <Link href="/usuario/publicaciones" className={styles.button}>
-              Mis publicaciones
-            </Link>
-            <Link href="/usuario/notificaciones" className={styles.button}>
-              Notificaciones
-            </Link>
-            <Link href="/donaciones/crear" className={styles.button}>
-              Crear donacion
-            </Link>
+            <BotonLink
+              href="/usuario/publicaciones"  texto="Mis publicaciones" />
+
+            <BotonLink href="/usuario/notificaciones" texto="Notificaciones" />
+
+            <BotonLink href="/donaciones/crear" texto="Crear donacion" />
           </div>
         </section>
       </div>
