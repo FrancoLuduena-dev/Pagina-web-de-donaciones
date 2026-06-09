@@ -1,4 +1,4 @@
-import styles from "./donaciones.module.css"
+import styles from "./publicaciones.module.css"
 
 /**
  * Página principal de donaciones.

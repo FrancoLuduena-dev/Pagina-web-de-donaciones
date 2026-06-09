@@ -1,0 +1,126 @@
+.menuUsuario {
+  position: relative;
+}
+
+.menuUsuarioBoton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.menuUsuarioBoton:hover {
+  opacity: 0.9;
+}
+
+.menuUsuarioAvatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--color-primario);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.menuUsuarioNombre {
+  color: var(--color-texto-principal);
+  font-weight: 500;
+}
+
+.menuUsuarioBadge {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: var(--color-alertas);
+  color: white;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.25rem;
+}
+
+.menuUsuarioFlecha {
+  font-size: 0.75rem;
+  color: var(--color-texto-secundario);
+}
+
+.menuUsuarioDropdown {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  right: 0;
+  width: 280px;
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-borde);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgb(0 0 0 / 10%);
+}
+
+.menuUsuarioHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.menuUsuarioHeader strong {
+  color: var(--color-texto-principal);
+}
+
+.menuUsuarioHeader span {
+  color: var(--color-texto-secundario);
+  font-size: 0.875rem;
+}
+
+.menuUsuarioItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  text-decoration: none;
+  color: var(--color-texto-principal);
+  transition: background-color 0.2s ease;
+}
+
+.menuUsuarioItem:hover {
+  background: var(--color-fondo);
+}
+
+.menuUsuarioItemBadge {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: var(--color-alertas);
+  color: white;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.25rem;
+}
+
+.menuUsuarioLogout {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.875rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-alertas);
+  border-top: 1px solid var(--color-borde);
+  transition: background-color 0.2s ease;
+}
+
+.menuUsuarioLogout:hover {
+  background: var(--color-fondo);
+}

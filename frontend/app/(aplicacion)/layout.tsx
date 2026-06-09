@@ -1,6 +1,6 @@
 import styles from "./aplicacion.module.css"
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
+import Footer from "@/components/layout/footer/Footer";
+import Navbar from "@/components/layout/navbar/Navbar";
 
  /**
  * Layout principal de las páginas públicas de la aplicación.

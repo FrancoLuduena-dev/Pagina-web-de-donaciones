@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { tituloPagina } from "@/constants/site";
 import styles from "./Navbar.module.css";
+import MenuUsuario from "@/components/layout/navbar/botonUsuario/MenuUsuario";
 
 /** Navbar principal para usuarios logueados. */
 
@@ -11,7 +12,6 @@ export default function Navbar() {
         <Link href="/">{tituloPagina}</Link>
       </div>
 
-
       <div className={styles.links}>
         <Link href="/">Inicio</Link>
         <Link href="/donaciones">Explorar donaciones</Link>
@@ -19,10 +19,8 @@ export default function Navbar() {
       </div>
 
       <div className={styles.botonUsuario}>
-        <Link href="/usuario">Usuario</Link>
+        <MenuUsuario />
       </div>
-
-      
     </nav>
   );
 }
