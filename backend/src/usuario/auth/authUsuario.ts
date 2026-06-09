@@ -30,12 +30,12 @@ export default class autenticacionUsuario {
   }
 
   public async logearUsuario(datos: logearUsuarioDTO): Promise<string> {
-    const usuario = await this.service.ObtenerUsuarioPorNombreUsuario(
-      datos.nombreUsuario,
+    const usuario = await this.service.ObtenerUsuarioPorCorreo(
+      datos.correo,
     );
 
     if (!usuario) {
-      throw new UnauthorizedException('Usuario o contrasenia incorrectos');
+      throw new UnauthorizedException('Correo o contrasenia incorrectos');
     }
 
     const isValid = await bcrypt.compare(
@@ -44,7 +44,7 @@ export default class autenticacionUsuario {
     );
 
     if (!isValid) {
-      throw new UnauthorizedException('Usuario o contrasenia incorrectos');
+      throw new UnauthorizedException('Correo o contrasenia incorrectos');
     }
 
     const secret: Secret = JWT_SECRET;
