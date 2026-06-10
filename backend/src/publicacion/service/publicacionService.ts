@@ -32,9 +32,9 @@ export class PublicacionService {
     return this.publicacionRepository.guardar(nuevaPublicacion);
   }
 
-  listarPublico(): Promise<Publicacion[]> {
-    return this.publicacionRepository.listarPublico();
-  }
+listarPublico(texto?: string): Promise<Publicacion[]> {
+  return this.publicacionRepository.listarPublico(texto);
+}
 
   listarMisPublicaciones(
     creadorId: string,

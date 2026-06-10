@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, Repository, ILike } from 'typeorm';
 
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
@@ -10,7 +10,7 @@ export class PublicacionRepository {
   constructor(
     @InjectRepository(Publicacion)
     private readonly repository: Repository<Publicacion>,
-  ) { }
+  ) {}
 
   crear(publicacion: Partial<Publicacion>): Publicacion {
     return this.repository.create(publicacion);
@@ -29,11 +29,29 @@ export class PublicacionRepository {
     });
   }
 
-  listarPublico(): Promise<Publicacion[]> {
+  listarPublico(texto?: string): Promise<Publicacion[]> {
+    if (!texto) {
+      return this.repository.find({
+        where: {
+          estado: EstadoPublicacion.DISPONIBLE,
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    }
+
     return this.repository.find({
-      where: {
-        estado: EstadoPublicacion.DISPONIBLE,
-      },
+      where: [
+        {
+          estado: EstadoPublicacion.DISPONIBLE,
+          titulo: ILike(`%${texto}%`),
+        },
+        {
+          estado: EstadoPublicacion.DISPONIBLE,
+          descripcion: ILike(`%${texto}%`),
+        },
+      ],
       order: {
         createdAt: 'DESC',
       },

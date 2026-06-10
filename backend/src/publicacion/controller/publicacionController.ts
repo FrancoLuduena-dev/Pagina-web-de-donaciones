@@ -43,9 +43,11 @@ export class PublicacionController {
   }
 
   @Get()
-  listarFeedPublico(): Promise<Publicacion[]> {
-    return this.publicacionService.listarPublico();
-  }
+listarFeedPublico(
+  @Query('q') q?: string,
+): Promise<Publicacion[]> {
+  return this.publicacionService.listarPublico();
+}
 
   @Roles(rolUsuario.usuarioNormal)
   @Get('mias')

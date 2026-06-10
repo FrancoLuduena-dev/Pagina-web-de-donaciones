@@ -1,0 +1,79 @@
+.searchbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 0.75rem;
+  background-color: var(--color-tarjeta);
+  color: var(--color-texto-principal);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primario);
+}
+
+.botonBuscar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 0.75rem;
+  background-color: var(--color-primario);
+  cursor: pointer;
+}
+
+.botonBuscar:hover {
+  background-color: var(--color-primario-hover);
+}
+
+.labelOculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* Tablet */
+
+@media (max-width: 768px) {
+  .input {
+    padding: 0.7rem 0.9rem;
+  }
+
+  .botonBuscar {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 480px) {
+  .searchbar {
+    gap: 0.4rem;
+  }
+
+  .input {
+    padding: 0.65rem 0.8rem;
+    font-size: 0.95rem;
+  }
+
+  .botonBuscar {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.6rem;
+  }
+}

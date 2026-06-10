@@ -1,5 +1,6 @@
 import Sidebar from "@/components/layout/sidebar/Sidebar";
 import styles from "./publicaciones.module.css"
+import Searchbar from "@/components/publicaciones/searchbar/Searchbar";
 
 /**
  * Layout de la sección de donaciones.
@@ -17,7 +18,10 @@ export default function PublicoLayout({
   return (
     <div className={styles.layout}>
       <Sidebar />
-      <main className={styles.main}>{children}</main>
+      <main className={styles.main}>
+        <Searchbar />
+        {children}
+      </main>
     </div>
   );
 }

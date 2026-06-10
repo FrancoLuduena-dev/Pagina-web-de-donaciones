@@ -6,9 +6,9 @@ import styles from "./publicaciones.module.css"
  * @returns Listado general de donaciones.
  */
 export default function DonacionesPage() {
-    return (
-        <main>
-            <h1 className={styles.titulo}>Donaciones</h1>
-        </main>
-    );
+  return (
+    <section className={styles.contenido}>
+      <h1 className={styles.titulo}>Donaciones</h1>
+    </section>
+  );
 }

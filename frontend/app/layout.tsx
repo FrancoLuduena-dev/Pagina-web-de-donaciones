@@ -1,12 +1,10 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-  },
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 /**
