@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+// import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 
@@ -11,19 +11,19 @@ export const viewport = {
  * Configuración para la fuente Geist Sans-Serif.
  * Crea la variable CSS de fuente la fuente principal  `--font-geist-sans`.
  */
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
 
 /**
  * Configuración para la fuente Geist Monoespaciada.
  * Inyecta la variable CSS de la fuente secundaria `--font-geist-mono`.
  */
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
 
 
 /**
@@ -39,10 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="es" className="h-full antialiased">
       <body className="app-root">{children}</body>
     </html>
   );

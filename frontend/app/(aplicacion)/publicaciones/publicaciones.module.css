@@ -3,7 +3,7 @@
   grid-template-columns: 240px 1fr;
   min-height: 100vh;
   align-items: start;
-  gap: 1.5rem;
+  gap: 0rem;
   background-color: var(--color-fondo);
 }
 
@@ -21,6 +21,7 @@
 .titulo {
   font-size: 2rem;
   margin: 0;
+  margin-left: 10px;
   color: var(--color-primario);
 }
 
