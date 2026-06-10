@@ -14,7 +14,7 @@ export default function Navbar() {
 
       <div className={styles.links}>
         <Link href="/">Inicio</Link>
-        <Link href="/donaciones">Explorar donaciones</Link>
+        <Link href="/publicaciones">Explorar donaciones</Link>
         <Link href="/como_funciona">Cómo funciona</Link>
       </div>
 
