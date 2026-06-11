@@ -1,0 +1,149 @@
+.main {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 16px;
+  background-color: var(--color-tarjeta);
+}
+
+.title {
+  color: var(--color-texto-principal);
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.datosUsuario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.selectorRol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.botonPrimario {
+  width: fit-content;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: white;
+  background-color: var(--color-primario);
+}
+
+.botonPrimario:hover {
+  background-color: var(--color-primario-hover);
+}
+
+.botonPrimario:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.advertencia {
+  font-weight: 600;
+  color: var(--color-warning);
+}
+
+.filaRol {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.badgeRol {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badgeUsuario {
+  background-color: var(--color-secundario-highlight);
+  color: var(--color-texto-principal);
+}
+
+.badgeModerador {
+  background-color: var(--color-primario-highlight);
+  color: var(--color-texto-principal);
+}
+
+.badgeAdministrador {
+  background-color: var(--color-warning);
+  color: white;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  padding: 1.5rem;
+  border-radius: 16px;
+  background-color: var(--color-tarjeta);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalBotones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.botonSecundario {
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 480px) {
+  .main {
+    padding: 0.5rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .botonPrimario {
+    width: 100%;
+  }
+}
