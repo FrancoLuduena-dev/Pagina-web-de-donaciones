@@ -102,6 +102,13 @@ export default async function PublicacionDetailPage({ params }: Props) {
           <Link href="/publicaciones" className={styles.backLink}>
             ← Volver a publicaciones
           </Link>
+          <Link
+            href={`/publicaciones/publicacion/${idPublicacion}/editar`}
+            className={styles.backLink}
+            style={{ marginLeft: "0.75rem" }}
+          >
+            Editar publicación
+          </Link>
         </div>
       </div>
     </main>

@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useParams } from "next/navigation";
+import { publicacionesDestacadas } from "@/lib/mockPublicaciones";
 
-export default function CrearPublicacionPage() {
+export default function EditarPublicacionPage() {
+  const params = useParams<{ idPublicacion: string }>();
+
+  const publicacion = useMemo(
+    () => publicacionesDestacadas.find((item) => item.idPublicacion === params.idPublicacion),
+    [params.idPublicacion],
+  );
+
   const [form, setForm] = useState({
-    titulo: "",
-    descripcion: "",
-    categoria: "",
-    zonaRetiro: "",
+    titulo: publicacion?.tituloPublicacion ?? "",
+    descripcion: publicacion?.descripcionPublicacion ?? "",
+    categoria: publicacion?.categoria ?? "",
+    zonaRetiro: publicacion?.zonaRetiro ?? "",
   });
-  const [imagenPreview, setImagenPreview] = useState<string>("");
+  const [imagenPreview, setImagenPreview] = useState<string>(publicacion?.urlFoto ?? "");
   const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
 
   const manejarArchivo = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,15 +44,19 @@ export default function CrearPublicacionPage() {
       formData.append("imagen", archivoImagen);
     }
 
-    console.log("Crear publicación (FormData)", Object.fromEntries(formData.entries()));
-    alert("Formulario de creación preparado para subir archivos al backend.");
+    console.log("Editar publicación (FormData)", Object.fromEntries(formData.entries()));
+    alert("Formulario de edición preparado para subir archivos al backend.");
   };
+
+  if (!publicacion) {
+    return <main style={{ padding: "2rem" }}>Publicación no encontrada.</main>;
+  }
 
   return (
     <main style={{ padding: "2rem", maxWidth: 760, margin: "0 auto" }}>
-      <h1>Crear publicación</h1>
+      <h1>Editar publicación</h1>
       <p style={{ color: "#4b5563", marginBottom: "1rem" }}>
-        Este primer paso queda preparado para integrar el POST real cuando el backend esté listo.
+        Este paso queda preparado para enlazar con la API real cuando el backend esté disponible.
       </p>
 
       <form onSubmit={guardar} style={{ display: "grid", gap: "0.9rem" }}>
@@ -76,7 +89,7 @@ export default function CrearPublicacionPage() {
           <img src={imagenPreview} alt="Vista previa" style={{ width: "100%", maxWidth: 320, borderRadius: "1rem", objectFit: "cover" }} />
         ) : null}
 
-        <button type="submit" style={buttonStyle}>Publicar</button>
+        <button type="submit" style={buttonStyle}>Guardar cambios</button>
       </form>
     </main>
   );
