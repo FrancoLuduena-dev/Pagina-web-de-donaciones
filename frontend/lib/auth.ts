@@ -10,6 +10,18 @@ export type LoginResponse = {
   message?: string;
 };
 
+export type RegisterPayload = {
+  correo: string;
+  contraseña: string;
+  nombreUsuario: string;
+  nombreCompleto: string;
+  numeroTelefono: string;
+};
+
+export type RegisterResponse = {
+  message?: string;
+};
+
 export async function loginRequest(
   payload: LoginPayload
 ): Promise<LoginResponse> {
@@ -32,6 +44,34 @@ export async function loginRequest(
       (res.status === 401
         ? "Correo o contraseña incorrectos."
         : `Error al iniciar sesión (${res.status}).`);
+    throw new Error(msg);
+  }
+
+  return data;
+}
+
+export async function registerRequest(
+  payload: RegisterPayload
+): Promise<RegisterResponse> {
+  const res = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  let data: RegisterResponse = {};
+  try {
+    data = (await res.json()) as RegisterResponse;
+  } catch {
+    /* cuerpo vacío o no JSON */
+  }
+
+  if (!res.ok) {
+    const msg =
+      data.message ||
+      (res.status === 401
+        ? "Campos invalidos o correo/nombre de usuario ya registrado."
+        : `Error al registrar cuenta (${res.status}).`);
     throw new Error(msg);
   }
 

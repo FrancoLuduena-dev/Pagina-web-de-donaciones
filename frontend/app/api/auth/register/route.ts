@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const res = await fetch(`${backendBase}/usuario/login`, {
+    const res = await fetch(`${backendBase}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

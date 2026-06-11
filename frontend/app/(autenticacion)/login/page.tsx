@@ -142,6 +142,16 @@ export default function LoginPage() {
             Volver al inicio
           </Link>
         </p>
+
+        <p className={styles.backLinkContainer}>
+          ¿No tenés una cuenta?{" "}
+          <Link
+            href="/register"
+            className={styles.backLink}
+          >
+            Registrate
+          </Link>
+        </p>
       </div>
     </main>
   );
