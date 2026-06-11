@@ -99,8 +99,8 @@ export default async function PublicacionDetailPage({ params }: Props) {
         </section>
 
         <div className={styles.actions}>
-          <Link href="/donaciones" className={styles.backLink}>
-            ← Volver a donaciones
+          <Link href="/publicaciones" className={styles.backLink}>
+            ← Volver a publicaciones
           </Link>
         </div>
       </div>

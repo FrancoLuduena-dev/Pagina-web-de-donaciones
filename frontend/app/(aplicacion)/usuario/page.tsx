@@ -185,7 +185,7 @@ export default function UsuarioPage() {
 
             <BotonLink href="/usuario/notificaciones" texto="Notificaciones" />
 
-            <BotonLink href="/donaciones/crear" texto="Crear donacion" />
+            <BotonLink href="/publicaciones/crear" texto="Crear donacion" />
           </div>
         </section>
       </div>
