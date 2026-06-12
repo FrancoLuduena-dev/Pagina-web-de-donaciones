@@ -1,5 +1,7 @@
 import Link from "next/link";
 import styles from "./publicaciones.module.css";
+import PublicacionCard from "@/components/PublicacionCard";
+import { publicacionesDestacadas } from "@/lib/mockPublicaciones";
 
 /**
  * Página principal de publicaciones.
@@ -19,6 +21,12 @@ export default function PublicacionesPage() {
         </Link>
       </div>
       <p>Desde aquí empezamos el flujo de creación y edición de publicaciones.</p>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem", marginTop: "1rem" }}>
+        {publicacionesDestacadas.map((p) => (
+          <PublicacionCard key={p.idPublicacion} publicacion={p} />
+        ))}
+      </div>
     </section>
   );
 }

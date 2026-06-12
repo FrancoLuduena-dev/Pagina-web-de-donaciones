@@ -47,8 +47,7 @@ export default function ModeracionPage() {
       setCargando(true);
       setMensaje("");
 
-      /*
-      Conexion real cuando este conectado front y back
+      /* Conexion real entre front y back */
 
       const token = localStorage.getItem("token");
 
@@ -69,27 +68,14 @@ export default function ModeracionPage() {
 
       setUsuario(datos);
       setRolSeleccionado(datos.rol);
-      */
+      
+    } catch (error) {
+      console.error(error);
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-
-      //MOCK usuario
-      const usuarioMock: UsuarioEncontrado = {
-        id: "1",
-        nombreCompleto: "Juan Perez",
-        nombreUsuario,
-        correo: "juan@gmail.com",
-        rol: RolUsuario.usuarioNormal,
-        estado: "ACTIVO",
-      };
-
-      setUsuario(usuarioMock);
-      setRolSeleccionado(usuarioMock.rol);
-    } catch {
       setMensaje("No se encontró el usuario.");
       setUsuario(null);
     } finally {
+      console.log("terminó búsqueda");
       setCargando(false);
     }
   }
@@ -100,8 +86,8 @@ export default function ModeracionPage() {
     }
 
     try {
-      /*
-      Conexion real cuando este conectado front y back
+      /*  
+      Conexion real cuando este conectado front y back*/
 
       const token = localStorage.getItem("token");
 
@@ -118,7 +104,7 @@ export default function ModeracionPage() {
           }),
         },
       );
-      */
+      /**/
 
       setUsuario({
         ...usuario,
