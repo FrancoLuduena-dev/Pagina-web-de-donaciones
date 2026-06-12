@@ -1,12 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
+import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
 
 export default function CrearPublicacionPage() {
   const [form, setForm] = useState({
     titulo: "",
     descripcion: "",
-    categoria: "",
+    categoria: CategoriaPublicacion.INDUMENTARIA,
     zonaRetiro: "",
   });
   const [imagenPreview, setImagenPreview] = useState<string>("");
@@ -59,7 +61,17 @@ export default function CrearPublicacionPage() {
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
           Categoría
-          <input value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} style={inputStyle} />
+          <select
+            value={form.categoria}
+            onChange={(e) => setForm({ ...form, categoria: e.target.value as CategoriaPublicacion })}
+            style={inputStyle}
+          >
+            {Object.values(CategoriaPublicacion).map((categoria) => (
+              <option key={categoria} value={categoria}>
+                {categoria}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
@@ -73,7 +85,7 @@ export default function CrearPublicacionPage() {
         </label>
 
         {imagenPreview ? (
-          <img src={imagenPreview} alt="Vista previa" style={{ width: "100%", maxWidth: 320, borderRadius: "1rem", objectFit: "cover" }} />
+          <Image src={imagenPreview} alt="Vista previa" width={320} height={220} style={{ width: "100%", maxWidth: 320, borderRadius: "1rem", objectFit: "cover" }} />
         ) : null}
 
         <button type="submit" style={buttonStyle}>Publicar</button>

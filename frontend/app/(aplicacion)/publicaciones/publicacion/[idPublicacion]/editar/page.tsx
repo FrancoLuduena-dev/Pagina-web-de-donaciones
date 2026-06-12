@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { publicacionesDestacadas } from "@/lib/mockPublicaciones";
+import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
 
 export default function EditarPublicacionPage() {
   const params = useParams<{ idPublicacion: string }>();
@@ -15,7 +17,7 @@ export default function EditarPublicacionPage() {
   const [form, setForm] = useState({
     titulo: publicacion?.tituloPublicacion ?? "",
     descripcion: publicacion?.descripcionPublicacion ?? "",
-    categoria: publicacion?.categoria ?? "",
+    categoria: (publicacion?.categoria as CategoriaPublicacion) ?? CategoriaPublicacion.INDUMENTARIA,
     zonaRetiro: publicacion?.zonaRetiro ?? "",
   });
   const [imagenPreview, setImagenPreview] = useState<string>(publicacion?.urlFoto ?? "");
@@ -72,7 +74,17 @@ export default function EditarPublicacionPage() {
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
           Categoría
-          <input value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} style={inputStyle} />
+          <select
+            value={form.categoria}
+            onChange={(e) => setForm({ ...form, categoria: e.target.value as CategoriaPublicacion })}
+            style={inputStyle}
+          >
+            {Object.values(CategoriaPublicacion).map((categoria) => (
+              <option key={categoria} value={categoria}>
+                {categoria}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
@@ -86,7 +98,7 @@ export default function EditarPublicacionPage() {
         </label>
 
         {imagenPreview ? (
-          <img src={imagenPreview} alt="Vista previa" style={{ width: "100%", maxWidth: 320, borderRadius: "1rem", objectFit: "cover" }} />
+          <Image src={imagenPreview} alt="Vista previa" width={320} height={220} style={{ width: "100%", maxWidth: 320, borderRadius: "1rem", objectFit: "cover" }} />
         ) : null}
 
         <button type="submit" style={buttonStyle}>Guardar cambios</button>
