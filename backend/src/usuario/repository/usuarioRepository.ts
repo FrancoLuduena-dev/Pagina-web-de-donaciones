@@ -15,7 +15,7 @@ export default class UsuarioRepository {
 
   async crearUsuario(datos: Partial<Usuario>): Promise<Usuario> {
     const nuevoUsuario = this.repository.create(datos);
-    return await this.repository.save(nuevoUsuario);
+    return this.repository.save(nuevoUsuario);
   }
 
   async eliminarUsuario(idUsuario: string): Promise<void> {
