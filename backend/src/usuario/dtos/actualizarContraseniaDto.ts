@@ -1,8 +1,13 @@
 import { IsString, MinLength, IsOptional } from 'class-validator';
 
-export default class actualizarContraseñaDTO {
+export default class actualizarContraseniaDTO {
   @IsString()
   @MinLength(6)
   @IsOptional()
-  contraseña?: string;
+  contraseniaActual?: string;
+
+  @IsString()
+  @MinLength(6)
+  @IsOptional()
+  contraseniaNueva?: string;
 }

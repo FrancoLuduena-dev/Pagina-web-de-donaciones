@@ -16,10 +16,12 @@ export default function RegisterPage() {
     const router = useRouter();
 
     const [correo, setCorreo] = useState("");
-    const [contraseña, setContraseña] = useState("");
+    const [contrasenia, setContrasenia] = useState("");
     const [nombreUsuario, setNombreUsuario] = useState("");
     const [nombreCompleto, setNombreCompleto] = useState("");
     const [numeroTelefono, setNumeroTelefono] = useState("");
+    const [correoDos, setCorreoDos] = useState("");
+    const [contraseniaDos, setContraseniaDos] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -35,17 +37,19 @@ export default function RegisterPage() {
         setLoading(true);
     
         try {
+            // la contraseña tiene que tener al menos 6 caracteres y el correo tiene que ser un formato valido 
           const data = await registerRequest({
             correo: correo.trim(),
-            contraseña,
+            contrasenia,
             nombreUsuario,
             nombreCompleto,
             numeroTelefono,
+
           });
     
           persistSession(data);
     
-          router.push("/");
+          router.push("/login");
           router.refresh();
         } catch (err) {
           setError(
@@ -57,7 +61,9 @@ export default function RegisterPage() {
           setLoading(false);
         }
       }
-      
+      // agregar texto que le diga al usuario que la contraseña tiene que tener al menos 6 caracteres y el correo tiene que ser un formato valido
+      // agregar un modal que le indique al usuario como debe ser el formato de su contraseña y correo 
+      // agregar script de comparacion entre correo y contraseña para que el usuario tenga que escribirlo dos veces y comparar ambos campos para validar que sean iguales, y mostrar un mensaje de error si no lo son
     return (
         <main className={styles.main}>
             <div className={styles.container}>
@@ -69,12 +75,12 @@ export default function RegisterPage() {
                         Llene el formulario para crear una cuenta.
                     </p>
                 </div>
-
+                
                 <form
                 onSubmit={handleSubmit}
                 className={styles.form}>
 
-                    <div className={styles.field}>
+                <div className={styles.field}>
                     <label
                         htmlFor="correo"
                         className={styles.label}
@@ -96,23 +102,69 @@ export default function RegisterPage() {
                     />
                 </div>
 
+                {/*validar que las contraseñas coincidan con un script*/}
+
                 <div className={styles.field}>
                     <label
-                        htmlFor="contraseña"
+                        htmlFor="correo"
+                        className={styles.label}
+                    >
+                        Confirme su correo
+                    </label>
+
+                    <input
+                        id="correo"
+                        name="correo"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        value={correoDos}
+                        onChange={(e) =>
+                            setCorreoDos(e.target.value)
+                        }
+                        className={styles.input}
+                    />
+                </div>
+
+                <div className={styles.field}>
+                    <label
+                        htmlFor="contrasenia"
                         className={styles.label}
                     >
                         Contraseña
                     </label>
-
+                    
                     <input
-                        id="contraseña"
-                        name="contraseña"
+                        id="contrasenia"
+                        name="contrasenia"
                         type="password"
                         autoComplete="current-password"
                         required
-                        value={contraseña}
+                        value={contrasenia}
                         onChange={(e) =>
-                            setContraseña(e.target.value)
+                            setContrasenia(e.target.value)
+                        }
+                        className={styles.input}
+                    />
+                </div>
+
+                <div className={styles.field}>
+                    <label
+                        htmlFor="contrasenia"
+                        className={styles.label}
+                    >
+                        Confirme su contraseña
+                    </label>
+
+                    <input
+                        id="contrasenia"
+                        name="contrasenia"
+                        type="password"
+                        autoComplete="current-password"
+                        required
+                        value={contraseniaDos}
+                        onChange={(e) =>
+                            setContraseniaDos(e.target.value)
                         }
                         className={styles.input}
                     />
@@ -193,6 +245,7 @@ export default function RegisterPage() {
                         </p>
                     ) : null}
 
+                    {/*validar todos los campos cuando toque el boton*/}
                     <button
                         type="submit"
                         className={styles.button}
@@ -209,7 +262,7 @@ export default function RegisterPage() {
                         href="/login"
                         className={styles.backLink}
                     >
-                        inicia sesión
+                        Inicia sesión
                     </Link>
                 </p>
             </div>

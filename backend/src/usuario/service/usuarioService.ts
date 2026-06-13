@@ -10,6 +10,7 @@ import Usuario from '../entity/usuarioEntity';
 import CrearUsuarioDTO from '../dtos/usuarioDto';
 import UsuarioRepository from '../repository/usuarioRepository';
 import actualizarUsuarioDTO from '../dtos/actualizarUsuarioDto';
+import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
 import { CambiarRolDTO } from '../dtos/cambiarRolDto';
 import { BloquearUsuarioDTO } from '../dtos/bloquearUsuarioDto';
 
@@ -180,8 +181,7 @@ export default class UsuarioService {
 
   public async ResetearContraseniaUsuario(
     idUsuario: string,
-    contraseniaActual: string,
-    contraseniaNueva: string,
+    actualizarContraseniaDto: actualizarContraseniaDTO,
   ): Promise<void> {
     /* verfifcar que el usuario exista
     verificar que la contrasenia actual sea correcta
@@ -191,7 +191,7 @@ export default class UsuarioService {
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
 
     const contraseniaValida = await bcrypt.compare(
-      contraseniaActual,
+      actualizarContraseniaDto.contraseniaActual,
       usuario.contrasenia,
     );
 
@@ -200,7 +200,7 @@ export default class UsuarioService {
     }
 
     const mismaContrasenia = await bcrypt.compare(
-      contraseniaNueva,
+      actualizarContraseniaDto.contraseniaNueva,
       usuario.contrasenia,
     );
 
@@ -210,7 +210,7 @@ export default class UsuarioService {
       );
     }
 
-    const hashNueva = await bcrypt.hash(contraseniaNueva, 10);
+    const hashNueva = await bcrypt.hash(actualizarContraseniaDto.contraseniaNueva, 10);
 
     await this.repo.resetearContraseniaUsuario(idUsuario, hashNueva);
   }

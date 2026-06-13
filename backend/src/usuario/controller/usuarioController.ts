@@ -20,6 +20,7 @@ import { BloquearUsuarioDTO } from '../dtos/bloquearUsuarioDto';
 import actualizarUsuarioDTO from '../dtos/actualizarUsuarioDto';
 import { CambiarRolDTO } from '../dtos/cambiarRolDto';
 import logearUsuarioDTO from '../dtos/logearUsuarioDto';
+import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
 
 import { AuthGuard } from '../auth/authGuard';
 import { Roles } from '../auth/authRolesDecorator';
@@ -100,10 +101,10 @@ export default class UsuarioController {
   @UseGuards(AuthGuard)
   @Patch(':id')
   async actualizarUsuario(
-    @Param('id') id: string,
+    @Req() req: RequestConUsuario,
     @Body() datos: actualizarUsuarioDTO,
   ) {
-    return this.service.ActualizarUsuario(id, datos);
+    return this.service.ActualizarUsuario(req.user.id, datos);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
@@ -118,17 +119,12 @@ export default class UsuarioController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch(':id/resetearContrasenia')
+  @Patch('resetearContrasenia')
   async resetearContrasenia(
-    @Param('id') id: string,
-    @Body('contraseniaActual') contraseniaActual: string,
-    @Body('contraseniaNueva') contraseniaNueva: string,
+    @Req() req: RequestConUsuario,
+    @Body() dto: actualizarContraseniaDTO,
   ) {
-    return this.service.ResetearContraseniaUsuario(
-      id,
-      contraseniaActual,
-      contraseniaNueva,
-    );
+    return this.service.ResetearContraseniaUsuario(req.user.id, dto);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
