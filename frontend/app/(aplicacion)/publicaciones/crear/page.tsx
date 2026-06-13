@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
 
@@ -88,7 +89,12 @@ export default function CrearPublicacionPage() {
           <Image src={imagenPreview} alt="Vista previa" width={320} height={220} style={{ width: "100%", maxWidth: 320, borderRadius: "1rem", objectFit: "cover" }} />
         ) : null}
 
-        <button type="submit" style={buttonStyle}>Publicar</button>
+        <div style={actionsStyle}>
+          <Link href="/publicaciones" style={exitButtonStyle}>
+            Salir
+          </Link>
+          <button type="submit" style={buttonStyle}>Publicar</button>
+        </div>
       </form>
     </main>
   );
@@ -99,6 +105,28 @@ const inputStyle: React.CSSProperties = {
   borderRadius: "0.75rem",
   padding: "0.75rem 0.9rem",
   fontSize: "1rem",
+};
+
+const actionsStyle: React.CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "0.75rem",
+  alignItems: "center",
+  marginTop: "0.5rem",
+};
+
+const exitButtonStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "0.75rem 1rem",
+  borderRadius: "999px",
+  border: "1px solid var(--color-borde)",
+  background: "var(--color-tarjeta)",
+  color: "var(--color-texto-principal)",
+  fontWeight: 500,
+  textDecoration: "none",
+  cursor: "pointer",
 };
 
 const buttonStyle: React.CSSProperties = {

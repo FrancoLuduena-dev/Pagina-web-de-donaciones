@@ -9,16 +9,13 @@ import styles from "./publicaciones.module.css";
 export default function PublicacionesPage() {
   return (
     <section className={styles.contenido}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
+      <div className={styles.header}>
         <h1 className={styles.titulo}>Publicaciones</h1>
-        <Link
-          href="/publicaciones/crear"
-          style={{ padding: "0.6rem 1rem", borderRadius: "999px", background: "#1f6feb", color: "white", textDecoration: "none" }}
-        >
+        <Link href="/publicaciones/crear" className={styles.crearButton}>
           + Crear publicación
         </Link>
       </div>
-      <p>Desde aquí empezamos el flujo de creación y edición de publicaciones.</p>
+      <p className={styles.descripcion}>Desde aquí empezamos el flujo de creación y edición de publicaciones.</p>
     </section>
   );
 }
