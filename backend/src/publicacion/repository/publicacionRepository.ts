@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository, ILike } from 'typeorm';
-
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
+import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
 
 @Injectable()
 export class PublicacionRepository {
@@ -29,14 +29,13 @@ export class PublicacionRepository {
     });
   }
 
-  listarPublico(texto?: string): Promise<Publicacion[]> {
-    if (!texto) {
+  listarPublico(filtros: FiltrosPublicacionDto): Promise<Publicacion[]> {
+    const { q } = filtros;
+
+    if (!q) {
       return this.repository.find({
         where: {
           estado: EstadoPublicacion.DISPONIBLE,
-        },
-        order: {
-          createdAt: 'DESC',
         },
       });
     }
@@ -45,16 +44,13 @@ export class PublicacionRepository {
       where: [
         {
           estado: EstadoPublicacion.DISPONIBLE,
-          titulo: ILike(`%${texto}%`),
+          titulo: ILike(`%${q}%`),
         },
         {
           estado: EstadoPublicacion.DISPONIBLE,
-          descripcion: ILike(`%${texto}%`),
+          descripcion: ILike(`%${q}%`),
         },
       ],
-      order: {
-        createdAt: 'DESC',
-      },
     });
   }
 

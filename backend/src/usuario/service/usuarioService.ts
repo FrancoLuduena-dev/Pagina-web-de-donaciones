@@ -155,9 +155,25 @@ export default class UsuarioService {
     datos: CambiarRolDTO,
   ): Promise<void> {
 
-    await this.obtenerUsuarioPorId(idUsuario);
+
+    const usuarioObjetivo = await this.obtenerUsuarioPorId(idUsuario);
 
     const usuarioAdmin = await this.obtenerUsuarioPorId(idAdmin);
+
+    // 1. No puede modificarse a sí mismo
+    if (usuarioObjetivo.id === usuarioAdmin.id) {
+      throw new BadRequestException('Un administrador no puede cambiar su propio rol');
+    }
+
+    // 2. No se puede modificar a otro administrador
+    if (usuarioObjetivo.rol === rolUsuario.usuarioAdministrador) {
+      throw new BadRequestException('No se puede modificar el rol de otro administrador');
+    }
+
+    // 3. No se puede asignar rol de administrador
+    if (datos.rol === rolUsuario.usuarioAdministrador) {
+      throw new BadRequestException('No se puede asignar el rol de administrador');
+    }
 
     await this.repo.cambiarRolUsuario(idUsuario, datos.rol);
   }

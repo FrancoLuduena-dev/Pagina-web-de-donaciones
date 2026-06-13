@@ -6,10 +6,11 @@ import {
 
 import { Publicacion } from '../entity/publicacionEntity';
 import { PublicacionRepository } from '../repository/publicacionRepository';
-import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
+import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
+import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
+import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
 
 @Injectable()
 export class PublicacionService {
@@ -32,9 +33,9 @@ export class PublicacionService {
     return this.publicacionRepository.guardar(nuevaPublicacion);
   }
 
-listarPublico(texto?: string): Promise<Publicacion[]> {
-  return this.publicacionRepository.listarPublico(texto);
-}
+  listarPublico(filtros: FiltrosPublicacionDto): Promise<Publicacion[]> {
+    return this.publicacionRepository.listarPublico(filtros);
+  }
 
   listarMisPublicaciones(
     creadorId: string,

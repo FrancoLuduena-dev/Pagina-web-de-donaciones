@@ -12,6 +12,7 @@ import {
 
 export default class CrearUsuarioDto {
   @IsString()
+  @IsOptional()
   id?: string;
 
   @IsString()
