@@ -99,7 +99,7 @@ export default class UsuarioController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch(':id')
+  @Patch('actualizarUsuario')
   async actualizarUsuario(
     @Req() req: RequestConUsuario,
     @Body() datos: actualizarUsuarioDTO,

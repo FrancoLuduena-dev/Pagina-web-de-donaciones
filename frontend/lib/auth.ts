@@ -21,7 +21,12 @@ export type RegisterPayload = {
 };
 
 export type RegisterResponse = {
-  message?: string;
+  message: string;
+  user?: {
+    id: number;
+    correo: string;
+    nombreUsuario: string;
+  };
 };
 
 export type psResetPayload = {
@@ -83,17 +88,19 @@ export async function loginRequest(
 export async function registerRequest(
   payload: RegisterPayload
 ): Promise<RegisterResponse> {
+
   const res = await fetch("/api/auth/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
 
-  let data: RegisterResponse = {};
+  let data: RegisterResponse = { message: "Error al intentar registrar la cuenta." };
   try {
     data = (await res.json()) as RegisterResponse;
   } catch {
     /* cuerpo vacío o no JSON */
+    data.message = "Error al intentar registrar la cuenta.";
   }
 
   if (!res.ok) {
@@ -143,9 +150,12 @@ export async function resetPasswordRequest(
 export async function editarPerfilRequest(
   payload: Partial<editarPerfilPayload>
 ): Promise<editarPerfilResponse> {
-  const res = await fetch("/api/auth/editar-perfil", {
+
+  const token = localStorage.getItem("access_token");
+
+  const res = await fetch("/api/auth/editarPerfil", {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),
   });
 
@@ -154,6 +164,7 @@ export async function editarPerfilRequest(
     data = (await res.json()) as editarPerfilResponse;
   } catch {
     /* cuerpo vacío o no JSON */
+    data.message = "Error al intentar actualizar el perfil.";
   }
 
   if (!res.ok) {
@@ -169,7 +180,7 @@ export async function editarPerfilRequest(
 }
 
 export function persistSession(data: LoginResponse): void {
-  const token = data.access_token ?? data.accessToken;
+  const token = data.accessToken;
   if (token && typeof window !== "undefined") {
     localStorage.setItem("access_token", token);
   }

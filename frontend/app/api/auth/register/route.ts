@@ -5,6 +5,7 @@ const backendBase =
 
 export async function POST(request: Request) {
   let body: unknown;
+  
   try {
     body = await request.json();
   } catch {
