@@ -35,27 +35,39 @@ export default function RegisterPage() {
     
         setError(null);
         setLoading(true);
-    
+        
+
         try {
             // la contraseña tiene que tener al menos 6 caracteres y el correo tiene que ser un formato valido 
+            // validaciones front
+            const contraseniasCoinciden = contrasenia === contraseniaDos;
+            const correosCoinciden = correo.trim() === correoDos.trim();
+
+            if (!contraseniasCoinciden) {
+                throw new Error("Las contraseñas no coinciden.");
+            }
+
+            if (!correosCoinciden) {
+                throw new Error("Los correos no coinciden.");
+            }
+
+            //validaciones en el backend
           const data = await registerRequest({
             correo: correo.trim(),
             contrasenia,
             nombreUsuario,
             nombreCompleto,
             numeroTelefono,
-
           });
-    
-          persistSession(data);
-    
+
+          //caso exito redirige al login
           router.push("/login");
           router.refresh();
         } catch (err) {
           setError(
             err instanceof Error
               ? err.message
-              : "Error desconocido."
+              : "Error desconocido." 
           );
         } finally {
           setLoading(false);

@@ -23,8 +23,8 @@ import logearUsuarioDTO from '../dtos/logearUsuarioDto';
 import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
 
 import { AuthGuard } from '../auth/authGuard';
-import { Roles } from '../auth/authRolesDecorator';
-import { RolesGuard } from '../auth/authGuardRoles';
+import { Roles } from 'src/compartidos/decorators/decoratorRol';
+import { RolesGuard } from 'src/compartidos/guards/rolesGuard';
 
 import { rolUsuario } from '../enums/rolUsuario';
 
