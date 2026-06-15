@@ -8,6 +8,7 @@ import {
   VersionColumn,
   OneToMany,
 } from 'typeorm';
+
 import { BadRequestException } from '@nestjs/common';
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
@@ -66,7 +67,7 @@ export class Publicacion {
   @OneToMany(() => Solicitud, (solicitud) => solicitud.publicacion)
   solicitudes!: Solicitud[];
 
-  transicionarA(nuevoEstado: EstadoPublicacion): void {
+  private transicionarA(nuevoEstado: EstadoPublicacion): void {
     const permitidos = TRANSICIONES_PUBLICACION[this.estado];
 
     if (!permitidos.includes(nuevoEstado)) {
@@ -134,6 +135,22 @@ export class Publicacion {
       this.condicion = datos.condicion;
     }
 
+    if (datos.categoriaId !== undefined) {
+      this.categoriaId = datos.categoriaId;
+    }
+
+    if (datos.localidadId !== undefined) {
+      this.localidadId = datos.localidadId;
+    }
+
     this.updatedAt = new Date();
+  }
+
+  validarPuedeRecibirSolicitudes(): void {
+    if (this.estado !== EstadoPublicacion.DISPONIBLE) {
+      throw new BadRequestException(
+        'La publicación no está disponible para recibir solicitudes',
+      );
+    }
   }
 }

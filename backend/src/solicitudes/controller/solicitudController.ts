@@ -1,32 +1,84 @@
-// src/solicitudes/controller/solicitudController.ts
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Request } from 'express';
 import { SolicitudService } from '../service/solicitudService';
 import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
 import { Solicitud } from '../entity/solicitudEntity';
+import { AuthGuard } from 'src/usuario/auth/authGuard';
+import { rolUsuario } from 'src/usuario/enums/rolUsuario';
+import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
+import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
 
-const USUARIO_ID_PRUEBA = '550e8400-e29b-41d4-a716-446655440002';
+interface RequestConUsuario extends Request {
+  user: {
+    id: string;
+    rol: rolUsuario;
+  };
+}
 
+@UseGuards(AuthGuard)
 @Controller('solicitudes')
 export class SolicitudController {
   constructor(private readonly solicitudService: SolicitudService) {}
 
   @Post()
-  crearSolicitud(@Body() dto: CrearSolicitudDto): Promise<Solicitud> {
-    return this.solicitudService.crearSolicitud(dto, USUARIO_ID_PRUEBA);
+  crearSolicitud(
+    @Body() dto: CrearSolicitudDto,
+    @Req() req: RequestConUsuario,
+  ): Promise<Solicitud> {
+    return this.solicitudService.crearSolicitud(dto, req.user.id);
   }
 
   @Get('mias')
-  listarMias(): Promise<Solicitud[]> {
-    return this.solicitudService.listarMisSolicitudes(USUARIO_ID_PRUEBA);
+  listarMias(@Req() req: RequestConUsuario): Promise<Solicitud[]> {
+    return this.solicitudService.listarMisSolicitudes(req.user.id);
   }
 
   @Get('recibidas')
-  listarRecibidas(): Promise<Solicitud[]> {
-    return this.solicitudService.listarSolicitudesRecibidas(USUARIO_ID_PRUEBA);
+  listarRecibidas(@Req() req: RequestConUsuario): Promise<Solicitud[]> {
+    return this.solicitudService.listarSolicitudesRecibidas(req.user.id);
   }
+
   @Patch(':id/aceptar')
-  aceptarSolicitud(@Param('id') id: string): Promise<Solicitud> {
-    return this.solicitudService.aceptarSolicitud(id, USUARIO_ID_PRUEBA);
+  aceptarSolicitud(
+    @Param('id') id: string,
+    @Req() req: RequestConUsuario,
+  ): Promise<Solicitud> {
+    return this.solicitudService.aceptarSolicitud(id, req.user.id);
+  }
+
+  @Patch(':id/rechazar')
+  rechazarSolicitud(
+    @Param('id') id: string,
+    @Body() dto: RechazarSolicitudDto,
+    @Req() req: RequestConUsuario,
+  ): Promise<Solicitud> {
+    return this.solicitudService.rechazarSolicitud(id, req.user.id, dto);
+  }
+
+  @Patch(':id/finalizar')
+  finalizarSolicitud(
+    @Param('id') id: string,
+    @Req() req: RequestConUsuario,
+  ): Promise<Solicitud> {
+    return this.solicitudService.finalizarSolicitud(id, req.user.id);
+  }
+
+  @Patch(':id/cancelar')
+  cancelarSolicitud(
+    @Param('id') id: string,
+    @Body() dto: CancelarSolicitudDto,
+    @Req() req: RequestConUsuario,
+  ): Promise<Solicitud> {
+    return this.solicitudService.cancelarSolicitud(id, req.user.id, dto);
   }
 }

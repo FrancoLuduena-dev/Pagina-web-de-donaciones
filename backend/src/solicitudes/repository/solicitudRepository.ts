@@ -1,8 +1,8 @@
-// src/solicitud/repository/solicitudRepository.ts
+// src/solicitudes/repository/solicitudRepository.ts
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { Solicitud } from '../entity/solicitudEntity';
 import { EstadoSolicitud } from '../enums/estadoSolicitud';
@@ -22,6 +22,10 @@ export class SolicitudRepository {
     return this.repository.save(solicitud);
   }
 
+  guardarVarias(solicitudes: Solicitud[]): Promise<Solicitud[]> {
+    return this.repository.save(solicitudes);
+  }
+
   buscarPorId(id: string): Promise<Solicitud | null> {
     return this.repository.findOne({
       where: { id },
@@ -33,18 +37,11 @@ export class SolicitudRepository {
     solicitanteId: string,
   ): Promise<Solicitud | null> {
     return this.repository.findOne({
-      where: [
-        {
-          publicacionId,
-          solicitanteId,
-          estado: EstadoSolicitud.PENDIENTE,
-        },
-        {
-          publicacionId,
-          solicitanteId,
-          estado: EstadoSolicitud.ACEPTADA,
-        },
-      ],
+      where: {
+        publicacionId,
+        solicitanteId,
+        estado: In([EstadoSolicitud.PENDIENTE, EstadoSolicitud.ACEPTADA]),
+      },
     });
   }
 
@@ -62,9 +59,7 @@ export class SolicitudRepository {
     });
   }
 
-  async buscarPendientesPorPublicacion(
-    publicacionId: string,
-  ): Promise<Solicitud[]> {
+  buscarPendientesPorPublicacion(publicacionId: string): Promise<Solicitud[]> {
     return this.repository.find({
       where: {
         publicacionId,

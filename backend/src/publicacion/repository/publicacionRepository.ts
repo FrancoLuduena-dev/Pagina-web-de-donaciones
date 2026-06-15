@@ -33,13 +33,13 @@ export class PublicacionRepository {
     return this.repository.find({
       where: {
         estado: EstadoPublicacion.DISPONIBLE,
+        deletedAt: IsNull(),
       },
       order: {
         createdAt: 'DESC',
       },
     });
   }
-
   listarPorCreador(
     creadorId: string,
     estado?: EstadoPublicacion,
@@ -47,6 +47,7 @@ export class PublicacionRepository {
     return this.repository.find({
       where: {
         creadorId,
+        deletedAt: IsNull(),
         ...(estado ? { estado } : {}),
       },
       order: {

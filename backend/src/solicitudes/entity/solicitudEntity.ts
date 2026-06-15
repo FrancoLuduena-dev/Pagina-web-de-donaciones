@@ -59,7 +59,7 @@ export class Solicitud {
   @UpdateDateColumn()
   updatedAt!: Date;
 
-  private transicionarA(nuevoEstado: EstadoSolicitud): void {
+  private validarTransicionSolicitud(nuevoEstado: EstadoSolicitud): void {
     const transicionesPermitidas = TRANSICIONES_SOLICITUD[this.estado];
 
     if (!transicionesPermitidas.includes(nuevoEstado)) {
@@ -72,24 +72,24 @@ export class Solicitud {
   }
 
   aceptar(): void {
-    this.transicionarA(EstadoSolicitud.ACEPTADA);
+    this.validarTransicionSolicitud(EstadoSolicitud.ACEPTADA);
   }
 
   rechazar(motivo?: string): void {
-    this.transicionarA(EstadoSolicitud.RECHAZADA);
+    this.validarTransicionSolicitud(EstadoSolicitud.RECHAZADA);
     this.motivoRechazo = motivo;
   }
 
   cancelar(motivo?: string): void {
-    this.transicionarA(EstadoSolicitud.CANCELADA);
+    this.validarTransicionSolicitud(EstadoSolicitud.CANCELADA);
     this.motivoCancelacion = motivo;
   }
 
   finalizar(): void {
-    this.transicionarA(EstadoSolicitud.FINALIZADA);
+    this.validarTransicionSolicitud(EstadoSolicitud.FINALIZADA);
   }
 
   expirar(): void {
-    this.transicionarA(EstadoSolicitud.EXPIRADA);
+    this.validarTransicionSolicitud(EstadoSolicitud.EXPIRADA);
   }
 }
