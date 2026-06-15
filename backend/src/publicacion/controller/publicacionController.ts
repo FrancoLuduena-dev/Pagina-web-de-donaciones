@@ -13,12 +13,13 @@ import {
 
 import { Request } from 'express';
 import { PublicacionService } from '../service/publicacionService';
-import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
+import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
+import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
+import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
 
 interface RequestConUsuario extends Request {
   user: {
@@ -41,8 +42,10 @@ export class PublicacionController {
   }
 
   @Get()
-  listarFeedPublico(): Promise<Publicacion[]> {
-    return this.publicacionService.listarPublico();
+  listarFeedPublico(
+    @Query() filtros: FiltrosPublicacionDto,
+  ): Promise<Publicacion[]> {
+    return this.publicacionService.listarPublico(filtros);
   }
 
   @UseGuards(AuthGuard)

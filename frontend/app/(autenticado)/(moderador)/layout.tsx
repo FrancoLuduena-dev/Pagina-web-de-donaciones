@@ -1,8 +1,8 @@
-import styles from "./aplicacion.module.css"
+import styles from "./moderacion.module.css";
 import Footer from "@/components/layout/footer/Footer";
 import Navbar from "@/components/layout/navbar/Navbar";
 
- /**
+/**
  * Layout principal de las páginas públicas de la aplicación.
  *
  * Incluye la barra de navegación y el footer global.
@@ -17,11 +17,15 @@ export default function PublicoLayout({
 }) {
   return (
     <div className={styles.layout}>
-      <Navbar />
+      <div className={styles.header}>
+        <Navbar />
+      </div>
 
-      {children}
+      <main className={styles.body}>{children}</main>
 
-      <Footer />
+      <div className={styles.footer}>
+        <Footer />
+      </div>
     </div>
   );
 }
