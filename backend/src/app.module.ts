@@ -7,7 +7,8 @@ import {
   type ConfigModuleOptions,
 } from '@nestjs/config';
 
-import { PublicacionesModule } from './publicacion/module/publicacionesModule';
+import { PublicacionModule } from './publicacion/module/publicacionModule';
+import { SolicitudesModule } from './solicitudes/module/solicitudModule';
 import { UsuarioModule } from './usuario/module/usuarioModule';
 
 const configModuleOptions: ConfigModuleOptions = {
@@ -39,7 +40,8 @@ const configModuleOptions: ConfigModuleOptions = {
     }),
 
     UsuarioModule,
-    PublicacionesModule,
+    PublicacionModule,
+    SolicitudesModule,
   ],
 })
 export class AppModule {}
