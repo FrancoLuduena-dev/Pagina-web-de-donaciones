@@ -6,9 +6,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { EstadoDenuncia } from '../enums/estadoDenuncia';
 import { MotivoDenuncia } from '../enums/motivoDenuncia';
 import { TipoResolucion } from '../enums/tipoResolucion';
-import { EstadoDenuncia } from '../enums/estadoDenuncia';
+import { puedeTransicionarDenuncia } from '../constante/transicionesDenuncia';
 
 @Entity('denuncias')
 export class Denuncia {
@@ -65,13 +66,27 @@ export class Denuncia {
   @UpdateDateColumn()
   fechaActualizacion!: Date;
 
-  tomar(moderadorId: string): void {
-    if (this.estado !== EstadoDenuncia.PENDIENTE) {
+  private cambiarEstado(nuevoEstado: EstadoDenuncia): void {
+    if (!puedeTransicionarDenuncia(this.estado, nuevoEstado)) {
       throw new Error('TRANSICION_ESTADO_INVALIDA');
     }
 
-    this.estado = EstadoDenuncia.EN_REVISION;
+    this.estado = nuevoEstado;
+  }
+
+  tomar(moderadorId: string): void {
+    this.cambiarEstado(EstadoDenuncia.EN_REVISION);
+
     this.moderadorAsignadoId = moderadorId;
+    this.version += 1;
+  }
+
+  resolver(tipoResolucion: TipoResolucion, detalleResolucion: string): void {
+    this.cambiarEstado(EstadoDenuncia.RESUELTA);
+
+    this.tipoResolucion = tipoResolucion;
+    this.detalleResolucion = detalleResolucion;
+    this.fechaResolucion = new Date();
     this.version += 1;
   }
 }

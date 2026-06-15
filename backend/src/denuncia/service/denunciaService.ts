@@ -1,18 +1,26 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 
-import { EstadoDenuncia } from '../enums/estadoDenuncia';
-import { DenunciaMapper } from '../mapper/denunciaMapper';
-import { DenunciaRepository } from '../repository/denunciaRepository';
 import { PublicacionService } from '../../publicacion/service/publicacionService';
+import { rolUsuario } from '../../usuario/enums/rolUsuario';
+
 import { CrearDenunciaDto } from '../dtos/crearDenunciaDto';
+import { DenunciaDetalleResponseDto } from '../dtos/denunciaDetalleResponseDto';
 import { DenunciaResponseDto } from '../dtos/denunciaResponseDto';
 import { FiltroDenunciaDto } from '../dtos/filtroDenunciaDto';
+import { ResolverDenunciaDto } from '../dtos/ResolverDenunciaDto';
 import { TomarDenunciaDto } from '../dtos/tomarDenunciaDto';
+
+import { EstadoDenuncia } from '../enums/estadoDenuncia';
+import { TipoResolucion } from '../enums/tipoResolucion';
+
+import { DenunciaMapper } from '../mapper/denunciaMapper';
+import { DenunciaRepository } from '../repository/denunciaRepository';
 
 @Injectable()
 export class DenunciaService {
@@ -64,6 +72,18 @@ export class DenunciaService {
     return denuncias.map((denuncia) => DenunciaMapper.toResponseDto(denuncia));
   }
 
+  async buscarDetallePorId(
+    denunciaId: string,
+  ): Promise<DenunciaDetalleResponseDto> {
+    const denuncia = await this.denunciaRepository.buscarPorId(denunciaId);
+
+    if (!denuncia) {
+      throw new NotFoundException('DENUNCIA_NO_ENCONTRADA');
+    }
+
+    return DenunciaMapper.toDetalleResponseDto(denuncia);
+  }
+
   async tomarDenuncia(
     denunciaId: string,
     moderadorId: string,
@@ -95,5 +115,85 @@ export class DenunciaService {
     const denunciaGuardada = await this.denunciaRepository.guardar(denuncia);
 
     return DenunciaMapper.toResponseDto(denunciaGuardada);
+  }
+
+  async resolverDenuncia(
+    denunciaId: string,
+    moderadorId: string,
+    dto: ResolverDenunciaDto,
+  ): Promise<DenunciaDetalleResponseDto> {
+    const denuncia = await this.denunciaRepository.buscarPorId(denunciaId);
+
+    if (!denuncia) {
+      throw new NotFoundException('DENUNCIA_NO_ENCONTRADA');
+    }
+
+    if (denuncia.version !== dto.version) {
+      throw new ConflictException('CONFLICTO_CONCURRENCIA');
+    }
+
+    if (denuncia.estado === EstadoDenuncia.RESUELTA) {
+      throw new ConflictException('DENUNCIA_YA_RESUELTA');
+    }
+
+    await this.ejecutarAccionResolucion(
+      dto.tipoResolucion,
+      denuncia.publicacionId,
+      moderadorId,
+    );
+
+    if (!denuncia.moderadorAsignadoId) {
+      denuncia.moderadorAsignadoId = moderadorId;
+    }
+
+    try {
+      denuncia.resolver(dto.tipoResolucion, dto.detalleResolucion);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === 'TRANSICION_ESTADO_INVALIDA'
+      ) {
+        throw new ConflictException('TRANSICION_ESTADO_INVALIDA');
+      }
+
+      throw error;
+    }
+
+    const denunciaGuardada = await this.denunciaRepository.guardar(denuncia);
+
+    return DenunciaMapper.toDetalleResponseDto(denunciaGuardada);
+  }
+
+  private async ejecutarAccionResolucion(
+    tipoResolucion: TipoResolucion,
+    publicacionId: string,
+    moderadorId: string,
+  ): Promise<void> {
+    switch (tipoResolucion) {
+      case TipoResolucion.DESCARTADA:
+        return;
+
+      case TipoResolucion.PUBLICACION_PAUSADA:
+        await this.publicacionService.pausar(
+          publicacionId,
+          moderadorId,
+          rolUsuario.usuarioModerador,
+        );
+        return;
+
+      case TipoResolucion.PUBLICACION_ELIMINADA:
+        await this.publicacionService.eliminar(
+          publicacionId,
+          moderadorId,
+          rolUsuario.usuarioModerador,
+        );
+        return;
+
+      case TipoResolucion.USUARIO_BLOQUEADO:
+        throw new BadRequestException('RESOLUCION_TODAVIA_NO_IMPLEMENTADA');
+
+      default:
+        throw new BadRequestException('TIPO_RESOLUCION_INVALIDO');
+    }
   }
 }
