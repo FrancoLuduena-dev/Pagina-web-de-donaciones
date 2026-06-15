@@ -1,4 +1,4 @@
-import { IsString, IsEmail, MinLength, IsOptional } from 'class-validator';
+import { IsString, IsEmail, IsOptional, ValidateIf } from 'class-validator';
 
 export default class actualizarUsuarioDTO {
   @IsString()
@@ -9,14 +9,10 @@ export default class actualizarUsuarioDTO {
   @IsOptional()
   nombreUsuario?: string;
 
+  @ValidateIf((o) => o.correo !== '')
   @IsEmail()
   @IsOptional()
   correo?: string;
-
-  @IsString()
-  @MinLength(6)
-  @IsOptional()
-  contraseña?: string;
 
   @IsString()
   @IsOptional()

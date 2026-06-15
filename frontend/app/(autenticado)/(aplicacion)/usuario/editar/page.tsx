@@ -80,7 +80,6 @@ export default function EditarUsuarioPage() {
               name="correo"
               type="email"
               autoComplete="email"
-              required
               value={correo}
               onChange={(e) =>
                 setCorreo(e.target.value)
@@ -102,7 +101,6 @@ export default function EditarUsuarioPage() {
               name="nombreUsuario"
               type="text"
               autoComplete="username"
-              required
               value={nombreUsuario}
               onChange={(e) =>
                 setNombreUsuario(e.target.value)
@@ -124,7 +122,6 @@ export default function EditarUsuarioPage() {
               name="nombreCompleto"
               type="text"
               autoComplete="name"
-              required
               value={nombreCompleto}
               onChange={(e) =>
                 setNombreCompleto(e.target.value)
@@ -146,7 +143,6 @@ export default function EditarUsuarioPage() {
               name="numeroTelefono"
               type="tel"
               autoComplete="tel"
-              required
               value={numeroTelefono}
               onChange={(e) =>
                 setNumeroTelefono(e.target.value)

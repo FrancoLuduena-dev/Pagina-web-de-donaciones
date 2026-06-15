@@ -94,14 +94,12 @@ export default class UsuarioService {
     idUsuario: string,
     datos: actualizarUsuarioDTO,
   ): Promise<void> {
-    /*
-    validar que el usuario exista
-    validar que el correo sea unico si se esta actualizando
-    validar que el nombre de usuario sea unico si se esta actualizando
-
-    */
 
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
+
+    const datosFiltrados = Object.fromEntries(
+      Object.entries(datos).filter(([_, value]) => value !== "")
+    );
 
     if (datos.correo && datos.correo !== usuario.correo) {
       const existeCorreo = await this.repo.buscarPorEmail(datos.correo);
@@ -123,7 +121,9 @@ export default class UsuarioService {
       }
     }
 
-    await this.repo.actualizarUsuario(idUsuario, datos);
+    Object.assign(usuario, datosFiltrados);
+
+    await this.repo.actualizarUsuario(idUsuario, datosFiltrados);
   }
 
   public async obtenerUsuarioPorId(idUsuario: string): Promise<Usuario> {
