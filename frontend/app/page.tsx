@@ -38,7 +38,7 @@ export default function HomePage() {
   */
 
   // MOCK_BORRAR
-  const autenticado = false;
+  const autenticado = true;
   // END_MOCK_BORRAR
 
   if (autenticado) {

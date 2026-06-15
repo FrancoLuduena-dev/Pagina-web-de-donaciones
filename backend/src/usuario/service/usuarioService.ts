@@ -48,9 +48,6 @@ export default class UsuarioService {
       throw new ConflictException('El nombre de usuario ya existe');
     }
 
-    usuario.rol ??= rolUsuario.usuarioNormal;
-    usuario.estado ??= estadosUsuario.ACTIVO;
-
     return this.repo.crearUsuario(usuario);
   }
   public async EliminarUsuario(
