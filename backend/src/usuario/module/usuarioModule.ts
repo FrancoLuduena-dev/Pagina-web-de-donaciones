@@ -6,7 +6,7 @@ import UsuarioService from '../service/usuarioService';
 import UsuarioRepository from '../repository/usuarioRepository';
 import autenticacionUsuario from '../auth/authUsuario';
 import { AuthGuard } from '../auth/authGuard';
-import { RolesGuard } from '../auth/authGuardRoles';
+import { RolesGuard } from 'src/compartidos/guards/rolesGuard';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Usuario])],

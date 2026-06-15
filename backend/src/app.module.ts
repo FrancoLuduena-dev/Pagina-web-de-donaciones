@@ -10,6 +10,7 @@ import {
 import { PublicacionModule } from './publicacion/module/publicacionModule';
 import { SolicitudesModule } from './solicitudes/module/solicitudModule';
 import { UsuarioModule } from './usuario/module/usuarioModule';
+import { DenunciaModeracionModule } from './denuncia/module/denunciaModeracionModule';
 
 const configModuleOptions: ConfigModuleOptions = {
   isGlobal: true,
@@ -42,6 +43,7 @@ const configModuleOptions: ConfigModuleOptions = {
     UsuarioModule,
     PublicacionModule,
     SolicitudesModule,
+    DenunciaModeracionModule,
   ],
 })
 export class AppModule {}
