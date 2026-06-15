@@ -12,6 +12,7 @@ import {
 
 export default class CrearUsuarioDto {
   @IsString()
+  @IsOptional()
   id?: string;
 
   @IsString()
@@ -36,9 +37,11 @@ export default class CrearUsuarioDto {
   numeroTelefono!: string;
 
   @IsEnum(rolUsuario)
+  @IsOptional()
   rol!: rolUsuario;
 
   @IsEnum(estadosUsuario)
+  @IsOptional()
   estado!: estadosUsuario;
 
   @IsNumber()

@@ -41,8 +41,6 @@ export default function ResetPasswordPage() {
                 contraseniaNueva: contraseniaNueva.trim(),
             });
 
-            persistSession(data);
-
             router.push("/login");
             router.refresh();
         } catch (err) {

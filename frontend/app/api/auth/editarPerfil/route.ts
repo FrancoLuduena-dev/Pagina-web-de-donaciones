@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const backendBase =
-  process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3001";
+  process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
 export async function PATCH(request: Request) {
   let body: unknown;

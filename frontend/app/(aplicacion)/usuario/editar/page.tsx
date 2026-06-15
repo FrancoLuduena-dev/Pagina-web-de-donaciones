@@ -36,8 +36,6 @@ export default function EditarUsuarioPage() {
         numeroTelefono,
       });
 
-      persistSession(data);
-
       router.push("/usuario");
       router.refresh();
     } catch (err) {

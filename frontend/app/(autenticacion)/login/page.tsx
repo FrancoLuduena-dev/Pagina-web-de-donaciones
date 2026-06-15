@@ -43,7 +43,7 @@ export default function LoginPage() {
 
       persistSession(data);
 
-      router.push("/");
+      router.push("/publicaciones");
       router.refresh();
     } catch (err) {
       setError(

@@ -6,6 +6,7 @@ import { FormEvent, use, useState } from "react";
 import { registerRequest, persistSession } from "@/lib/auth";
 import styles from "./register.module.css"
 
+
 /**
  * Página de registro de usuarios.
  *
@@ -24,7 +25,6 @@ export default function RegisterPage() {
     const [contraseniaDos, setContraseniaDos] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-
     /**
      * Maneja el envío del formulario.
      *
@@ -49,6 +49,12 @@ export default function RegisterPage() {
 
             if (!correosCoinciden) {
                 throw new Error("Los correos no coinciden.");
+            }
+
+            const isMailValid = /^\S+@\S+\.\S+$/.test(correo.trim());
+
+            if (!isMailValid) {
+                throw new Error("El formato del correo no es válido.");
             }
 
             //validaciones en el backend
@@ -112,9 +118,15 @@ export default function RegisterPage() {
                         }
                         className={styles.input}
                     />
+                        <div className={styles.guidelines}>
+                            <p>Requisitos del correo:</p>
+                            <ul>
+                                <li>Debe ser formato ejemplo@dominio.com</li>
+                                <li>No debe tener espacios</li>
+                                <li>Debe ser un correo real</li>
+                            </ul>
+                        </div>
                 </div>
-
-                {/*validar que las contraseñas coincidan con un script*/}
 
                 <div className={styles.field}>
                     <label
@@ -145,7 +157,6 @@ export default function RegisterPage() {
                     >
                         Contraseña
                     </label>
-                    
                     <input
                         id="contrasenia"
                         name="contrasenia"
@@ -158,6 +169,14 @@ export default function RegisterPage() {
                         }
                         className={styles.input}
                     />
+                        <div className={styles.guidelines}>
+                            <p>Requisitos de la contraseña:</p>
+                            <ul>
+                                <li>Mínimo 6 caracteres</li>
+                                <li>Usa letras y números</li>
+                                <li>No uses tu nombre completo</li>
+                            </ul>
+                        </div>
                 </div>
 
                 <div className={styles.field}>

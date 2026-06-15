@@ -5,8 +5,6 @@ import UsuarioController from '../controller/usuarioController';
 import UsuarioService from '../service/usuarioService';
 import UsuarioRepository from '../repository/usuarioRepository';
 import autenticacionUsuario from '../auth/authUsuario';
-import { AuthGuard } from '../auth/authGuard';
-import { RolesGuard } from '../auth/authGuardRoles';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Usuario])],
@@ -15,9 +13,7 @@ import { RolesGuard } from '../auth/authGuardRoles';
     UsuarioService,
     UsuarioRepository,
     autenticacionUsuario,
-    AuthGuard,
-    RolesGuard,
   ],
-  exports: [UsuarioService, UsuarioRepository, AuthGuard, RolesGuard],
+  exports: [UsuarioService, UsuarioRepository, autenticacionUsuario],
 })
 export class UsuarioModule {}

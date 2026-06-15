@@ -17,9 +17,9 @@ import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
-import { Roles } from 'src/usuario/auth/authRolesDecorator';
+import { Roles } from 'src/compartidos/decorators/decoratorRol';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
-import { RolesGuard } from 'src/usuario/auth/authGuardRoles';
+import { RolesGuard } from 'src/compartidos/guards/rolesGuard';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 
 interface RequestConUsuario extends Request {
