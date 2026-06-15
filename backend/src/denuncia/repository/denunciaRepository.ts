@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Denuncia } from '../entity/denunciaEntity';
+import { FiltroDenunciaDto } from '../dtos/filtroDenunciaDto';
 
 @Injectable()
 export class DenunciaRepository {
@@ -33,6 +34,20 @@ export class DenunciaRepository {
       where: {
         denuncianteId,
         publicacionId,
+      },
+    });
+  }
+
+  listar(filtros: FiltroDenunciaDto): Promise<Denuncia[]> {
+    return this.repository.find({
+      where: {
+        ...(filtros.estado ? { estado: filtros.estado } : {}),
+        ...(filtros.publicacionId
+          ? { publicacionId: filtros.publicacionId }
+          : {}),
+      },
+      order: {
+        fechaCreacion: 'ASC',
       },
     });
   }

@@ -64,4 +64,14 @@ export class Denuncia {
 
   @UpdateDateColumn()
   fechaActualizacion!: Date;
+
+  tomar(moderadorId: string): void {
+    if (this.estado !== EstadoDenuncia.PENDIENTE) {
+      throw new Error('TRANSICION_ESTADO_INVALIDA');
+    }
+
+    this.estado = EstadoDenuncia.EN_REVISION;
+    this.moderadorAsignadoId = moderadorId;
+    this.version += 1;
+  }
 }
