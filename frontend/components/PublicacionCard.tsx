@@ -30,7 +30,7 @@ export default function PublicacionCard({
     estadoDonacion,
   } = publicacion;
 
-  const linkHref = href ?? `/donaciones/publicacion/${idPublicacion}`;
+  const linkHref = href ?? `/publicaciones/publicacion/${idPublicacion}`;
   const disponible = estadoPublicacion === EstadoPublicacion.DISPONIBLE;
 
   return (

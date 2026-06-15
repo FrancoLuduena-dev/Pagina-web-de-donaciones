@@ -31,7 +31,7 @@
 
 .menuUsuarioNombre {
   color: var(--color-texto-principal);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .menuUsuarioBadge {
@@ -71,10 +71,11 @@
   gap: 0.25rem;
   padding: 1rem;
   border-bottom: 1px solid var(--color-borde);
+  font-weight: 900;
 }
 
 .menuUsuarioHeader strong {
-  color: var(--color-texto-principal);
+  color: var(--color-primario);
 }
 
 .menuUsuarioHeader span {
@@ -90,6 +91,7 @@
   text-decoration: none;
   color: var(--color-texto-principal);
   transition: background-color 0.2s ease;
+  font-weight: 700;
 }
 
 .menuUsuarioItem:hover {
@@ -119,6 +121,7 @@
   color: var(--color-alertas);
   border-top: 1px solid var(--color-borde);
   transition: background-color 0.2s ease;
+  font-weight: 700;
 }
 
 .menuUsuarioLogout:hover {
