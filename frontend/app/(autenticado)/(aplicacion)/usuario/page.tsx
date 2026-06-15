@@ -102,10 +102,10 @@ export default function UsuarioPage() {
         });
         */
 
+        // MOCK_BORRAR
         // Simular carga
         await new Promise((resolve) => setTimeout(resolve, 500));
 
-        // Usuario mock
         const data = {
           nombre: "Marcelo",
           correo: "marcelo@gmail.com",
@@ -113,6 +113,8 @@ export default function UsuarioPage() {
           solicitudesPendientes: 2,
           notificaciones: 7,
         };
+
+        // END_MOCK_BORRAR
 
         setUsuario(data);
       } catch {
@@ -185,7 +187,7 @@ export default function UsuarioPage() {
 
             <BotonLink href="/usuario/notificaciones" texto="Notificaciones" />
 
-            <BotonLink href="/publicaciones/crear" texto="Crear donacion" />
+            <BotonLink href="/publicaciones/crear" texto="Crear Publicacion" />
           </div>
         </section>
       </div>

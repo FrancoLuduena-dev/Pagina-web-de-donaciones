@@ -37,8 +37,9 @@ export default function HomePage() {
 
   */
 
-  // Mock para desarrollo
+  // MOCK_BORRAR
   const autenticado = false;
+  // END_MOCK_BORRAR
 
   if (autenticado) {
     redirect("/publicaciones");

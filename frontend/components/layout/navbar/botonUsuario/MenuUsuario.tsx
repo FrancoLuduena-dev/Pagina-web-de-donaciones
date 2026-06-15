@@ -18,7 +18,7 @@ export default function MenuUsuario() {
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // mock usuario moderador
+  // MOCK_BORRAR
   const usuario: UsuarioNavbar = {
     id: "1",
     nombreUsuario: "Marcelo",
@@ -28,6 +28,8 @@ export default function MenuUsuario() {
 
     // rol: RolUsuario.usuarioModerador,
     // rol: RolUsuario.usuarioAdministrador,
+
+    // END_MOCK_BORRAR
   };
 
   const cantidadNotificaciones = 3;
