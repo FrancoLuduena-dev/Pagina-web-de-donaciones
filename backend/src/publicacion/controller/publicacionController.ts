@@ -16,12 +16,7 @@ import { PublicacionService } from '../service/publicacionService';
 import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-<<<<<<< HEAD
-import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
-=======
 import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
-import { Roles } from 'src/usuario/auth/authRolesDecorator';
->>>>>>> front
 import { AuthGuard } from 'src/usuario/auth/authGuard';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';

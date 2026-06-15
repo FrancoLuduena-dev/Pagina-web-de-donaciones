@@ -37,10 +37,12 @@ export default class CrearUsuarioDto {
   numeroTelefono!: string;
 
   @IsEnum(rolUsuario)
-  rol!: rolUsuario;
+  @IsOptional()
+  rol?: rolUsuario;
 
-  @IsEnum(estadosUsuario)
-  estado!: estadosUsuario;
+  @IsEnum(estadosUsuario) 
+  @IsOptional()
+  estado?: estadosUsuario;
 
   @IsNumber()
   @IsOptional()

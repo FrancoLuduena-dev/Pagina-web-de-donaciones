@@ -1,13 +1,11 @@
-import { IsString, MinLength, IsOptional } from 'class-validator';
+import { IsString, MinLength } from 'class-validator';
 
 export default class actualizarContraseniaDTO {
   @IsString()
   @MinLength(6)
-  @IsOptional()
-  contraseniaActual?: string;
+  contraseniaActual!: string;
 
   @IsString()
   @MinLength(6)
-  @IsOptional()
-  contraseniaNueva?: string;
+  contraseniaNueva!: string;
 }
