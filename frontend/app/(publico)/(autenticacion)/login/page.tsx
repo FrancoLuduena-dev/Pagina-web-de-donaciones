@@ -17,7 +17,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const [correo, setCorreo] = useState("");
-  const [contraseña, setContraseña] = useState("");
+  const [contrasenia, setContrasenia] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -35,14 +35,15 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // probar poner una validacion de que el correo sea un @hotmail.com o @gmail.com etc y que la contraseña tenga al menos 6 caracteres 
       const data = await loginRequest({
         correo: correo.trim(),
-        contraseña,
+        contrasenia,
       });
 
       persistSession(data);
 
-      router.push("/");
+      router.push("/publicaciones");
       router.refresh();
     } catch (err) {
       setError(
@@ -108,9 +109,9 @@ export default function LoginPage() {
               type="password"
               autoComplete="current-password"
               required
-              value={contraseña}
+              value={contrasenia}
               onChange={(e) =>
-                setContraseña(e.target.value)
+                setContrasenia(e.target.value)
               }
               className={styles.input}
             />
@@ -140,6 +141,26 @@ export default function LoginPage() {
             className={styles.backLink}
           >
             Volver al inicio
+          </Link>
+        </p>
+
+        <p className={styles.backLinkContainer}>
+          ¿No tenés una cuenta?{" "}
+          <Link
+            href="/register"
+            className={styles.backLink}
+          >
+            Registrate
+          </Link>
+        </p>
+
+        <p className={styles.backLinkContainer}>
+          ¿Olvidaste tu contraseña?{" "}
+          <Link
+            href="/reset-password"
+            className={styles.backLink}
+          >
+            Restablecela
           </Link>
         </p>
       </div>

@@ -10,6 +10,7 @@ import Usuario from '../entity/usuarioEntity';
 import CrearUsuarioDTO from '../dtos/usuarioDto';
 import UsuarioRepository from '../repository/usuarioRepository';
 import actualizarUsuarioDTO from '../dtos/actualizarUsuarioDto';
+import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
 import { CambiarRolDTO } from '../dtos/cambiarRolDto';
 import { BloquearUsuarioDTO } from '../dtos/bloquearUsuarioDto';
 
@@ -35,7 +36,6 @@ export default class UsuarioService {
         validar formato de correo
 
         */
-
     const existeCorreo = await this.repo.buscarPorEmail(usuario.correo);
 
     if (existeCorreo) {
@@ -50,7 +50,6 @@ export default class UsuarioService {
 
     return this.repo.crearUsuario(usuario);
   }
-
   public async EliminarUsuario(
     idUsuario: string,
     contrasenia: string,
@@ -95,14 +94,12 @@ export default class UsuarioService {
     idUsuario: string,
     datos: actualizarUsuarioDTO,
   ): Promise<void> {
-    /*
-    validar que el usuario exista
-    validar que el correo sea unico si se esta actualizando
-    validar que el nombre de usuario sea unico si se esta actualizando
-
-    */
 
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
+
+    const datosFiltrados = Object.fromEntries(
+      Object.entries(datos).filter(([_, value]) => value !== "")
+    );
 
     if (datos.correo && datos.correo !== usuario.correo) {
       const existeCorreo = await this.repo.buscarPorEmail(datos.correo);
@@ -124,7 +121,9 @@ export default class UsuarioService {
       }
     }
 
-    await this.repo.actualizarUsuario(idUsuario, datos);
+    Object.assign(usuario, datosFiltrados);
+
+    await this.repo.actualizarUsuario(idUsuario, datosFiltrados);
   }
 
   public async obtenerUsuarioPorId(idUsuario: string): Promise<Usuario> {
@@ -154,25 +153,29 @@ export default class UsuarioService {
     idAdmin: string,
     datos: CambiarRolDTO,
   ): Promise<void> {
-
-
     const usuarioObjetivo = await this.obtenerUsuarioPorId(idUsuario);
 
     const usuarioAdmin = await this.obtenerUsuarioPorId(idAdmin);
 
     // 1. No puede modificarse a sí mismo
     if (usuarioObjetivo.id === usuarioAdmin.id) {
-      throw new BadRequestException('Un administrador no puede cambiar su propio rol');
+      throw new BadRequestException(
+        'Un administrador no puede cambiar su propio rol',
+      );
     }
 
     // 2. No se puede modificar a otro administrador
     if (usuarioObjetivo.rol === rolUsuario.usuarioAdministrador) {
-      throw new BadRequestException('No se puede modificar el rol de otro administrador');
+      throw new BadRequestException(
+        'No se puede modificar el rol de otro administrador',
+      );
     }
 
     // 3. No se puede asignar rol de administrador
     if (datos.rol === rolUsuario.usuarioAdministrador) {
-      throw new BadRequestException('No se puede asignar el rol de administrador');
+      throw new BadRequestException(
+        'No se puede asignar el rol de administrador',
+      );
     }
 
     await this.repo.cambiarRolUsuario(idUsuario, datos.rol);
@@ -180,8 +183,7 @@ export default class UsuarioService {
 
   public async ResetearContraseniaUsuario(
     idUsuario: string,
-    contraseniaActual: string,
-    contraseniaNueva: string,
+    actualizarContraseniaDto: actualizarContraseniaDTO,
   ): Promise<void> {
     /* verfifcar que el usuario exista
     verificar que la contrasenia actual sea correcta
@@ -191,7 +193,7 @@ export default class UsuarioService {
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
 
     const contraseniaValida = await bcrypt.compare(
-      contraseniaActual,
+      actualizarContraseniaDto.contraseniaActual,
       usuario.contrasenia,
     );
 
@@ -200,7 +202,7 @@ export default class UsuarioService {
     }
 
     const mismaContrasenia = await bcrypt.compare(
-      contraseniaNueva,
+      actualizarContraseniaDto.contraseniaNueva,
       usuario.contrasenia,
     );
 
@@ -210,7 +212,10 @@ export default class UsuarioService {
       );
     }
 
-    const hashNueva = await bcrypt.hash(contraseniaNueva, 10);
+    const hashNueva = await bcrypt.hash(
+      actualizarContraseniaDto.contraseniaNueva,
+      10,
+    );
 
     await this.repo.resetearContraseniaUsuario(idUsuario, hashNueva);
   }

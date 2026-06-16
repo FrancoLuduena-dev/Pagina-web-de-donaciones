@@ -72,7 +72,6 @@
 
 .error {
   font-size: 0.875rem;
-
   color: var(--color-alertas);
 }
 
@@ -122,24 +121,4 @@
 
 .backLink:hover {
   opacity: 0.8;
-}
-
-.guidelines {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 280px;
-  margin-top: 8px;
-  padding: 14px;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-  z-index: 10;
-}
-
-.field:focus-within .guidelines,
-.field:hover .guidelines {
-  display: block;
 }

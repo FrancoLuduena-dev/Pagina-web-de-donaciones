@@ -5,37 +5,27 @@ const backendBase =
 
 export async function POST(request: Request) {
   let body: unknown;
-
+  
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ message: "Cuerpo inválido." }, { status: 400 });
   }
 
-
   try {
-    const res = await fetch(`${backendBase}/usuario/login`, {
+    const res = await fetch(`${backendBase}/usuario`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    const contentType = res.headers.get("content-type") ?? "application/json";
 
-    if (!res.ok) {
-      const msg =
-        data.message ||
-        (res.status === 401
-          ? "Correo o contraseña incorrectos."
-          : `Error al iniciar sesión (${res.status}).`);
-
-      return NextResponse.json({ message: msg }, { status: res.status });
-    }
-
-    return NextResponse.json(
-      { accessToken: data.accessToken },
-      { status: 200 }
-    );
+    return new NextResponse(text, {
+      status: res.status,
+      headers: { "Content-Type": contentType },
+    });
   } catch {
     return NextResponse.json(
       {

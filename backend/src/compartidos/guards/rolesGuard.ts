@@ -1,31 +1,33 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-
-import { ROLES_KEY } from '../decorators/decoratorRol';
+import { Request } from 'express';
+import { ROLES_KEY } from 'src/compartidos/decorators/decoratorRol';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
+
+interface RequestConUsuario extends Request {
+  user: {
+    rol: rolUsuario;
+  };
+}
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const rolesRequeridos = this.reflector.get<rolUsuario[]>(
+    const rolesRequeridos = this.reflector.getAllAndOverride<rolUsuario[]>(
       ROLES_KEY,
-      context.getHandler(),
+      [context.getHandler(), context.getClass()],
     );
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const request = context.switchToHttp().getRequest();
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    const rolUsuario = request.headers['rol'];
-
-    console.log('ROL USUARIO:', rolUsuario);
-    console.log('ROLES REQUERIDOS:', rolesRequeridos);
 
     if (!rolesRequeridos) {
       return true;
     }
-    return rolesRequeridos.includes(rolUsuario);
+
+    const request = context.switchToHttp().getRequest<RequestConUsuario>();
+
+    const user = request.user;
+
+    return rolesRequeridos.includes(user.rol);
   }
 }

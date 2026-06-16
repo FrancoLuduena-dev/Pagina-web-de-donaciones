@@ -6,12 +6,15 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   VersionColumn,
+  OneToMany,
 } from 'typeorm';
+
 import { BadRequestException } from '@nestjs/common';
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
 import { TRANSICIONES_PUBLICACION } from '../constante/transicionesPublicacion';
+import { Solicitud } from '../../solicitudes/entity/solicitudEntity';
 
 @Entity('publicacion')
 export class Publicacion {
@@ -61,7 +64,10 @@ export class Publicacion {
   @DeleteDateColumn({ nullable: true })
   deletedAt!: Date;
 
-  transicionarA(nuevoEstado: EstadoPublicacion): void {
+  @OneToMany(() => Solicitud, (solicitud) => solicitud.publicacion)
+  solicitudes!: Solicitud[];
+
+  private transicionarA(nuevoEstado: EstadoPublicacion): void {
     const permitidos = TRANSICIONES_PUBLICACION[this.estado];
 
     if (!permitidos.includes(nuevoEstado)) {
@@ -72,6 +78,7 @@ export class Publicacion {
 
     this.estado = nuevoEstado;
   }
+
   reservar(): void {
     this.transicionarA(EstadoPublicacion.RESERVADA);
   }
@@ -128,6 +135,22 @@ export class Publicacion {
       this.condicion = datos.condicion;
     }
 
+    if (datos.categoriaId !== undefined) {
+      this.categoriaId = datos.categoriaId;
+    }
+
+    if (datos.localidadId !== undefined) {
+      this.localidadId = datos.localidadId;
+    }
+
     this.updatedAt = new Date();
+  }
+
+  validarPuedeRecibirSolicitudes(): void {
+    if (this.estado !== EstadoPublicacion.DISPONIBLE) {
+      throw new BadRequestException(
+        'La publicación no está disponible para recibir solicitudes',
+      );
+    }
   }
 }

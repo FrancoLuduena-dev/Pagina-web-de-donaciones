@@ -11,9 +11,6 @@ import {
 } from 'class-validator';
 
 export default class CrearUsuarioDto {
-  @IsString()
-  @IsOptional()
-  id?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -35,18 +32,4 @@ export default class CrearUsuarioDto {
   @IsString()
   @IsNotEmpty()
   numeroTelefono!: string;
-
-  @IsEnum(rolUsuario)
-  rol!: rolUsuario;
-
-  @IsEnum(estadosUsuario)
-  estado!: estadosUsuario;
-
-  @IsNumber()
-  @IsOptional()
-  idBloqueador?: number | null;
-
-  @IsString()
-  @IsOptional()
-  razonBloqueo?: string | null;
 }

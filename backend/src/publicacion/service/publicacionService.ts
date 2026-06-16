@@ -140,20 +140,6 @@ export class PublicacionService {
     return this.publicacionRepository.guardar(publicacion);
   }
 
-  async entregar(id: string, usuarioId: string): Promise<Publicacion> {
-    const publicacion = await this.buscarPublicacionPorId(id);
-
-    if (publicacion.creadorId !== usuarioId) {
-      throw new ForbiddenException(
-        'Solo el creador puede marcar la publicación como entregada',
-      );
-    }
-
-    publicacion.entregar();
-
-    return this.publicacionRepository.guardar(publicacion);
-  }
-
   async eliminar(
     id: string,
     usuarioId: string,
@@ -173,6 +159,10 @@ export class PublicacionService {
 
     publicacion.eliminar();
 
+    return this.publicacionRepository.guardar(publicacion);
+  }
+
+  async guardar(publicacion: Publicacion): Promise<Publicacion> {
     return this.publicacionRepository.guardar(publicacion);
   }
 }

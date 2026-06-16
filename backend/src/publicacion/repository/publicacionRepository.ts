@@ -36,6 +36,10 @@ export class PublicacionRepository {
       return this.repository.find({
         where: {
           estado: EstadoPublicacion.DISPONIBLE,
+          deletedAt: IsNull(),
+        },
+        order: {
+          createdAt: 'DESC',
         },
       });
     }
@@ -44,13 +48,18 @@ export class PublicacionRepository {
       where: [
         {
           estado: EstadoPublicacion.DISPONIBLE,
+          deletedAt: IsNull(),
           titulo: ILike(`%${q}%`),
         },
         {
           estado: EstadoPublicacion.DISPONIBLE,
+          deletedAt: IsNull(),
           descripcion: ILike(`%${q}%`),
         },
       ],
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 
@@ -61,6 +70,7 @@ export class PublicacionRepository {
     return this.repository.find({
       where: {
         creadorId,
+        deletedAt: IsNull(),
         ...(estado ? { estado } : {}),
       },
       order: {

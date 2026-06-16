@@ -17,9 +17,7 @@ import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
-import { Roles } from 'src/usuario/auth/authRolesDecorator';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
-import { RolesGuard } from 'src/usuario/auth/authGuardRoles';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
 
@@ -30,11 +28,11 @@ interface RequestConUsuario extends Request {
   };
 }
 
-@UseGuards(AuthGuard, RolesGuard)
 @Controller('publicaciones')
 export class PublicacionController {
   constructor(private readonly publicacionService: PublicacionService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   crearPublicacion(
     @Body() dto: CrearPublicacionDto,
@@ -50,7 +48,7 @@ export class PublicacionController {
     return this.publicacionService.listarPublico(filtros);
   }
 
-  @Roles(rolUsuario.usuarioNormal)
+  @UseGuards(AuthGuard)
   @Get('mias')
   listarMisPublicaciones(
     @Req() req: RequestConUsuario,
@@ -64,6 +62,7 @@ export class PublicacionController {
     return this.publicacionService.buscarPublicacionPorId(id);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id/pausar')
   pausar(
     @Param('id') id: string,
@@ -72,6 +71,7 @@ export class PublicacionController {
     return this.publicacionService.pausar(id, req.user.id, req.user.rol);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id/reactivar')
   reactivar(
     @Param('id') id: string,
@@ -80,14 +80,7 @@ export class PublicacionController {
     return this.publicacionService.reactivar(id, req.user.id, req.user.rol);
   }
 
-  @Patch(':id/entregar')
-  entregar(
-    @Param('id') id: string,
-    @Req() req: RequestConUsuario,
-  ): Promise<Publicacion> {
-    return this.publicacionService.entregar(id, req.user.id);
-  }
-
+  @UseGuards(AuthGuard)
   @Delete(':id/eliminar')
   eliminar(
     @Param('id') id: string,
@@ -96,6 +89,7 @@ export class PublicacionController {
     return this.publicacionService.eliminar(id, req.user.id, req.user.rol);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id')
   editar(
     @Param('id') id: string,
