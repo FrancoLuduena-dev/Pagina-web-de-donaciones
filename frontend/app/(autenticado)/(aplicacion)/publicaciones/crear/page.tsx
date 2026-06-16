@@ -88,7 +88,7 @@ export default function CrearPublicacionPage() {
             value={form.titulo}
             onChange={(e) => setForm({ ...form, titulo: e.target.value })}
             style={inputStyle}
-            minLength={10}
+            minLength={4}
             required
           />
         </label>

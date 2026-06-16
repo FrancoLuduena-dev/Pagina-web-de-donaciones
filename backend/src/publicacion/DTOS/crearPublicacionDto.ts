@@ -13,7 +13,7 @@ import { CondicionObjeto } from '../enums/condicionObjeto';
 export class CrearPublicacionDto {
   @IsString()
   @IsNotEmpty()
-  @MinLength(10)
+  @MinLength(4)
   titulo!: string;
 
   @IsString()

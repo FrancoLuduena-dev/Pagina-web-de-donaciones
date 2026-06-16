@@ -13,7 +13,7 @@ export default function Navbar() {
       </div>
 
       <div className={styles.links}>
-        <Link href="/">Inicio</Link>
+        <Link href="/publicaciones">Inicio</Link>
         <Link href="/publicaciones">Explorar publicaciones</Link>
         <Link href="/como_funciona">Cómo funciona</Link>
       </div>

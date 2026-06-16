@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsNotEmpty,
   MinLength,
+  IsNumber,
 } from 'class-validator';
 
 export default class CrearUsuarioDto {

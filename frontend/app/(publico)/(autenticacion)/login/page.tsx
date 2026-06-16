@@ -155,13 +155,7 @@ export default function LoginPage() {
         </p>
 
         <p className={styles.backLinkContainer}>
-          ¿Olvidaste tu contraseña?{" "}
-          <Link
-            href="/reset-password"
-            className={styles.backLink}
-          >
-            Restablecela
-          </Link>
+          ¿Olvidaste tu contraseña? Manda un correo a pagina@donaciones.com
         </p>
       </div>
     </main>

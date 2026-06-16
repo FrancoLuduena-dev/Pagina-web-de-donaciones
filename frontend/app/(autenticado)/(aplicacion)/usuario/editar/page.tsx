@@ -216,7 +216,7 @@ export default function EditarUsuarioPage() {
         <p className={styles.backLinkContainer}>
           Para restablecer tu contraseña {" "}
           <Link
-            href="/reset-password"
+            href="/usuario/reset-password"
             className={styles.backLink}
           >
             ingresa aca
