@@ -11,6 +11,7 @@ export default function EditarUsuarioPage() {
   const router = useRouter();
 
   const [correo, setCorreo] = useState("");
+  const [correoDos, setCorreoDos] = useState("");
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [nombreCompleto, setNombreCompleto] = useState("");
   const [numeroTelefono, setNumeroTelefono] = useState("");
@@ -29,6 +30,17 @@ export default function EditarUsuarioPage() {
     setLoading(true);
 
     try {
+
+      if (correo && correoDos && correo.trim() !== correoDos.trim()) {
+        throw new Error("Los correos no coinciden.");
+      }
+
+      const isMailValid = /^\S+@\S+\.\S+$/.test(correo.trim());
+
+      if (!isMailValid) {
+        throw new Error("El formato del correo no es válido.");
+      }
+      
       const data = await editarRequest({
         correo: correo.trim(),
         nombreUsuario,
@@ -86,6 +98,37 @@ export default function EditarUsuarioPage() {
               }
               className={styles.input}
             />
+            <div className={styles.guidelines}>
+              <p>Requisitos del correo:</p>
+              <ul>
+                <li>Debe ser formato ejemplo@dominio.com</li>
+                <li>No debe tener espacios</li>
+                <li>Debe ser un correo real</li>
+              </ul>
+            </div>
+            
+          </div>
+
+          <div className={styles.field}>
+            <label
+              htmlFor="correo"
+              className={styles.label}
+            >
+              confirme su correo
+            </label>
+
+            <input
+              id="correo"
+              name="correo"
+              type="email"
+              autoComplete="email"
+              value={correoDos}
+              onChange={(e) =>
+                setCorreoDos(e.target.value)
+              }
+              className={styles.input}
+            />
+            
           </div>
 
           <div className={styles.field}>
