@@ -1,28 +1,85 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
-import { publicacionesDestacadas } from "@/lib/mockPublicaciones";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import RemoteImage from "@/components/RemoteImage";
+import {
+  CATEGORIA_IDS,
+  CONDICIONES_OBJETO,
+  categoriaIdToEnum,
+  type CondicionObjeto,
+} from "@/constants/publicacionesBackend";
+import {
+  editarPublicacionRequest,
+  obtenerPublicacionRequest,
+  subirImagenPublicacionRequest,
+} from "@/lib/publicaciones";
 import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
 
 export default function EditarPublicacionPage() {
   const params = useParams<{ idPublicacion: string }>();
-
-  const publicacion = useMemo(
-    () => publicacionesDestacadas.find((item) => item.idPublicacion === params.idPublicacion),
-    [params.idPublicacion],
-  );
+  const router = useRouter();
 
   const [form, setForm] = useState({
-    titulo: publicacion?.tituloPublicacion ?? "",
-    descripcion: publicacion?.descripcionPublicacion ?? "",
-    categoria: (publicacion?.categoria as CategoriaPublicacion) ?? CategoriaPublicacion.INDUMENTARIA,
-    zonaRetiro: publicacion?.zonaRetiro ?? "",
+    titulo: "",
+    descripcion: "",
+    categoria: CategoriaPublicacion.INDUMENTARIA,
+    condicion: "USADO_BUENO" as CondicionObjeto,
+    imagenUrl: "",
   });
-  const [imagenPreview, setImagenPreview] = useState<string>(publicacion?.urlFoto ?? "");
+  const [imagenPreview, setImagenPreview] = useState<string>("");
   const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+  const [noEncontrada, setNoEncontrada] = useState(false);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarPublicacion() {
+      setCargando(true);
+      setError("");
+      setNoEncontrada(false);
+
+      try {
+        const publicacion = await obtenerPublicacionRequest(params.idPublicacion);
+
+        if (!activo) return;
+
+        setForm({
+          titulo: publicacion.titulo,
+          descripcion: publicacion.descripcion,
+          categoria: categoriaIdToEnum(publicacion.categoriaId),
+          condicion: publicacion.condicion as CondicionObjeto,
+          imagenUrl: publicacion.imagenUrl,
+        });
+        setImagenPreview(publicacion.imagenUrl);
+      } catch (err) {
+        if (!activo) return;
+
+        const mensaje =
+          err instanceof Error ? err.message : "No se pudo cargar la publicación.";
+
+        if (mensaje.toLowerCase().includes("404")) {
+          setNoEncontrada(true);
+        } else {
+          setError(mensaje);
+        }
+      } finally {
+        if (activo) {
+          setCargando(false);
+        }
+      }
+    }
+
+    cargarPublicacion();
+
+    return () => {
+      activo = false;
+    };
+  }, [params.idPublicacion]);
 
   const manejarArchivo = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -34,24 +91,39 @@ export default function EditarPublicacionPage() {
     reader.readAsDataURL(file);
   };
 
-  const guardar = (event: React.FormEvent<HTMLFormElement>) => {
+  const guardar = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError("");
+    setGuardando(true);
 
-    const formData = new FormData();
-    formData.append("titulo", form.titulo);
-    formData.append("descripcion", form.descripcion);
-    formData.append("categoria", form.categoria);
-    formData.append("zonaRetiro", form.zonaRetiro);
+    try {
+      let imagenUrl = form.imagenUrl.trim();
 
-    if (archivoImagen) {
-      formData.append("imagen", archivoImagen);
+      if (archivoImagen) {
+        imagenUrl = await subirImagenPublicacionRequest(archivoImagen);
+      }
+
+      await editarPublicacionRequest(params.idPublicacion, {
+        titulo: form.titulo.trim(),
+        descripcion: form.descripcion.trim(),
+        categoriaId: CATEGORIA_IDS[form.categoria],
+        condicion: form.condicion,
+        ...(imagenUrl ? { imagenUrl } : {}),
+      });
+
+      router.push(`/publicaciones/publicacion/${params.idPublicacion}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo editar la publicación.");
+    } finally {
+      setGuardando(false);
     }
-
-    console.log("Editar publicación (FormData)", Object.fromEntries(formData.entries()));
-    alert("Formulario de edición preparado para subir archivos al backend.");
   };
 
-  if (!publicacion) {
+  if (cargando) {
+    return <main style={{ padding: "2rem" }}>Cargando publicación...</main>;
+  }
+
+  if (noEncontrada) {
     return <main style={{ padding: "2rem" }}>Publicación no encontrada.</main>;
   }
 
@@ -59,25 +131,44 @@ export default function EditarPublicacionPage() {
     <main style={{ padding: "2rem", maxWidth: 760, margin: "0 auto" }}>
       <h1>Editar publicación</h1>
       <p style={{ color: "#4b5563", marginBottom: "1rem" }}>
-        Este paso queda preparado para enlazar con la API real cuando el backend esté disponible.
+        Los cambios se guardan en el backend. Tenés que ser el creador de la publicación.
       </p>
+
+      {error ? (
+        <p style={{ color: "#dc2626", marginBottom: "1rem" }}>{error}</p>
+      ) : null}
 
       <form onSubmit={guardar} style={{ display: "grid", gap: "0.9rem" }}>
         <label style={{ display: "grid", gap: "0.25rem" }}>
           Título
-          <input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} style={inputStyle} />
+          <input
+            value={form.titulo}
+            onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+            style={inputStyle}
+            minLength={3}
+            required
+          />
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
           Descripción
-          <textarea value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} rows={4} style={inputStyle} />
+          <textarea
+            value={form.descripcion}
+            onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+            rows={4}
+            style={inputStyle}
+            minLength={10}
+            required
+          />
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
           Categoría
           <select
             value={form.categoria}
-            onChange={(e) => setForm({ ...form, categoria: e.target.value as CategoriaPublicacion })}
+            onChange={(e) =>
+              setForm({ ...form, categoria: e.target.value as CategoriaPublicacion })
+            }
             style={inputStyle}
           >
             {Object.values(CategoriaPublicacion).map((categoria) => (
@@ -89,17 +180,63 @@ export default function EditarPublicacionPage() {
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
-          Zona de retiro
-          <input value={form.zonaRetiro} onChange={(e) => setForm({ ...form, zonaRetiro: e.target.value })} style={inputStyle} />
+          Condición del objeto
+          <select
+            value={form.condicion}
+            onChange={(e) =>
+              setForm({ ...form, condicion: e.target.value as CondicionObjeto })
+            }
+            style={inputStyle}
+          >
+            {CONDICIONES_OBJETO.map((condicion) => (
+              <option key={condicion.value} value={condicion.value}>
+                {condicion.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
-          Foto de la publicación
+          URL de imagen (opcional si subís un archivo)
+          <input
+            value={form.imagenUrl}
+            onChange={(e) => {
+              setForm({ ...form, imagenUrl: e.target.value });
+              setImagenPreview(e.target.value);
+              setArchivoImagen(null);
+            }}
+            style={inputStyle}
+            placeholder="https://..."
+          />
+        </label>
+
+        <label style={{ display: "grid", gap: "0.25rem" }}>
+          Subir nueva imagen
           <input type="file" accept="image/*" onChange={manejarArchivo} style={inputStyle} />
         </label>
 
         {imagenPreview ? (
-          <Image src={imagenPreview} alt="Vista previa" width={320} height={220} style={{ width: "100%", maxWidth: 320, borderRadius: "1rem", objectFit: "cover" }} />
+          imagenPreview.startsWith("data:") ? (
+            <img
+              src={imagenPreview}
+              alt="Vista previa"
+              style={{
+                width: "100%",
+                maxWidth: 320,
+                borderRadius: "1rem",
+                objectFit: "cover",
+              }}
+            />
+          ) : (
+            <div style={{ position: "relative", width: 320, height: 220 }}>
+              <RemoteImage
+                src={imagenPreview}
+                alt="Vista previa"
+                fill
+                loading="eager"
+              />
+            </div>
+          )
         ) : null}
 
         <div style={actionsStyle}>
@@ -109,7 +246,9 @@ export default function EditarPublicacionPage() {
           >
             Salir
           </Link>
-          <button type="submit" style={buttonStyle}>Guardar cambios</button>
+          <button type="submit" style={buttonStyle} disabled={guardando}>
+            {guardando ? "Guardando..." : "Guardar cambios"}
+          </button>
         </div>
       </form>
     </main>

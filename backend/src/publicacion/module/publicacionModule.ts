@@ -5,6 +5,7 @@ import { PublicacionRepository } from '../repository/publicacionRepository';
 import { PublicacionService } from '../service/publicacionService';
 import { UsuarioModule } from '../../usuario/module/usuarioModule';
 import { PublicacionController } from '../controller/publicacionController';
+
 @Module({
   imports: [TypeOrmModule.forFeature([Publicacion]), UsuarioModule],
   controllers: [PublicacionController],

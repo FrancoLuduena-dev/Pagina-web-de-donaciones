@@ -2,18 +2,30 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  CATEGORIA_IDS,
+  CONDICIONES_OBJETO,
+  LOCALIDAD_ID_DEFAULT,
+  type CondicionObjeto,
+} from "@/constants/publicacionesBackend";
+import { crearPublicacionRequest, subirImagenPublicacionRequest } from "@/lib/publicaciones";
 import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
 
 export default function CrearPublicacionPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
     titulo: "",
     descripcion: "",
     categoria: CategoriaPublicacion.INDUMENTARIA,
-    zonaRetiro: "",
+    condicion: "USADO_BUENO" as CondicionObjeto,
+    imagenUrl: "",
   });
   const [imagenPreview, setImagenPreview] = useState<string>("");
   const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+  const [error, setError] = useState("");
+  const [guardando, setGuardando] = useState(false);
 
   const manejarArchivo = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -25,46 +37,81 @@ export default function CrearPublicacionPage() {
     reader.readAsDataURL(file);
   };
 
-  const guardar = (event: React.FormEvent<HTMLFormElement>) => {
+  const guardar = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError("");
+    setGuardando(true);
 
-    const formData = new FormData();
-    formData.append("titulo", form.titulo);
-    formData.append("descripcion", form.descripcion);
-    formData.append("categoria", form.categoria);
-    formData.append("zonaRetiro", form.zonaRetiro);
+    try {
+      let imagenUrl = form.imagenUrl.trim();
 
-    if (archivoImagen) {
-      formData.append("imagen", archivoImagen);
+      if (archivoImagen) {
+        imagenUrl = await subirImagenPublicacionRequest(archivoImagen);
+      }
+
+      if (!imagenUrl) {
+        throw new Error("Subí una imagen o ingresá una URL de imagen.");
+      }
+
+      const creada = await crearPublicacionRequest({
+        titulo: form.titulo.trim(),
+        descripcion: form.descripcion.trim(),
+        categoriaId: CATEGORIA_IDS[form.categoria],
+        localidadId: LOCALIDAD_ID_DEFAULT,
+        condicion: form.condicion,
+        imagenUrl,
+      });
+
+      router.push(`/publicaciones/publicacion/${creada.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear la publicación.");
+    } finally {
+      setGuardando(false);
     }
-
-    console.log("Crear publicación (FormData)", Object.fromEntries(formData.entries()));
-    alert("Formulario de creación preparado para subir archivos al backend.");
   };
 
   return (
     <main style={{ padding: "2rem", maxWidth: 760, margin: "0 auto" }}>
       <h1>Crear publicación</h1>
       <p style={{ color: "#4b5563", marginBottom: "1rem" }}>
-        Este primer paso queda preparado para integrar el POST real cuando el backend esté listo.
+        La publicación se guarda en el backend. Tenés que estar logueado.
       </p>
+
+      {error ? (
+        <p style={{ color: "#dc2626", marginBottom: "1rem" }}>{error}</p>
+      ) : null}
 
       <form onSubmit={guardar} style={{ display: "grid", gap: "0.9rem" }}>
         <label style={{ display: "grid", gap: "0.25rem" }}>
           Título
-          <input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} style={inputStyle} />
+          <input
+            value={form.titulo}
+            onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+            style={inputStyle}
+            minLength={10}
+            required
+          />
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
           Descripción
-          <textarea value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} rows={4} style={inputStyle} />
+          <textarea
+            value={form.descripcion}
+            onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+            rows={4}
+            style={inputStyle}
+            minLength={20}
+            required
+          />
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
           Categoría
           <select
             value={form.categoria}
-            onChange={(e) => setForm({ ...form, categoria: e.target.value as CategoriaPublicacion })}
+            onChange={(e) =>
+              setForm({ ...form, categoria: e.target.value as CategoriaPublicacion })
+            }
             style={inputStyle}
           >
             {Object.values(CategoriaPublicacion).map((categoria) => (
@@ -76,24 +123,59 @@ export default function CrearPublicacionPage() {
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
-          Zona de retiro
-          <input value={form.zonaRetiro} onChange={(e) => setForm({ ...form, zonaRetiro: e.target.value })} style={inputStyle} />
+          Condición del objeto
+          <select
+            value={form.condicion}
+            onChange={(e) =>
+              setForm({ ...form, condicion: e.target.value as CondicionObjeto })
+            }
+            style={inputStyle}
+          >
+            {CONDICIONES_OBJETO.map((condicion) => (
+              <option key={condicion.value} value={condicion.value}>
+                {condicion.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
-          Foto de la publicación
+          URL de imagen (opcional si subís un archivo)
+          <input
+            value={form.imagenUrl}
+            onChange={(e) => setForm({ ...form, imagenUrl: e.target.value })}
+            style={inputStyle}
+            placeholder="https://..."
+          />
+        </label>
+
+        <label style={{ display: "grid", gap: "0.25rem" }}>
+          Subir imagen
           <input type="file" accept="image/*" onChange={manejarArchivo} style={inputStyle} />
         </label>
 
         {imagenPreview ? (
-          <Image src={imagenPreview} alt="Vista previa" width={320} height={220} style={{ width: "100%", maxWidth: 320, borderRadius: "1rem", objectFit: "cover" }} />
+          <Image
+            src={imagenPreview}
+            alt="Vista previa"
+            width={320}
+            height={220}
+            style={{
+              width: "100%",
+              maxWidth: 320,
+              borderRadius: "1rem",
+              objectFit: "cover",
+            }}
+          />
         ) : null}
 
         <div style={actionsStyle}>
           <Link href="/publicaciones" style={exitButtonStyle}>
             Salir
           </Link>
-          <button type="submit" style={buttonStyle}>Publicar</button>
+          <button type="submit" style={buttonStyle} disabled={guardando}>
+            {guardando ? "Publicando..." : "Publicar"}
+          </button>
         </div>
       </form>
     </main>

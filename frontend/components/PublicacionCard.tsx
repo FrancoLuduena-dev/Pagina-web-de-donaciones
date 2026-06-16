@@ -1,5 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
+
+import RemoteImage from "@/components/RemoteImage";
 
 import {
   labelCategoria,
@@ -37,12 +38,11 @@ export default function PublicacionCard({
     <article className={styles.card}>
       <div className={styles.imageWrapper}>
         {urlFoto ? (
-          <Image
+          <RemoteImage
             src={urlFoto}
             alt={tituloPublicacion}
             fill
             className={styles.image}
-            sizes="(max-width: 768px) 100vw, 280px"
           />
         ) : (
           <div className={styles.imagePlaceholder} aria-hidden>

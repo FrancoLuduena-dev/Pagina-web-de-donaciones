@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -9,10 +10,17 @@ import {
   Query,
   Delete,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { Request } from 'express';
 import { PublicacionService } from '../service/publicacionService';
+import {
+  buildPublicacionImagenUrl,
+  publicacionUploadMulterOptions,
+} from '../service/publicacionUploadService';
 import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
@@ -31,6 +39,19 @@ interface RequestConUsuario extends Request {
 @Controller('publicaciones')
 export class PublicacionController {
   constructor(private readonly publicacionService: PublicacionService) {}
+
+  @UseGuards(AuthGuard)
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('imagen', publicacionUploadMulterOptions))
+  subirImagen(
+    @UploadedFile() file: Express.Multer.File,
+  ): { imagenUrl: string } {
+    if (!file) {
+      throw new BadRequestException('No se recibió ninguna imagen');
+    }
+
+    return { imagenUrl: buildPublicacionImagenUrl(file.filename) };
+  }
 
   @UseGuards(AuthGuard)
   @Post()

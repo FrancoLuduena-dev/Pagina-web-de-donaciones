@@ -31,7 +31,7 @@ export class CrearPublicacionDto {
   @IsEnum(CondicionObjeto)
   condicion!: CondicionObjeto;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsNotEmpty()
   imagenUrl!: string;
 }

@@ -32,6 +32,6 @@ export class EditarPublicacionDto {
   condicion?: CondicionObjeto;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   imagenUrl?: string;
 }
