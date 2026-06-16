@@ -116,7 +116,7 @@ export default class UsuarioService {
 
       if (existeUser) {
         throw new ConflictException(
-          'El nombre de usuario ya existe en la base de datos',
+          'El nombre de usuario ya esta registrado en la base de datos',
         );
       }
     }

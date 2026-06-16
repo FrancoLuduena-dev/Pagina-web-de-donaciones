@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, use, useState } from "react";
-import { registerRequest, persistSession } from "@/lib/auth";
+import { FormEvent, useState } from "react";
+import { registerRequest } from "@/lib/auth";
 import styles from "./register.module.css"
 
 
