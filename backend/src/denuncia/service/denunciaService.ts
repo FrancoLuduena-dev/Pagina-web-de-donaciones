@@ -8,12 +8,13 @@ import {
 
 import { PublicacionService } from '../../publicacion/service/publicacionService';
 import { rolUsuario } from '../../usuario/enums/rolUsuario';
+import UsuarioService from '../../usuario/service/usuarioService';
 
 import { CrearDenunciaDto } from '../dtos/crearDenunciaDto';
 import { DenunciaDetalleResponseDto } from '../dtos/denunciaDetalleResponseDto';
 import { DenunciaResponseDto } from '../dtos/denunciaResponseDto';
 import { FiltroDenunciaDto } from '../dtos/filtroDenunciaDto';
-import { ResolverDenunciaDto } from '../dtos/ResolverDenunciaDto';
+import { ResolverDenunciaDto } from '../dtos/resolverDenunciaDto';
 import { TomarDenunciaDto } from '../dtos/tomarDenunciaDto';
 
 import { EstadoDenuncia } from '../enums/estadoDenuncia';
@@ -27,6 +28,7 @@ export class DenunciaService {
   constructor(
     private readonly denunciaRepository: DenunciaRepository,
     private readonly publicacionService: PublicacionService,
+    private readonly usuarioService: UsuarioService,
   ) {}
 
   async crearDenuncia(
@@ -139,7 +141,9 @@ export class DenunciaService {
     await this.ejecutarAccionResolucion(
       dto.tipoResolucion,
       denuncia.publicacionId,
+      denuncia.creadorPublicacionId,
       moderadorId,
+      dto.detalleResolucion,
     );
 
     if (!denuncia.moderadorAsignadoId) {
@@ -167,7 +171,9 @@ export class DenunciaService {
   private async ejecutarAccionResolucion(
     tipoResolucion: TipoResolucion,
     publicacionId: string,
+    creadorPublicacionId: string,
     moderadorId: string,
+    detalleResolucion: string,
   ): Promise<void> {
     switch (tipoResolucion) {
       case TipoResolucion.DESCARTADA:
@@ -190,7 +196,14 @@ export class DenunciaService {
         return;
 
       case TipoResolucion.USUARIO_BLOQUEADO:
-        throw new BadRequestException('RESOLUCION_TODAVIA_NO_IMPLEMENTADA');
+        await this.usuarioService.BloquearUsuario(
+          creadorPublicacionId,
+          moderadorId,
+          {
+            razonBloqueo: detalleResolucion,
+          },
+        );
+        return;
 
       default:
         throw new BadRequestException('TIPO_RESOLUCION_INVALIDO');

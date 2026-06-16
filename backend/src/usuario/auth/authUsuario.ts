@@ -30,9 +30,7 @@ export default class autenticacionUsuario {
   }
 
   public async logearUsuario(datos: logearUsuarioDTO): Promise<string> {
-    const usuario = await this.service.ObtenerUsuarioPorCorreo(
-      datos.correo,
-    );
+    const usuario = await this.service.ObtenerUsuarioPorCorreo(datos.correo);
 
     if (!usuario) {
       throw new UnauthorizedException('Correo o contrasenia incorrectos');
@@ -66,7 +64,11 @@ export default class autenticacionUsuario {
 
   public async validarToken(token: string): Promise<Usuario> {
     try {
-      const decoded = verify(token, JWT_SECRET) as { id: string };
+      const decoded = verify(token, JWT_SECRET) as {
+        id: string;
+        correo: string;
+        rol: string;
+      };
 
       const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
 
@@ -75,7 +77,11 @@ export default class autenticacionUsuario {
       }
 
       return usuario;
-    } catch {
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+
       throw new UnauthorizedException('Token inválido');
     }
   }

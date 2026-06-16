@@ -6,16 +6,20 @@ import {
 } from '@nestjs/common';
 
 import { Request } from 'express';
-import * as jwt from 'jsonwebtoken';
-import Usuario_Service from '../service/usuarioService';
-import { JWT_SECRET } from './authConstants';
+
+import Usuario from '../entity/usuarioEntity';
+import autenticacionUsuario from './authUsuario';
+
+type RequestConUsuario = Request & {
+  user?: Usuario;
+};
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly service: Usuario_Service) {}
+  constructor(private readonly authUsuario: autenticacionUsuario) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<RequestConUsuario>();
 
     const authHeader = request.headers.authorization;
 
@@ -25,28 +29,10 @@ export class AuthGuard implements CanActivate {
 
     const token = authHeader.replace('Bearer ', '').trim();
 
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as {
-        id: string;
-        correo: string;
-        rol: string;
-      };
+    const usuario = await this.authUsuario.validarToken(token);
 
-      const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
+    request.user = usuario;
 
-      if (!usuario) {
-        throw new UnauthorizedException('Usuario no encontrado');
-      }
-
-      const requestWithUser = request as Request & {
-        user?: unknown;
-      };
-
-      requestWithUser.user = usuario;
-
-      return true;
-    } catch {
-      throw new UnauthorizedException('Token inválido');
-    }
+    return true;
   }
 }
