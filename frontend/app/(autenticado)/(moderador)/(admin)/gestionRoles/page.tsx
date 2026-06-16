@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
-import styles from "./moderacion.module.css";
+import styles from "./gestionRoles.module.css";
 import { RolUsuario } from "@/types/RolUsuario";
 import BuscadorUsuario from "@/components/moderacion/buscadorUsuario/Buscadorusuario";
 
@@ -49,18 +49,21 @@ export default function ModeracionPage() {
 
       /* Conexion real entre front y back */
 
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
 
-      const respuesta = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/usuario/nombre/${nombreUsuario}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const respuesta = await fetch(`/api/usuarios/buscar/${nombreUsuario}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       if (!respuesta.ok) {
+        console.log("STATUS:", respuesta.status);
+
+        const texto = await respuesta.text();
+
+        console.log("BODY:", texto);
+
         throw new Error();
       }
 
@@ -68,7 +71,6 @@ export default function ModeracionPage() {
 
       setUsuario(datos);
       setRolSeleccionado(datos.rol);
-      
     } catch (error) {
       console.error(error);
 
@@ -86,25 +88,40 @@ export default function ModeracionPage() {
     }
 
     try {
-      /*  
-      Conexion real cuando este conectado front y back*/
+      
+      const token = localStorage.getItem("access_token");
 
-      const token = localStorage.getItem("token");
-
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/usuario/${usuario.id}/rol`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            rol: rolSeleccionado,
-          }),
+      const respuesta = await fetch(`/api/usuarios/${usuario.id}/rol`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      );
-      /**/
+        body: JSON.stringify({
+          rol: rolSeleccionado,
+        }),
+      });
+
+      // TEST_DESCOMENTAR
+      /* 
+      if (!respuesta.ok) {
+        throw new Error("No se pudo actualizar el rol");
+      }
+      */
+      // END_TEST_DESCOMENTAR
+
+
+      // MOCK_BORRAR
+      if (!respuesta.ok) {
+        console.log("STATUS:", respuesta.status);
+
+        const texto = await respuesta.text();
+
+        console.log("BODY:", texto);
+
+        throw new Error("No se pudo actualizar el rol");
+      }
+      // END_MOCK_BORRAR
 
       setUsuario({
         ...usuario,

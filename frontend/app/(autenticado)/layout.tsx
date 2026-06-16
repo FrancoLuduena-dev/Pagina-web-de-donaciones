@@ -1,32 +1,25 @@
-// TEST_DESCOMENTAR
-/* 
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+"use client";
 
-export default async function LayoutAutenticado({
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function LayoutAutenticado({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token');
+  
+  const router = useRouter();
 
-  if (!token) {
-    redirect('/login');
-  }
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+
+    console.log("TOKEN IN LAYOUT:", token);
+
+    if (!token) {
+      router.replace("/login");
+    }
+  }, [router]);
 
   return <>{children}</>;
-} */
-
-// END_TEST_DESCOMENTAR
-
-//MOCK_BORRAR
-export default function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return children;
 }
-
-//END_MOCK_BORRAR

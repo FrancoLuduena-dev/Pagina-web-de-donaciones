@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import estilos from "./MenuUsuario.module.css";
 import { RolUsuario } from "@/types/RolUsuario";
 
@@ -14,29 +16,23 @@ interface UsuarioNavbar {
 }
 
 export default function MenuUsuario() {
+  const router = useRouter();
+
   const [abierto, setAbierto] = useState(false);
+  const [usuario, setUsuario] = useState<UsuarioNavbar | null>(null);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
   // MOCK_BORRAR
-  const usuario: UsuarioNavbar = {
-    id: "1",
-    nombreUsuario: "Marcelo",
-    correo: "marcelo@gmail.com",
-    // Cambiar para probar menú de usuario
-    rol: RolUsuario.usuarioAdministrador,
-
-    // rol: RolUsuario.usuarioModerador,
-    // rol: RolUsuario.usuarioAdministrador,
-
-    // END_MOCK_BORRAR
-  };
-
   const cantidadNotificaciones = 3;
+  // END_MOCK_BORRAR
 
   useEffect(() => {
     const cerrarMenu = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
         setAbierto(false);
       }
     };
@@ -44,155 +40,210 @@ export default function MenuUsuario() {
     document.addEventListener("mousedown", cerrarMenu);
 
     return () => {
-      document.removeEventListener("mousedown", cerrarMenu);
+      document.removeEventListener(
+        "mousedown",
+        cerrarMenu
+      );
     };
   }, []);
-
-  /*
-  const [usuario, setUsuario] = useState<UsuarioNavbar | null>(null);
-  const [cantidadNotificaciones, setCantidadNotificaciones] = useState(0);
 
   useEffect(() => {
     const cargarUsuario = async () => {
-      const token = localStorage.getItem('token');
+      try {
+        const token =
+          localStorage.getItem("access_token");
 
-      const respuesta = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/usuario/me`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+        if (!token) {
+          router.push("/login");
+          return;
+        }
 
-      const datos = await respuesta.json();
+        const respuesta = await fetch(
+          "/api/auth/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      setUsuario(datos);
+        if (!respuesta.ok) {
+          throw new Error(
+            "No se pudo obtener el usuario"
+          );
+        }
+
+        const datos = await respuesta.json();
+
+        setUsuario({
+          id: datos.id,
+          nombreUsuario: datos.nombreUsuario,
+          correo: datos.correo,
+          rol: datos.rol,
+        });
+      } catch (error) {
+        console.error(error);
+      }
     };
 
     cargarUsuario();
-  }, []);
-  */
+  }, [router]);
 
-  /*
-  useEffect(() => {
-    const cargarNotificaciones = async () => {
-      const token = localStorage.getItem('token');
+  const cerrarSesion = () => {
+    localStorage.removeItem("access_token");
 
-      const respuesta = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/notificaciones`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+    router.push("/login");
+  };
 
-      const datos = await respuesta.json();
-
-      const sinLeer = datos.filter(
-        (notificacion: any) => !notificacion.leida,
-      ).length;
-
-      setCantidadNotificaciones(sinLeer);
-    };
-
-    cargarNotificaciones();
-  }, []);
-  */
+  if (!usuario) {
+    return null;
+  }
 
   return (
-    <div className={estilos.menuUsuario} ref={menuRef}>
+    <div
+      className={estilos.menuUsuario}
+      ref={menuRef}
+    >
       <button
         type="button"
         className={estilos.menuUsuarioBoton}
         onClick={() => setAbierto(!abierto)}
       >
         <div className={estilos.menuUsuarioAvatar}>
-          {usuario.nombreUsuario.charAt(0).toUpperCase()}
+          {usuario.nombreUsuario
+            .charAt(0)
+            .toUpperCase()}
         </div>
 
-        <span className={estilos.menuUsuarioNombre}>
+        <span
+          className={estilos.menuUsuarioNombre}
+        >
           {usuario.nombreUsuario}
         </span>
 
         {cantidadNotificaciones > 0 && (
-          <span className={estilos.menuUsuarioBadge}>
+          <span
+            className={estilos.menuUsuarioBadge}
+          >
             {cantidadNotificaciones}
           </span>
         )}
 
-        <span className={estilos.menuUsuarioFlecha}>▼</span>
+        <span
+          className={estilos.menuUsuarioFlecha}
+        >
+          ▼
+        </span>
       </button>
 
       {abierto && (
-        <div className={estilos.menuUsuarioDropdown}>
-          <div className={estilos.menuUsuarioHeader}>
-            <strong>{usuario.nombreUsuario}</strong>
+        <div
+          className={
+            estilos.menuUsuarioDropdown
+          }
+        >
+          <div
+            className={
+              estilos.menuUsuarioHeader
+            }
+          >
+            <strong>
+              {usuario.nombreUsuario}
+            </strong>
+
             <span>{usuario.correo}</span>
           </div>
 
-          {usuario.rol === RolUsuario.usuarioNormal && (
-            <Link href="/usuario" className={estilos.menuUsuarioItem}>
-              Panel de usuario
-            </Link>
-          )}
-
-          {usuario.rol === RolUsuario.usuarioNormal && (
+          {usuario.rol ===
+            RolUsuario.usuarioNormal && (
             <>
               <Link
+                href="/usuario"
+                className={
+                  estilos.menuUsuarioItem
+                }
+              >
+                Panel de usuario
+              </Link>
+
+              <Link
                 href="/mis_publicaciones"
-                className={estilos.menuUsuarioItem}
+                className={
+                  estilos.menuUsuarioItem
+                }
               >
                 Mis publicaciones
               </Link>
 
-              <Link href="/notificaciones" className={estilos.menuUsuarioItem}>
+              <Link
+                href="/notificaciones"
+                className={
+                  estilos.menuUsuarioItem
+                }
+              >
                 <span>Notificaciones</span>
 
-                {cantidadNotificaciones > 0 && (
-                  <span className={estilos.menuUsuarioItemBadge}>
-                    {cantidadNotificaciones}
+                {cantidadNotificaciones >
+                  0 && (
+                  <span
+                    className={
+                      estilos.menuUsuarioItemBadge
+                    }
+                  >
+                    {
+                      cantidadNotificaciones
+                    }
                   </span>
                 )}
               </Link>
             </>
           )}
 
-          {usuario.rol === RolUsuario.usuarioAdministrador && (
-            <Link href="/moderacion" className={estilos.menuUsuarioItem}>
-              Moderación
-            </Link>
-          )}
 
-          {usuario.rol !== RolUsuario.usuarioNormal && (
-            <Link href="/denuncias" className={estilos.menuUsuarioItem}>
+          {(usuario.rol ===
+            RolUsuario.usuarioModerador ||
+            usuario.rol ===
+              RolUsuario.usuarioAdministrador) && (
+            <Link
+              href="/denuncias"
+              className={
+                estilos.menuUsuarioItem
+              }
+            >
               Denuncias
             </Link>
           )}
 
-          <Link href="/configuracion" className={estilos.menuUsuarioItem}>
-            Configuración
+          
+          {usuario.rol ===
+            RolUsuario.usuarioAdministrador && (
+            <Link
+              href="/gestionRoles"
+              className={
+                estilos.menuUsuarioItem
+              }
+            >
+              Gestión de roles de usuario
+            </Link>
+          )}
+
+          <Link
+            href="/usuario/editar"
+            className={
+              estilos.menuUsuarioItem
+            }
+          >
+            Editar Perfil
           </Link>
-          <button type="button" className={estilos.menuUsuarioLogout}>
+
+          <button
+            type="button"
+            className={
+              estilos.menuUsuarioLogout
+            }
+            onClick={cerrarSesion}
+          >
             Cerrar sesión
-            {/*
-            const token = localStorage.getItem('token');
-
-            await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/logout`,
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              },
-            );
-
-            localStorage.removeItem('token');
-
-            router.push('/');
-            */}
           </button>
         </div>
       )}

@@ -1,12 +1,11 @@
+
+
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 // Pagina raiz.
 // Decide si enviar al usuario a la landing publica o a la aplicacion cuando exista autenticacion.
-export default function HomePage() {
-  /* CONEXION REAL CUANDO ESTE CONECTADO FRONT Y BACK
-
-  import { cookies } from "next/headers";
-
+export default async function HomePage() {
   const cookieStore = await cookies();
 
   const token = cookieStore.get("token");
@@ -34,16 +33,4 @@ export default function HomePage() {
 
   // Usuario autenticado
   redirect("/publicaciones");
-
-  */
-
-  // MOCK_BORRAR
-  const autenticado = true;
-  // END_MOCK_BORRAR
-
-  if (autenticado) {
-    redirect("/publicaciones");
-  }
-
-  redirect("/inicio");
 }
