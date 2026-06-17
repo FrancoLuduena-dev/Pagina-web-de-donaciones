@@ -1,0 +1,1 @@
+export const tituloPagina = "Pagina de   Donaciones";

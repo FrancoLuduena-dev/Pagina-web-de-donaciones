@@ -1,0 +1,9 @@
+{
+  "entryPoints": [
+    "./app",
+    "./components",
+    "./constants"
+  ],
+  "entryPointStrategy": "expand",
+  "out": "./docs"
+}

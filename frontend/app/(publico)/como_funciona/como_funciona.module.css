@@ -1,0 +1,28 @@
+.main {
+  display: flex;
+  justify-content: center;
+
+  padding: 4rem 1rem;
+
+  background-color: var(--color-fondo);
+}
+
+.container {
+  width: 100%;
+  max-width: 48rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  text-align: center;
+  line-height: 1.7;
+
+  color: var(--color-texto-secundario);
+}
