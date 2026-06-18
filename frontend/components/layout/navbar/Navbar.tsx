@@ -9,7 +9,7 @@ export default function Navbar() {
   return (
     <nav className={styles.navbar}>
       <div className={styles.logo}>
-        <Link href="/">{tituloPagina}</Link>
+        <p>{tituloPagina}</p>
       </div>
 
       <div className={styles.links}>

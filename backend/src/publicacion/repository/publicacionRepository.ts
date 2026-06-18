@@ -30,13 +30,14 @@ export class PublicacionRepository {
   }
 
   listarPublico(filtros: FiltrosPublicacionDto): Promise<Publicacion[]> {
-    const { q } = filtros;
+    const { q, categoriaId } = filtros;
 
     if (!q) {
       return this.repository.find({
         where: {
           estado: EstadoPublicacion.DISPONIBLE,
           deletedAt: IsNull(),
+          ...(categoriaId ? { categoriaId } : {}),
         },
         order: {
           createdAt: 'DESC',
@@ -49,11 +50,13 @@ export class PublicacionRepository {
         {
           estado: EstadoPublicacion.DISPONIBLE,
           deletedAt: IsNull(),
+          ...(categoriaId ? { categoriaId } : {}),
           titulo: ILike(`%${q}%`),
         },
         {
           estado: EstadoPublicacion.DISPONIBLE,
           deletedAt: IsNull(),
+          ...(categoriaId ? { categoriaId } : {}),
           descripcion: ILike(`%${q}%`),
         },
       ],

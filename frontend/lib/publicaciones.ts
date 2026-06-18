@@ -148,8 +148,39 @@ export async function obtenerPublicacionPorId(
   return res.json();
 }
 
-export async function listarPublicacionesDesdeBackend(): Promise<PublicacionBackend[]> {
-  const res = await fetch(`${backendBase}/publicaciones`, {
+export async function listarPublicacionesDesdeBackend(
+  categoriaId?: string,
+  // TEST_DESCOMENTAR
+  /*
+  condicion?: string,
+  estado?: string,
+  */
+  // END_TEST_DESCOMENTAR
+): Promise<PublicacionBackend[]> {
+  const params = new URLSearchParams();
+
+  if (categoriaId) {
+    params.append("categoriaId", categoriaId);
+  }
+
+  // TEST_DESCOMENTAR
+  /*
+  if (condicion) {
+    params.append("condicion", condicion);
+  }
+
+  if (estado) {
+    params.append("estado", estado);
+  }
+  */
+  // END_TEST_DESCOMENTAR
+
+  const url =
+    params.toString().length > 0
+      ? `${backendBase}/publicaciones?${params.toString()}`
+      : `${backendBase}/publicaciones`;
+
+  const res = await fetch(url, {
     cache: "no-store",
   });
 

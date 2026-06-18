@@ -122,6 +122,22 @@
   display: none;
 }
 
+.filaFiltro {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  gap: 0.5rem;
+}
+
+.labelFiltro {
+  font-size: 0.9rem;
+  color: var(--color-texto-secundario);
+}
+
+.selectFiltro {
+  flex: 1;
+}
+
 /*media query para celular*/
 @media screen and (max-width: 480px) {
   .sidebar {

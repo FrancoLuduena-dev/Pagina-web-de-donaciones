@@ -176,12 +176,12 @@ export default function MenuUsuario() {
               </Link>
 
               <Link
-                href="/notificaciones"
+                href="/usuario/solicitudes"
                 className={
                   estilos.menuUsuarioItem
                 }
               >
-                <span>Notificaciones</span>
+                <span>Mis Solicitudes</span>
 
                 {cantidadNotificaciones >
                   0 && (
