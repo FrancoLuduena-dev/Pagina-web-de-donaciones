@@ -36,7 +36,6 @@ export default class UsuarioService {
         validar formato de correo
 
         */
-
     const existeCorreo = await this.repo.buscarPorEmail(usuario.correo);
 
     if (existeCorreo) {
@@ -51,7 +50,6 @@ export default class UsuarioService {
 
     return this.repo.crearUsuario(usuario);
   }
-
   public async EliminarUsuario(
     idUsuario: string,
     contrasenia: string,
@@ -96,14 +94,12 @@ export default class UsuarioService {
     idUsuario: string,
     datos: actualizarUsuarioDTO,
   ): Promise<void> {
-    /*
-    validar que el usuario exista
-    validar que el correo sea unico si se esta actualizando
-    validar que el nombre de usuario sea unico si se esta actualizando
-
-    */
 
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
+
+    const datosFiltrados = Object.fromEntries(
+      Object.entries(datos).filter(([_, value]) => value !== "")
+    );
 
     if (datos.correo && datos.correo !== usuario.correo) {
       const existeCorreo = await this.repo.buscarPorEmail(datos.correo);
@@ -120,12 +116,14 @@ export default class UsuarioService {
 
       if (existeUser) {
         throw new ConflictException(
-          'El nombre de usuario ya existe en la base de datos',
+          'El nombre de usuario ya esta registrado en la base de datos',
         );
       }
     }
 
-    await this.repo.actualizarUsuario(idUsuario, datos);
+    Object.assign(usuario, datosFiltrados);
+
+    await this.repo.actualizarUsuario(idUsuario, datosFiltrados);
   }
 
   public async obtenerUsuarioPorId(idUsuario: string): Promise<Usuario> {

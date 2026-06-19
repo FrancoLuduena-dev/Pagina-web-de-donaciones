@@ -13,7 +13,7 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
+import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
 import { TRANSICIONES_PUBLICACION } from '../constante/transicionesPublicacion';
 import { Solicitud } from '../../solicitudes/entity/solicitudEntity';
 import { rolUsuario } from '../../usuario/enums/rolUsuario';

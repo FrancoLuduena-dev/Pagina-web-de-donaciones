@@ -1,1 +1,1 @@
-export const tituloPagina = "Pagina Donaciones";
+export const tituloPagina = "Página de Donaciones";

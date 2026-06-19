@@ -1,18 +1,13 @@
-import { estadosUsuario } from '../enums/estadosUsuario';
-import { rolUsuario } from '../enums/rolUsuario';
+
 import {
   IsString,
   IsEmail,
   IsNotEmpty,
   MinLength,
-  IsOptional,
-  IsEnum,
   IsNumber,
 } from 'class-validator';
 
 export default class CrearUsuarioDto {
-  @IsString()
-  id?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -34,18 +29,4 @@ export default class CrearUsuarioDto {
   @IsString()
   @IsNotEmpty()
   numeroTelefono!: string;
-
-  @IsEnum(rolUsuario)
-  rol!: rolUsuario;
-
-  @IsEnum(estadosUsuario)
-  estado!: estadosUsuario;
-
-  @IsNumber()
-  @IsOptional()
-  idBloqueador?: number | null;
-
-  @IsString()
-  @IsOptional()
-  razonBloqueo?: string | null;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import RemoteImage from "@/components/RemoteImage";
 import styles from "./Gallery.module.css";
 
 type Props = {
@@ -19,12 +19,11 @@ export default function Gallery({ images, maxImages = 5 }: Props) {
   return (
     <div className={styles.gallery}>
       <div className={styles.main}>
-        <Image
+        <RemoteImage
           src={imgs[index]}
           alt={`Imagen ${index + 1}`}
           fill
           className={styles.mainImage}
-          sizes="(max-width: 720px) 100vw, 640px"
           loading="eager"
         />
 
@@ -55,7 +54,7 @@ export default function Gallery({ images, maxImages = 5 }: Props) {
                 aria-label={`Ver imagen ${i + 1}`}
                 type="button"
               >
-                <Image
+                <RemoteImage
                   src={src}
                   alt={`Miniatura ${i + 1}`}
                   width={120}

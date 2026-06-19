@@ -9,13 +9,13 @@ export default function Navbar() {
   return (
     <nav className={styles.navbar}>
       <div className={styles.logo}>
-        <Link href="/">{tituloPagina}</Link>
+        <p>{tituloPagina}</p>
       </div>
 
       <div className={styles.links}>
-        <Link href="/">Inicio</Link>
-        <Link href="/publicaciones">Explorar donaciones</Link>
-        <Link href="/como_funciona">Cómo funciona</Link>
+        <Link href="/publicaciones">Inicio</Link>
+        <Link href="/publicaciones">Explorar publicaciones</Link>
+        <Link href="/ayuda">Preguntas Frecuentes</Link>
       </div>
 
       <div className={styles.botonUsuario}>

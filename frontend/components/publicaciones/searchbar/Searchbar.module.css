@@ -1,0 +1,123 @@
+.searchbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.contenedorInput {
+  position: relative;
+  width: 100%;
+}
+
+.input {
+    width: 100%;
+  padding-right: 3rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 0.75rem;
+  background-color: var(--color-tarjeta);
+  color: var(--color-texto-principal);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primario);
+}
+
+.botonBuscar {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.iconoNormal,
+.iconoHover {
+  position: absolute;
+  top: -10;
+  right: 5;
+  width: 24px;
+  height: 24px;
+  transition: opacity 0.2s ease;
+}
+
+.labelOculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+
+.iconoNormal {
+  opacity: 1;
+}
+
+.iconoHover {
+  opacity: 0;
+}
+
+.botonBuscar:hover .iconoNormal {
+  opacity: 0;
+}
+
+.botonBuscar:hover .iconoHover {
+  opacity: 1;
+  height: 30px;
+  width: 30px;
+  top: -15;
+}
+
+/* Prevent PNG icons from being recolored by global filters or blend modes */
+.icono,
+.botonBuscar img {
+  filter: none !important;
+  -webkit-filter: none !important;
+  mix-blend-mode: normal !important;
+  background-color: transparent !important;
+}
+
+
+/* Tablet */
+
+@media (max-width: 768px) {
+  .input {
+    padding: 0.7rem 0.9rem;
+  }
+
+  .botonBuscar {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 480px) {
+  .searchbar {
+    gap: 0.4rem;
+  }
+
+  .input {
+    padding: 0.65rem 0.8rem;
+    font-size: 0.95rem;
+  }
+
+  .botonBuscar {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.6rem;
+  }
+}
