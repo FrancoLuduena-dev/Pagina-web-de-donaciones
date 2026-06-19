@@ -32,12 +32,25 @@
 }
 
 .estado {
-  background: var(--color-primario-highlight);
-  color: var(--color-texto-principal);
-  padding: 0.35rem 0.75rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 600;
+}
+
+.estadoAceptada {
+  background-color: var(--color-exito);
+  color: var(--color-texto-primario);
+}
+
+.estadoRechazada {
+  background-color: var(--color-alertas);
+  color: var(--color-texto-primario);
+}
+
+.estadoPendiente {
+  background-color: var(--color-warning);
+  color: var(--color-texto-primario);
 }
 
 .contenido {
