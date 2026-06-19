@@ -9,11 +9,14 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import { BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 
 import { EstadoSolicitud } from '../enums/estadoSolicitud';
 import { TRANSICIONES_SOLICITUD } from '../constante/transicionesSolicitud';
-
 import { Publicacion } from '../../publicacion/entity/publicacionEntity';
 
 @Entity('solicitudes')
@@ -58,6 +61,50 @@ export class Solicitud {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  validarCreadorPublicacion(
+    usuarioId: string,
+    mensaje = 'Solo el creador de la publicación puede realizar esta acción',
+  ): void {
+    if (this.creadorPublicacionId !== usuarioId) {
+      throw new ForbiddenException(mensaje);
+    }
+  }
+
+  validarSolicitante(
+    usuarioId: string,
+    mensaje = 'Solo el solicitante puede realizar esta acción',
+  ): void {
+    if (this.solicitanteId !== usuarioId) {
+      throw new ForbiddenException(mensaje);
+    }
+  }
+
+  validarPuedeCancelarsePor(usuarioId: string): void {
+    const esSolicitante = this.solicitanteId === usuarioId;
+    const esCreador = this.creadorPublicacionId === usuarioId;
+
+    if (
+      this.estado !== EstadoSolicitud.PENDIENTE &&
+      this.estado !== EstadoSolicitud.ACEPTADA
+    ) {
+      throw new ConflictException(
+        'Solo se pueden cancelar solicitudes pendientes o aceptadas',
+      );
+    }
+
+    if (this.estado === EstadoSolicitud.PENDIENTE && !esSolicitante) {
+      throw new ForbiddenException(
+        'Solo el solicitante puede cancelar una solicitud pendiente',
+      );
+    }
+
+    if (this.estado === EstadoSolicitud.ACEPTADA && !esCreador) {
+      throw new ForbiddenException(
+        'Solo el creador puede cancelar una solicitud aceptada',
+      );
+    }
+  }
 
   private validarTransicionSolicitud(nuevoEstado: EstadoSolicitud): void {
     const transicionesPermitidas = TRANSICIONES_SOLICITUD[this.estado];

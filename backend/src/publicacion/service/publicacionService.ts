@@ -1,9 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Publicacion } from '../entity/publicacionEntity';
 import { PublicacionRepository } from '../repository/publicacionRepository';
 import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
@@ -50,11 +45,10 @@ export class PublicacionService {
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    if (publicacion.creadorId !== usuarioId) {
-      throw new ForbiddenException(
-        'Solo el creador puede editar la publicación',
-      );
-    }
+    publicacion.validarCreador(
+      usuarioId,
+      'Solo el creador puede editar la publicación',
+    );
 
     publicacion.editar(dto);
 
@@ -74,9 +68,10 @@ export class PublicacionService {
   async reservar(id: string, usuarioId: string): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    if (publicacion.creadorId === usuarioId) {
-      throw new ForbiddenException('No podés reservar tu propia publicación');
-    }
+    publicacion.validarNoEsCreador(
+      usuarioId,
+      'No podés reservar tu propia publicación',
+    );
 
     publicacion.reservar();
 
@@ -86,9 +81,10 @@ export class PublicacionService {
   async cancelarReserva(id: string, usuarioId: string): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    if (publicacion.creadorId !== usuarioId) {
-      throw new ForbiddenException('Solo el creador puede cancelar la reserva');
-    }
+    publicacion.validarCreador(
+      usuarioId,
+      'Solo el creador puede cancelar la reserva',
+    );
 
     publicacion.cancelarReserva();
 
@@ -102,15 +98,11 @@ export class PublicacionService {
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    const esCreador = publicacion.creadorId === usuarioId;
-    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
-    const esAdministrador = usuarioRol === rolUsuario.usuarioAdministrador;
-
-    if (!esCreador && !esModerador && !esAdministrador) {
-      throw new ForbiddenException(
-        'Solo el creador, un moderador o un superusuario puede pausar la publicación',
-      );
-    }
+    publicacion.validarPuedeSerGestionadaPor(
+      usuarioId,
+      usuarioRol,
+      'Solo el creador, un moderador o un superusuario puede pausar la publicación',
+    );
 
     publicacion.pausar();
 
@@ -124,15 +116,11 @@ export class PublicacionService {
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    const esCreador = publicacion.creadorId === usuarioId;
-    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
-    const esAdministrador = usuarioRol === rolUsuario.usuarioAdministrador;
-
-    if (!esCreador && !esModerador && !esAdministrador) {
-      throw new ForbiddenException(
-        'Solo el creador, un moderador o un superusuario puede reactivar la publicación',
-      );
-    }
+    publicacion.validarPuedeSerGestionadaPor(
+      usuarioId,
+      usuarioRol,
+      'Solo el creador, un moderador o un superusuario puede reactivar la publicación',
+    );
 
     publicacion.reactivar();
 
@@ -146,15 +134,11 @@ export class PublicacionService {
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    const esCreador = publicacion.creadorId === usuarioId;
-    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
-    const esSuperUsuario = usuarioRol === rolUsuario.usuarioAdministrador;
-
-    if (!esCreador && !esModerador && !esSuperUsuario) {
-      throw new ForbiddenException(
-        'Solo el creador, un moderador o super usuario puede eliminar la publicación',
-      );
-    }
+    publicacion.validarPuedeSerGestionadaPor(
+      usuarioId,
+      usuarioRol,
+      'Solo el creador, un moderador o superusuario puede eliminar la publicación',
+    );
 
     publicacion.eliminar();
 

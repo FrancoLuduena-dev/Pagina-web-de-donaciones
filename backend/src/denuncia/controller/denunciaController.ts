@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 
 import { Request } from 'express';
-import Usuario from '../../usuario/entity/usuarioEntity';
 import { AuthGuard } from '../../usuario/auth/authGuard';
 import { rolUsuario } from '../../usuario/enums/rolUsuario';
 import { Roles } from '../../compartidos/decorators/decoratorRol';
@@ -24,10 +23,7 @@ import { FiltroDenunciaDto } from '../dtos/filtroDenunciaDto';
 import { ResolverDenunciaDto } from '../dtos/resolverDenunciaDto';
 import { TomarDenunciaDto } from '../dtos/tomarDenunciaDto';
 import { DenunciaService } from '../service/denunciaService';
-
-type RequestConUsuario = Request & {
-  user: Usuario;
-};
+import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
 
 @Controller('denuncias')
 @UseGuards(AuthGuard, StatusGuard, RolesGuard)

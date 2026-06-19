@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+
 import { EstadoDenuncia } from '../enums/estadoDenuncia';
 import { MotivoDenuncia } from '../enums/motivoDenuncia';
 import { TipoResolucion } from '../enums/tipoResolucion';
@@ -66,12 +68,22 @@ export class Denuncia {
   @UpdateDateColumn()
   fechaActualizacion!: Date;
 
-  private cambiarEstado(nuevoEstado: EstadoDenuncia): void {
-    if (!puedeTransicionarDenuncia(this.estado, nuevoEstado)) {
-      throw new Error('TRANSICION_ESTADO_INVALIDA');
+  validarNoEsCreadorPublicacion(
+    usuarioId: string,
+    mensaje = 'No podés denunciar tu propia publicación',
+  ): void {
+    if (this.creadorPublicacionId === usuarioId) {
+      throw new ForbiddenException(mensaje);
     }
+  }
 
-    this.estado = nuevoEstado;
+  validarModeradorAsignado(
+    moderadorId: string,
+    mensaje = 'Solo el moderador asignado puede realizar esta acción',
+  ): void {
+    if (this.moderadorAsignadoId !== moderadorId) {
+      throw new ForbiddenException(mensaje);
+    }
   }
 
   tomar(moderadorId: string): void {
@@ -88,5 +100,15 @@ export class Denuncia {
     this.detalleResolucion = detalleResolucion;
     this.fechaResolucion = new Date();
     this.version += 1;
+  }
+
+  private cambiarEstado(nuevoEstado: EstadoDenuncia): void {
+    if (!puedeTransicionarDenuncia(this.estado, nuevoEstado)) {
+      throw new BadRequestException(
+        `No se puede cambiar una denuncia de ${this.estado} a ${nuevoEstado}`,
+      );
+    }
+
+    this.estado = nuevoEstado;
   }
 }

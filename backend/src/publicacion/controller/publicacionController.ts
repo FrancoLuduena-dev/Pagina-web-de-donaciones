@@ -11,21 +11,13 @@ import {
   Req,
 } from '@nestjs/common';
 
-import { Request } from 'express';
 import { PublicacionService } from '../service/publicacionService';
 import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
-import { rolUsuario } from 'src/usuario/enums/rolUsuario';
-
-interface RequestConUsuario extends Request {
-  user: {
-    id: string;
-    rol: rolUsuario;
-  };
-}
+import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
 
 @Controller('publicaciones')
 export class PublicacionController {

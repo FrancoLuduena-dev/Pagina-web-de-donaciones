@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import { Solicitud } from '../entity/solicitudEntity';
 import { SolicitudRepository } from '../repository/solicitudRepository';
 import { PublicacionService } from '../../publicacion/service/publicacionService';
@@ -64,22 +65,18 @@ export class SolicitudService {
   ): Promise<Solicitud[]> {
     return this.solicitudRepository.listarRecibidas(creadorPublicacionId);
   }
+
   async rechazarSolicitud(
     solicitudId: string,
     usuarioId: string,
     dto: RechazarSolicitudDto,
   ): Promise<Solicitud> {
-    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
+    const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
-    if (!solicitud) {
-      throw new NotFoundException('Solicitud no encontrada');
-    }
-
-    if (solicitud.creadorPublicacionId !== usuarioId) {
-      throw new ForbiddenException(
-        'Solo el creador puede rechazar solicitudes',
-      );
-    }
+    solicitud.validarCreadorPublicacion(
+      usuarioId,
+      'Solo el creador puede rechazar solicitudes',
+    );
 
     solicitud.rechazar(dto.motivo);
 
@@ -90,15 +87,12 @@ export class SolicitudService {
     solicitudId: string,
     usuarioId: string,
   ): Promise<Solicitud> {
-    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
+    const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
-    if (!solicitud) {
-      throw new NotFoundException('Solicitud no encontrada');
-    }
-
-    if (solicitud.creadorPublicacionId !== usuarioId) {
-      throw new ForbiddenException('Solo el creador puede aceptar solicitudes');
-    }
+    solicitud.validarCreadorPublicacion(
+      usuarioId,
+      'Solo el creador puede aceptar solicitudes',
+    );
 
     const publicacion = await this.publicacionService.buscarPublicacionPorId(
       solicitud.publicacionId,
@@ -106,69 +100,49 @@ export class SolicitudService {
 
     publicacion.validarPuedeRecibirSolicitudes();
 
-    publicacion.reservar();
-
     solicitud.aceptar();
+    publicacion.reservar();
 
     await this.publicacionService.guardar(publicacion);
 
     return this.solicitudRepository.guardar(solicitud);
   }
+
   async finalizarSolicitud(
     solicitudId: string,
     usuarioId: string,
   ): Promise<Solicitud> {
-    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
+    const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
-    if (!solicitud) {
-      throw new NotFoundException('Solicitud no encontrada');
-    }
-
-    if (solicitud.creadorPublicacionId !== usuarioId) {
-      throw new ForbiddenException(
-        'Solo el creador puede finalizar la entrega',
-      );
-    }
+    solicitud.validarCreadorPublicacion(
+      usuarioId,
+      'Solo el creador puede finalizar la entrega',
+    );
 
     const publicacion = await this.publicacionService.buscarPublicacionPorId(
       solicitud.publicacionId,
     );
 
     solicitud.finalizar();
-
     publicacion.entregar();
 
-    const solicitudesPendientes =
-      await this.solicitudRepository.buscarPendientesPorPublicacion(
-        solicitud.publicacionId,
-      );
-
-    const solicitudesARechazar = solicitudesPendientes.filter(
-      (pendiente) => pendiente.id !== solicitud.id,
+    await this.rechazarSolicitudesPendientesRestantes(
+      solicitud.publicacionId,
+      solicitud.id,
     );
 
-    for (const pendiente of solicitudesARechazar) {
-      pendiente.rechazar('La publicación ya fue entregada');
-    }
-
-    await this.solicitudRepository.guardarVarias(solicitudesARechazar);
-
     await this.publicacionService.guardar(publicacion);
-
     return this.solicitudRepository.guardar(solicitud);
   }
+
   async cancelarSolicitud(
     solicitudId: string,
     usuarioId: string,
     dto: CancelarSolicitudDto,
   ): Promise<Solicitud> {
-    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
+    const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
-    if (!solicitud) {
-      throw new NotFoundException('Solicitud no encontrada');
-    }
-
-    this.validarCancelacionSolicitud(solicitud, usuarioId);
+    solicitud.validarPuedeCancelarsePor(usuarioId);
 
     const debeLiberarPublicacion =
       solicitud.estado === EstadoSolicitud.ACEPTADA;
@@ -188,32 +162,33 @@ export class SolicitudService {
     return this.solicitudRepository.guardar(solicitud);
   }
 
-  private validarCancelacionSolicitud(
-    solicitud: Solicitud,
-    usuarioId: string,
-  ): void {
-    const esSolicitante = solicitud.solicitanteId === usuarioId;
-    const esCreador = solicitud.creadorPublicacionId === usuarioId;
+  private async obtenerSolicitudPorId(solicitudId: string): Promise<Solicitud> {
+    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
 
-    if (
-      solicitud.estado !== EstadoSolicitud.PENDIENTE &&
-      solicitud.estado !== EstadoSolicitud.ACEPTADA
-    ) {
-      throw new ConflictException(
-        'Solo se pueden cancelar solicitudes pendientes o aceptadas',
-      );
+    if (!solicitud) {
+      throw new NotFoundException('Solicitud no encontrada');
     }
 
-    if (solicitud.estado === EstadoSolicitud.PENDIENTE && !esSolicitante) {
-      throw new ForbiddenException(
-        'Solo el solicitante puede cancelar una solicitud pendiente',
+    return solicitud;
+  }
+
+  private async rechazarSolicitudesPendientesRestantes(
+    publicacionId: string,
+    solicitudFinalizadaId: string,
+  ): Promise<void> {
+    const solicitudesPendientes =
+      await this.solicitudRepository.buscarPendientesPorPublicacion(
+        publicacionId,
       );
+
+    const solicitudesARechazar = solicitudesPendientes.filter(
+      (pendiente) => pendiente.id !== solicitudFinalizadaId,
+    );
+
+    for (const pendiente of solicitudesARechazar) {
+      pendiente.rechazar('La publicación ya fue entregada');
     }
 
-    if (solicitud.estado === EstadoSolicitud.ACEPTADA && !esCreador) {
-      throw new ForbiddenException(
-        'Solo el creador puede cancelar una solicitud aceptada',
-      );
-    }
+    await this.solicitudRepository.guardarVarias(solicitudesARechazar);
   }
 }

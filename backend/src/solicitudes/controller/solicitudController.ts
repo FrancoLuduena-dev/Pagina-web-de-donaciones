@@ -9,21 +9,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { Request } from 'express';
 import { SolicitudService } from '../service/solicitudService';
 import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
 import { Solicitud } from '../entity/solicitudEntity';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
-import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
 import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
-
-interface RequestConUsuario extends Request {
-  user: {
-    id: string;
-    rol: rolUsuario;
-  };
-}
+import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
 
 @UseGuards(AuthGuard)
 @Controller('solicitudes')

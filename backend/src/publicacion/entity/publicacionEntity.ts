@@ -9,12 +9,14 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
 import { TRANSICIONES_PUBLICACION } from '../constante/transicionesPublicacion';
 import { Solicitud } from '../../solicitudes/entity/solicitudEntity';
+import { rolUsuario } from '../../usuario/enums/rolUsuario';
 
 @Entity('publicacion')
 export class Publicacion {
@@ -67,42 +69,44 @@ export class Publicacion {
   @OneToMany(() => Solicitud, (solicitud) => solicitud.publicacion)
   solicitudes!: Solicitud[];
 
-  private transicionarA(nuevoEstado: EstadoPublicacion): void {
-    const permitidos = TRANSICIONES_PUBLICACION[this.estado];
+  validarCreador(
+    usuarioId: string,
+    mensaje = 'Solo el creador puede realizar esta acción',
+  ): void {
+    if (this.creadorId !== usuarioId) {
+      throw new ForbiddenException(mensaje);
+    }
+  }
 
-    if (!permitidos.includes(nuevoEstado)) {
+  validarNoEsCreador(
+    usuarioId: string,
+    mensaje = 'No podés realizar esta acción sobre tu propia publicación',
+  ): void {
+    if (this.creadorId === usuarioId) {
+      throw new ForbiddenException(mensaje);
+    }
+  }
+
+  validarPuedeSerGestionadaPor(
+    usuarioId: string,
+    usuarioRol: rolUsuario,
+    mensaje = 'No tenés permisos para gestionar esta publicación',
+  ): void {
+    const esCreador = this.creadorId === usuarioId;
+    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
+    const esAdministrador = usuarioRol === rolUsuario.usuarioAdministrador;
+
+    if (!esCreador && !esModerador && !esAdministrador) {
+      throw new ForbiddenException(mensaje);
+    }
+  }
+
+  validarPuedeRecibirSolicitudes(): void {
+    if (this.estado !== EstadoPublicacion.DISPONIBLE) {
       throw new BadRequestException(
-        `No se puede pasar de ${this.estado} a ${nuevoEstado}`,
+        'La publicación no está disponible para recibir solicitudes',
       );
     }
-
-    this.estado = nuevoEstado;
-  }
-
-  reservar(): void {
-    this.transicionarA(EstadoPublicacion.RESERVADA);
-  }
-
-  pausar(): void {
-    this.transicionarA(EstadoPublicacion.PAUSADA);
-  }
-
-  reactivar(): void {
-    this.transicionarA(EstadoPublicacion.DISPONIBLE);
-  }
-
-  entregar(): void {
-    this.transicionarA(EstadoPublicacion.ENTREGADA);
-  }
-
-  eliminar(): void {
-    this.transicionarA(EstadoPublicacion.ELIMINADA);
-
-    this.deletedAt = new Date();
-  }
-
-  cancelarReserva(): void {
-    this.transicionarA(EstadoPublicacion.DISPONIBLE);
   }
 
   puedeEditar(): boolean {
@@ -146,11 +150,40 @@ export class Publicacion {
     this.updatedAt = new Date();
   }
 
-  validarPuedeRecibirSolicitudes(): void {
-    if (this.estado !== EstadoPublicacion.DISPONIBLE) {
+  reservar(): void {
+    this.transicionarA(EstadoPublicacion.RESERVADA);
+  }
+
+  pausar(): void {
+    this.transicionarA(EstadoPublicacion.PAUSADA);
+  }
+
+  reactivar(): void {
+    this.transicionarA(EstadoPublicacion.DISPONIBLE);
+  }
+
+  entregar(): void {
+    this.transicionarA(EstadoPublicacion.ENTREGADA);
+  }
+
+  eliminar(): void {
+    this.transicionarA(EstadoPublicacion.ELIMINADA);
+    this.deletedAt = new Date();
+  }
+
+  cancelarReserva(): void {
+    this.transicionarA(EstadoPublicacion.DISPONIBLE);
+  }
+
+  private transicionarA(nuevoEstado: EstadoPublicacion): void {
+    const permitidos = TRANSICIONES_PUBLICACION[this.estado];
+
+    if (!permitidos.includes(nuevoEstado)) {
       throw new BadRequestException(
-        'La publicación no está disponible para recibir solicitudes',
+        `No se puede pasar de ${this.estado} a ${nuevoEstado}`,
       );
     }
+
+    this.estado = nuevoEstado;
   }
 }

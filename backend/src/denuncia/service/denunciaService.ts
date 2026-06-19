@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -17,6 +16,7 @@ import { FiltroDenunciaDto } from '../dtos/filtroDenunciaDto';
 import { ResolverDenunciaDto } from '../dtos/resolverDenunciaDto';
 import { TomarDenunciaDto } from '../dtos/tomarDenunciaDto';
 
+import { Denuncia } from '../entity/denunciaEntity';
 import { EstadoDenuncia } from '../enums/estadoDenuncia';
 import { TipoResolucion } from '../enums/tipoResolucion';
 
@@ -39,9 +39,10 @@ export class DenunciaService {
       dto.publicacionId,
     );
 
-    if (publicacion.creadorId === denuncianteId) {
-      throw new ForbiddenException('NO_PUEDE_DENUNCIAR_PROPIA_PUBLICACION');
-    }
+    publicacion.validarNoEsCreador(
+      denuncianteId,
+      'NO_PUEDE_DENUNCIAR_PROPIA_PUBLICACION',
+    );
 
     const denunciaExistente =
       await this.denunciaRepository.buscarPorDenuncianteYPublicacion(
@@ -77,11 +78,7 @@ export class DenunciaService {
   async buscarDetallePorId(
     denunciaId: string,
   ): Promise<DenunciaDetalleResponseDto> {
-    const denuncia = await this.denunciaRepository.buscarPorId(denunciaId);
-
-    if (!denuncia) {
-      throw new NotFoundException('DENUNCIA_NO_ENCONTRADA');
-    }
+    const denuncia = await this.obtenerDenunciaPorId(denunciaId);
 
     return DenunciaMapper.toDetalleResponseDto(denuncia);
   }
@@ -91,28 +88,11 @@ export class DenunciaService {
     moderadorId: string,
     dto: TomarDenunciaDto,
   ): Promise<DenunciaResponseDto> {
-    const denuncia = await this.denunciaRepository.buscarPorId(denunciaId);
+    const denuncia = await this.obtenerDenunciaPorId(denunciaId);
 
-    if (!denuncia) {
-      throw new NotFoundException('DENUNCIA_NO_ENCONTRADA');
-    }
+    this.validarVersionDenuncia(denuncia, dto.version);
 
-    if (denuncia.version !== dto.version) {
-      throw new ConflictException('CONFLICTO_CONCURRENCIA');
-    }
-
-    try {
-      denuncia.tomar(moderadorId);
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === 'TRANSICION_ESTADO_INVALIDA'
-      ) {
-        throw new ConflictException('TRANSICION_ESTADO_INVALIDA');
-      }
-
-      throw error;
-    }
+    denuncia.tomar(moderadorId);
 
     const denunciaGuardada = await this.denunciaRepository.guardar(denuncia);
 
@@ -124,19 +104,10 @@ export class DenunciaService {
     moderadorId: string,
     dto: ResolverDenunciaDto,
   ): Promise<DenunciaDetalleResponseDto> {
-    const denuncia = await this.denunciaRepository.buscarPorId(denunciaId);
+    const denuncia = await this.obtenerDenunciaPorId(denunciaId);
 
-    if (!denuncia) {
-      throw new NotFoundException('DENUNCIA_NO_ENCONTRADA');
-    }
-
-    if (denuncia.version !== dto.version) {
-      throw new ConflictException('CONFLICTO_CONCURRENCIA');
-    }
-
-    if (denuncia.estado === EstadoDenuncia.RESUELTA) {
-      throw new ConflictException('DENUNCIA_YA_RESUELTA');
-    }
+    this.validarVersionDenuncia(denuncia, dto.version);
+    this.validarDenunciaNoResuelta(denuncia);
 
     await this.ejecutarAccionResolucion(
       dto.tipoResolucion,
@@ -147,25 +118,36 @@ export class DenunciaService {
     );
 
     if (!denuncia.moderadorAsignadoId) {
-      denuncia.moderadorAsignadoId = moderadorId;
+      denuncia.tomar(moderadorId);
     }
 
-    try {
-      denuncia.resolver(dto.tipoResolucion, dto.detalleResolucion);
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === 'TRANSICION_ESTADO_INVALIDA'
-      ) {
-        throw new ConflictException('TRANSICION_ESTADO_INVALIDA');
-      }
-
-      throw error;
-    }
+    denuncia.resolver(dto.tipoResolucion, dto.detalleResolucion);
 
     const denunciaGuardada = await this.denunciaRepository.guardar(denuncia);
 
     return DenunciaMapper.toDetalleResponseDto(denunciaGuardada);
+  }
+
+  private async obtenerDenunciaPorId(denunciaId: string): Promise<Denuncia> {
+    const denuncia = await this.denunciaRepository.buscarPorId(denunciaId);
+
+    if (!denuncia) {
+      throw new NotFoundException('DENUNCIA_NO_ENCONTRADA');
+    }
+
+    return denuncia;
+  }
+
+  private validarVersionDenuncia(denuncia: Denuncia, version: number): void {
+    if (denuncia.version !== version) {
+      throw new ConflictException('CONFLICTO_CONCURRENCIA');
+    }
+  }
+
+  private validarDenunciaNoResuelta(denuncia: Denuncia): void {
+    if (denuncia.estado === EstadoDenuncia.RESUELTA) {
+      throw new ConflictException('DENUNCIA_YA_RESUELTA');
+    }
   }
 
   private async ejecutarAccionResolucion(
