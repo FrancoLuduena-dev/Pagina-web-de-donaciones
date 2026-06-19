@@ -34,12 +34,6 @@ export default function EditarUsuarioPage() {
       if (correo && correoDos && correo.trim() !== correoDos.trim()) {
         throw new Error("Los correos no coinciden.");
       }
-
-      const isMailValid = /^\S+@\S+\.\S+$/.test(correo.trim());
-
-      if (!isMailValid) {
-        throw new Error("El formato del correo no es válido.");
-      }
       
       const data = await editarRequest({
         correo: correo.trim(),

@@ -1,6 +1,7 @@
   import Sidebar from "@/components/layout/sidebar/Sidebar";
   import styles from "./publicaciones.module.css"
   import Searchbar from "@/components/publicaciones/searchbar/Searchbar";
+  import { Suspense } from "react";
 
   /**
    * Layout de la sección de donaciones.

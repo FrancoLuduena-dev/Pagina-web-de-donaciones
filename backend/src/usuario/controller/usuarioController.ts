@@ -40,7 +40,9 @@ export default class UsuarioController {
   ) {}
 
   @Post()
-  async crearUsuario(@Body() usuario: CrearUsuarioDTO): Promise<Usuario> {
+  async crearUsuario(
+    @Body() usuario: CrearUsuarioDTO,
+  ): Promise<Omit<Usuario, 'contrasenia'>> {
     return this.authService.registrarUsuario(usuario);
   }
 

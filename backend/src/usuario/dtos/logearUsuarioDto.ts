@@ -8,6 +8,5 @@ export default class logearUsuarioDTO {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
   contrasenia!: string;
 }

@@ -79,9 +79,7 @@ export default function RegisterPage() {
           setLoading(false);
         }
       }
-      // agregar texto que le diga al usuario que la contraseña tiene que tener al menos 6 caracteres y el correo tiene que ser un formato valido
-      // agregar un modal que le indique al usuario como debe ser el formato de su contraseña y correo 
-      // agregar script de comparacion entre correo y contraseña para que el usuario tenga que escribirlo dos veces y comparar ambos campos para validar que sean iguales, y mostrar un mensaje de error si no lo son
+      
     return (
         <main className={styles.main}>
             <div className={styles.container}>

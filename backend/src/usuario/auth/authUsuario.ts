@@ -14,7 +14,7 @@ import { JWT_SECRET, JWT_EXPIRATION } from './authConstants';
 export default class autenticacionUsuario {
   constructor(private readonly service: Usuario_Service) {}
 
-  async registrarUsuario(usuario: crearUsuarioDTO) {
+  async registrarUsuario(usuario: crearUsuarioDTO): Promise<Omit<Usuario, 'contrasenia'>> {
     const hashedPassword = await bcrypt.hash(usuario.contrasenia, 10);
 
     const newUser = await this.service.CrearUsuario({
@@ -26,7 +26,8 @@ export default class autenticacionUsuario {
       throw new UnauthorizedException('Error al registrar el usuario');
     }
 
-    return newUser;
+    const { contrasenia, ...usuarioSinContrasenia } = newUser;
+    return usuarioSinContrasenia;
   }
 
   public async logearUsuario(datos: logearUsuarioDTO): Promise<string> {
