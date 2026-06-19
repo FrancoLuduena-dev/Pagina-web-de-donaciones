@@ -28,7 +28,7 @@
 .header {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 1rem;
+
 }
 
 .estado {
@@ -65,7 +65,6 @@
 .acciones {
   display: flex;
   gap: 0.75rem;
-  margin-top: 1rem;
 }
 
 .botonAceptar,
@@ -79,10 +78,39 @@
 
 .botonAceptar {
   background-color: var(--color-exito);
-  color: white;
+  color: var(--color-texto-blanco);
 }
 
-.botonRechazar {
+.inputConBoton {
+  flex: 1;
+  display: flex;
+}
+
+.inputMotivo {
+  flex: 1;
+  padding: 0 1rem;
+  border: 1px solid var(--color-borde);
+  border-right: none;
+  border-radius: 0.5rem 0 0 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--color-texto-blanco);
+}
+
+.botonRechazar{
+  border: none;
+  padding: 0 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
   background-color: var(--color-alertas);
-  color: white;
+  color: var(--color-texto-blanco);
+  cursor: pointer;
+}
+
+.botonCancelar {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background-color: var(--color-warning);
+  color: var(--color-tarjeta);
+  font-weight: 600;
 }

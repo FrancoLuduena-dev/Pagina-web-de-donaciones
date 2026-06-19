@@ -22,6 +22,9 @@ export default function SolicitudesPage() {
   );
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [motivosRechazo, setMotivosRechazo] = useState<
+    Record<string, string>
+  >({});
 
   const titulo = "Mis solicitudes";
 
@@ -85,9 +88,9 @@ export default function SolicitudesPage() {
         solicitudesRecibidas.map((solicitud) =>
           solicitud.id === solicitudId
             ? {
-                ...solicitud,
-                estado: "ACEPTADA",
-              }
+              ...solicitud,
+              estado: "ACEPTADA",
+            }
             : solicitud,
         ),
       );
@@ -109,7 +112,7 @@ export default function SolicitudesPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            motivo: "",
+            motivo: motivosRechazo[solicitudId] ?? "",
           }),
         },
       );
@@ -122,14 +125,61 @@ export default function SolicitudesPage() {
         solicitudesRecibidas.map((solicitud) =>
           solicitud.id === solicitudId
             ? {
-                ...solicitud,
-                estado: "RECHAZADA",
-              }
+              ...solicitud,
+              estado: "RECHAZADA",
+            }
             : solicitud,
         ),
       );
     } catch {
       alert("No se pudo rechazar la solicitud.");
+    }
+  }
+
+  async function cancelarSolicitud(
+    solicitudId: string,
+  ) {
+    try {
+      const token =
+        localStorage.getItem(
+          "access_token",
+        );
+
+      const respuesta = await fetch(
+        `/api/solicitudes/${solicitudId}/cancelar`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            motivo: "",
+          }),
+        },
+      );
+
+      if (!respuesta.ok) {
+        throw new Error();
+      }
+
+      setSolicitudes(
+        solicitudes.map(
+          (solicitud) =>
+            solicitud.id === solicitudId
+              ? {
+                ...solicitud,
+                estado:
+                  "CANCELADA",
+              }
+              : solicitud,
+        ),
+      );
+    } catch {
+      alert(
+        "No se pudo cancelar la solicitud.",
+      );
     }
   }
 
@@ -188,6 +238,21 @@ export default function SolicitudesPage() {
                       <strong>Fecha:</strong>{" "}
                       {new Date(solicitud.createdAt).toLocaleDateString()}
                     </p>
+                    {solicitud.estado === "PENDIENTE" && (
+                      <div className={styles.acciones}>
+                        <button
+                          type="button"
+                          className={styles.botonCancelar}
+                          onClick={() =>
+                            cancelarSolicitud(
+                              solicitud.id,
+                            )
+                          }
+                        >
+                          Cancelar solicitud
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </article>
               ))}
@@ -237,18 +302,44 @@ export default function SolicitudesPage() {
                         <button
                           type="button"
                           className={styles.botonAceptar}
-                          onClick={() => aceptarSolicitud(solicitud.id)}
+                          onClick={() =>
+                            aceptarSolicitud(
+                              solicitud.id,
+                            )
+                          }
                         >
                           Aceptar
                         </button>
 
-                        <button
-                          type="button"
-                          className={styles.botonRechazar}
-                          onClick={() => rechazarSolicitud(solicitud.id)}
-                        >
-                          Rechazar
-                        </button>
+                        <div className={styles.inputConBoton}>
+                          <input
+                            type="text"
+                            placeholder="Motivo de rechazo (opcional)"
+                            value={
+                              motivosRechazo[solicitud.id] ?? ""
+                            }
+                            onChange={(e) =>
+                              setMotivosRechazo({
+                                ...motivosRechazo,
+                                [solicitud.id]:
+                                  e.target.value,
+                              })
+                            }
+                            className={styles.inputMotivo}
+                          />
+
+                          <button
+                            type="button"
+                            className={styles.botonRechazar}
+                            onClick={() =>
+                              rechazarSolicitud(
+                                solicitud.id,
+                              )
+                            }
+                          >
+                            Rechazar
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
