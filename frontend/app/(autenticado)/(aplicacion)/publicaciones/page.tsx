@@ -6,6 +6,7 @@ import styles from "./publicaciones.module.css";
 
 type Props = {
   searchParams: Promise<{
+    q?: string;
     condicion?: string;
     estado?: string;
   }>;
@@ -19,19 +20,15 @@ export default async function PublicacionesPage({ searchParams }: Props) {
   let publicaciones: ReturnType<typeof mapPublicacionBackendToResumen>[] = [];
   let error = "";
 
-  const { condicion, estado } = await searchParams;
+  const {q, condicion, estado } = await searchParams;
 
   try {
-    // TEST_DESCOMENTAR
-    /*
-const data = await listarPublicacionesDesdeBackend(
-  undefined,
-  condicion,
-  estado,
-);
-*/
-    // END_TEST_DESCOMENTAR
-    const data = await listarPublicacionesDesdeBackend();
+    const data = await listarPublicacionesDesdeBackend(
+      undefined,
+      condicion,
+      estado,
+      q,
+    );
     publicaciones = data.map(mapPublicacionBackendToResumen);
   } catch {
     error =

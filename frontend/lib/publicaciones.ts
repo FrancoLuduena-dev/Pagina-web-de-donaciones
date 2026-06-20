@@ -190,21 +190,15 @@ export async function obtenerPublicacionPorId(
 
 export async function listarPublicacionesDesdeBackend(
   categoriaId?: string,
-  // TEST_DESCOMENTAR
-  /*
   condicion?: string,
   estado?: string,
-  */
-  // END_TEST_DESCOMENTAR
+  q?: string,
 ): Promise<PublicacionBackend[]> {
   const params = new URLSearchParams();
 
   if (categoriaId) {
     params.append("categoriaId", categoriaId);
   }
-
-  // TEST_DESCOMENTAR
-  /*
   if (condicion) {
     params.append("condicion", condicion);
   }
@@ -212,8 +206,10 @@ export async function listarPublicacionesDesdeBackend(
   if (estado) {
     params.append("estado", estado);
   }
-  */
-  // END_TEST_DESCOMENTAR
+
+  if (q) {
+    params.append("q", q);
+  }
 
   const url =
     params.toString().length > 0
