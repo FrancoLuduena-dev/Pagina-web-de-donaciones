@@ -7,9 +7,9 @@ export async function PATCH(request: Request) {
     let body: unknown;
 
     try {
-      body = await request.json();
+        body = await request.json();
     } catch {
-      return NextResponse.json({ message: "Cuerpo inválido." }, { status: 400 });
+        return NextResponse.json({ message: "Cuerpo inválido." }, { status: 400 });
     }
 
     const auth = request.headers.get("authorization");

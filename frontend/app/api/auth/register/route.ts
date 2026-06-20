@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         message:
-          "No se pudo conectar con el servidor. ¿Está corriendo el backend?",
+          "No se pudo conectar con el servidor.",
       },
       { status: 503 }
     );

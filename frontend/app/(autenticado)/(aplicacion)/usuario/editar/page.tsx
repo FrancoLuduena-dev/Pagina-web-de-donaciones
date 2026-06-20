@@ -39,7 +39,7 @@ export default function EditarUsuarioPage() {
         correo: correo.trim(),
         nombreUsuario,
         nombreCompleto,
-        numeroTelefono,
+        numeroTelefono: numeroTelefono.replace(/\D/g, ''),
       });
 
       router.push("/usuario");
@@ -180,6 +180,8 @@ export default function EditarUsuarioPage() {
               name="numeroTelefono"
               type="tel"
               autoComplete="tel"
+              pattern="^\+?[0-9\s]{8,20}$"
+              placeholder="Ejemplo de formato: +54 9 11 1234 5678 o 1234 5678"
               value={numeroTelefono}
               onChange={(e) =>
                 setNumeroTelefono(e.target.value)

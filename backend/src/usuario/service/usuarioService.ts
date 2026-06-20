@@ -36,6 +36,11 @@ export default class UsuarioService {
         validar formato de correo
 
         */
+
+    if (!usuario.nombreCompleto) {
+      throw new BadRequestException ('Debe completar el campo de nombre de usuario') 
+    }
+
     const existeCorreo = await this.repo.buscarPorEmail(usuario.correo);
 
     if (existeCorreo) {
@@ -97,12 +102,38 @@ export default class UsuarioService {
 
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
 
-    const datosFiltrados = Object.fromEntries(
-      Object.entries(datos).filter(([_, value]) => value !== "")
-    );
+    if (
+      !datos.nombreCompleto &&
+      !datos.nombreUsuario &&
+      !datos.correo &&
+      !datos.numeroTelefono
+    ) {
+      throw new BadRequestException(
+        'Debe completar al menos un campo para actualizar'
+      );
+    }
 
-    if (datos.correo && datos.correo !== usuario.correo) {
-      const existeCorreo = await this.repo.buscarPorEmail(datos.correo);
+    const datosFiltrados = {
+      nombreCompleto:
+        typeof datos.nombreCompleto === 'string' && datos.nombreCompleto.trim() !== ''
+          ? datos.nombreCompleto.trim()
+          : usuario.nombreCompleto,
+      nombreUsuario:
+        typeof datos.nombreUsuario === 'string' && datos.nombreUsuario.trim() !== ''
+          ? datos.nombreUsuario.trim()
+          : usuario.nombreUsuario,
+      correo:
+        typeof datos.correo === 'string' && datos.correo.trim() !== ''
+          ? datos.correo.trim()
+          : usuario.correo,
+      numeroTelefono:
+        typeof datos.numeroTelefono === 'string' && datos.numeroTelefono.trim() !== ''
+          ? datos.numeroTelefono.trim()
+          : usuario.numeroTelefono,
+    };
+
+    if (datosFiltrados.correo !== usuario.correo) {
+      const existeCorreo = await this.repo.buscarPorEmail(datosFiltrados.correo);
 
       if (existeCorreo) {
         throw new ConflictException(
@@ -111,8 +142,8 @@ export default class UsuarioService {
       }
     }
 
-    if (datos.nombreUsuario && datos.nombreUsuario !== usuario.nombreUsuario) {
-      const existeUser = await this.repo.buscarPorUsername(datos.nombreUsuario);
+    if (datosFiltrados.nombreUsuario !== usuario.nombreUsuario) {
+      const existeUser = await this.repo.buscarPorUsername(datosFiltrados.nombreUsuario);
 
       if (existeUser) {
         throw new ConflictException(
