@@ -17,6 +17,25 @@ type Solicitud = {
   numeroTelefono?: string;
   createdAt: string;
   updatedAt: string;
+
+  publicacion?: {
+    id: string;
+    titulo: string;
+  };
+
+  solicitante?: {
+    id: string;
+    nombre: string;
+    email?: string;
+    telefono?: string;
+  };
+
+  creadorPublicacion?: {
+    id: string;
+    nombre: string;
+    email?: string;
+    telefono?: string;
+  };
 };
 
 export default function SolicitudesPage() {
@@ -225,12 +244,14 @@ export default function SolicitudesPage() {
 
                   <div className={styles.contenido}>
                     <p>
-                      <strong>Publicación:</strong>{" "}
-                      <Link
-                        href={`/publicaciones/publicacion/${solicitud.publicacionId}`}
-                      >
-                        Ver publicación
-                      </Link>
+                      <p>
+                        <strong>Publicación:</strong>{" "}
+                        <Link className={styles.linkPublicacion}
+                          href={`/publicaciones/publicacion/${solicitud.publicacionId}`}
+                        >
+                          {solicitud.publicacion?.titulo ?? "Ver publicación"}
+                        </Link>
+                      </p>
                     </p>
 
                     {solicitud.mensaje && (
@@ -252,17 +273,20 @@ export default function SolicitudesPage() {
                     )}
                     {solicitud.estado === "ACEPTADA" && (
                       <>
+                      <div className={styles.separador}>
+                        <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
                         <p>
-                          <strong>Nombre:</strong> {solicitud.nombreUsuario}
+                          <strong>Nombre:</strong> {solicitud.creadorPublicacion?.nombre}
                         </p>
 
                         <p>
-                          <strong>Correo:</strong> {solicitud.correo}
+                          <strong>Correo:</strong> {solicitud.creadorPublicacion?.email}
                         </p>
 
                         <p>
-                          <strong>Teléfono:</strong> {solicitud.numeroTelefono}
+                          <strong>Teléfono:</strong> {solicitud.creadorPublicacion?.telefono}
                         </p>
+                        </div>
                       </>
                     )}
                     {solicitud.estado === "PENDIENTE" && (
@@ -313,10 +337,10 @@ export default function SolicitudesPage() {
                   <div className={styles.contenido}>
                     <p>
                       <strong>Publicación:</strong>{" "}
-                      <Link
+                      <Link className={styles.linkPublicacion}
                         href={`/publicaciones/publicacion/${solicitud.publicacionId}`}
                       >
-                        Ver publicación
+                        {solicitud.publicacion?.titulo ?? "Ver publicación"}
                       </Link>
                     </p>
 
@@ -340,17 +364,20 @@ export default function SolicitudesPage() {
 
                     {solicitud.estado === "ACEPTADA" && (
                       <>
+                      <div className={styles.separador}>
+                        <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
                         <p>
-                          <strong>Nombre:</strong> {solicitud.nombreUsuario}
+                          <strong>Nombre:</strong> {solicitud.solicitante?.nombre}
                         </p>
 
                         <p>
-                          <strong>Correo:</strong> {solicitud.correo}
+                          <strong>Correo:</strong> {solicitud.solicitante?.email}
                         </p>
 
                         <p>
-                          <strong>Teléfono:</strong> {solicitud.numeroTelefono}
+                          <strong>Teléfono:</strong> {solicitud.solicitante?.telefono}
                         </p>
+                        </div>
                       </>
                     )}
                     {solicitud.estado === "PENDIENTE" && (
