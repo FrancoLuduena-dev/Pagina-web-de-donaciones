@@ -105,7 +105,10 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0 2rem 2rem;
 }
 

@@ -4,8 +4,14 @@ import { EstadoPublicacion } from "@/types/EstadoPublicacion";
 import type { PublicacionResumen } from "@/types/PublicacionResumen";
 import type { PublicacionBackend } from "@/types/PublicacionBackend";
 import { labelCategoria } from "@/lib/publicacionLabels";
+import {
+  LOCALIDAD_ID_DEFAULT,
+  zonaRetiroDesdeLocalidadId,
+} from "@/constants/localidadesVicenteLopez";
 
-/** UUIDs temporales hasta que el backend exponga categorías y localidades reales. */
+export { LOCALIDAD_ID_DEFAULT };
+
+/** UUIDs temporales hasta que el backend exponga categorías reales. */
 export const CATEGORIA_IDS: Record<CategoriaPublicacion, string> = {
   [CategoriaPublicacion.INDUMENTARIA]: "550e8400-e29b-41d4-a716-446655440001",
   [CategoriaPublicacion.MUEBLES]: "550e8400-e29b-41d4-a716-446655440002",
@@ -13,7 +19,13 @@ export const CATEGORIA_IDS: Record<CategoriaPublicacion, string> = {
   [CategoriaPublicacion.OTROS]: "550e8400-e29b-41d4-a716-446655440004",
 };
 
-export const LOCALIDAD_ID_DEFAULT = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
+export const MAX_IMAGENES_PUBLICACION = 5;
+
+export function getImagenesPublicacion(publicacion: {
+  imagenUrls?: string[];
+}): string[] {
+  return publicacion.imagenUrls ?? [];
+}
 
 export const CONDICIONES_OBJETO = [
   { value: "NUEVO", label: "Nuevo" },
@@ -58,6 +70,8 @@ export function labelEstadoPublicacionBackend(estado: string): string {
   return ESTADO_PUBLICACION_LABELS[estado] ?? estado;
 }
 
+export { labelLocalidadId, zonaRetiroDesdeLocalidadId } from "@/constants/localidadesVicenteLopez";
+
 export function mapPublicacionBackendToResumen(
   publicacion: PublicacionBackend,
 ): PublicacionResumen {
@@ -65,9 +79,9 @@ export function mapPublicacionBackendToResumen(
     idPublicacion: publicacion.id,
     tituloPublicacion: publicacion.titulo,
     descripcionPublicacion: publicacion.descripcion,
-    urlFoto: publicacion.imagenUrl,
+    urlFoto: getImagenesPublicacion(publicacion)[0] ?? "",
     categoria: categoriaIdToEnum(publicacion.categoriaId),
-    zonaRetiro: "Localidad por definir",
+    zonaRetiro: zonaRetiroDesdeLocalidadId(publicacion.localidadId),
     estadoPublicacion:
       ESTADO_BACKEND_A_FRONT[publicacion.estado] ?? EstadoPublicacion.DISPONIBLE,
     estadoDonacion:

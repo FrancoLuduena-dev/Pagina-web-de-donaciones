@@ -1,20 +1,23 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "./Searchbar.module.css";
-// Use plain <img> to avoid next/image wrappers that may alter rendering
 
 export default function Searchbar() {
+  const router = useRouter();
   const [busqueda, setBusqueda] = useState("");
 
   const manejarBusqueda = () => {
-    console.log("Buscar:", busqueda);
+    const texto = busqueda.trim();
 
-    /*
-    Conexion real cuando este conectado front y back
+    if (!texto) {
+      router.push("/publicaciones");
+      return;
+    }
 
-    buscarPublicaciones(busqueda);
-    */
+    router.push(`/publicaciones?q=${encodeURIComponent(texto)}`);
+
   };
 
   return (
@@ -53,7 +56,7 @@ export default function Searchbar() {
           />
 
           <img
-            src="/icons/search_hover.png"
+            src="/icons/search.png"
             alt=""
             width={24}
             height={24}

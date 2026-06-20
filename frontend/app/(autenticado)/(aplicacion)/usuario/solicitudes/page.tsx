@@ -92,9 +92,9 @@ export default function SolicitudesPage() {
         solicitudesRecibidas.map((solicitud) =>
           solicitud.id === solicitudId
             ? {
-                ...solicitud,
-                estado: "ACEPTADA",
-              }
+              ...solicitud,
+              estado: "ACEPTADA",
+            }
             : solicitud,
         ),
       );
@@ -129,9 +129,9 @@ export default function SolicitudesPage() {
         solicitudesRecibidas.map((solicitud) =>
           solicitud.id === solicitudId
             ? {
-                ...solicitud,
-                estado: "RECHAZADA",
-              }
+              ...solicitud,
+              estado: "RECHAZADA",
+            }
             : solicitud,
         ),
       );
@@ -166,9 +166,9 @@ export default function SolicitudesPage() {
         solicitudes.map((solicitud) =>
           solicitud.id === solicitudId
             ? {
-                ...solicitud,
-                estado: "CANCELADA",
-              }
+              ...solicitud,
+              estado: "CANCELADA",
+            }
             : solicitud,
         ),
       );
@@ -210,13 +210,14 @@ export default function SolicitudesPage() {
                 <article key={solicitud.id} className={styles.card}>
                   <div className={styles.header}>
                     <span
-                      className={`${styles.estado} ${
-                        solicitud.estado === "ACEPTADA"
-                          ? styles.estadoAceptada
-                          : solicitud.estado === "RECHAZADA"
-                            ? styles.estadoRechazada
+                      className={`${styles.estado} ${solicitud.estado === "ACEPTADA"
+                        ? styles.estadoAceptada
+                        : solicitud.estado === "RECHAZADA"
+                          ? styles.estadoRechazada
+                          : solicitud.estado === "CANCELADA"
+                            ? styles.estadoCancelada
                             : styles.estadoPendiente
-                      }`}
+                        }`}
                     >
                       {solicitud.estado}
                     </span>
@@ -296,13 +297,14 @@ export default function SolicitudesPage() {
                 <article key={solicitud.id} className={styles.card}>
                   <div className={styles.header}>
                     <span
-                      className={`${styles.estado} ${
-                        solicitud.estado === "ACEPTADA"
-                          ? styles.estadoAceptada
-                          : solicitud.estado === "RECHAZADA"
-                            ? styles.estadoRechazada
+                      className={`${styles.estado} ${solicitud.estado === "ACEPTADA"
+                        ? styles.estadoAceptada
+                        : solicitud.estado === "RECHAZADA"
+                          ? styles.estadoRechazada
+                          : solicitud.estado === "CANCELADA"
+                            ? styles.estadoCancelada
                             : styles.estadoPendiente
-                      }`}
+                        }`}
                     >
                       {solicitud.estado}
                     </span>

@@ -5,9 +5,11 @@ export type PublicacionBackend = {
   categoriaId: string;
   localidadId: string;
   condicion: string;
-  imagenUrl: string;
+  imagenUrls: string[];
   estado: string;
   creadorId: string;
+  creadorNombreUsuario?: string;
+  creadorNombreCompleto?: string;
 };
 
 export type CrearPublicacionPayload = {
@@ -16,7 +18,7 @@ export type CrearPublicacionPayload = {
   categoriaId: string;
   localidadId: string;
   condicion: string;
-  imagenUrl: string;
+  imagenUrls: string[];
 };
 
 export type EditarPublicacionPayload = Partial<CrearPublicacionPayload>;

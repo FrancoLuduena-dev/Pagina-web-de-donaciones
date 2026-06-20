@@ -4,8 +4,19 @@ const backendBase =
   process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
 export async function POST(request: Request) {
+  const authToken = request.headers
+    .get("Authorization")
+    ?.replace(/^Bearer\s+/, "");
+
+  if (!authToken) {
+    return NextResponse.json(
+      { message: "Token de autenticación faltante." },
+      { status: 401 },
+    );
+  }
+
   let body: unknown;
-  
+
   try {
     body = await request.json();
   } catch {
@@ -13,9 +24,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const res = await fetch(`${backendBase}/usuario`, {
+    const res = await fetch(`${backendBase}/solicitudes`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`,
+      },
       body: JSON.stringify(body),
     });
 
@@ -30,9 +44,9 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         message:
-          "No se pudo conectar con el servidor.",
+          "No se pudo conectar con el servidor. ¿Está corriendo el backend?",
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }

@@ -38,10 +38,10 @@ export default function RegisterPage() {
         
 
         try {
-            // la contraseña tiene que tener al menos 6 caracteres y el correo tiene que ser un formato valido 
             // validaciones front
             const contraseniasCoinciden = contrasenia === contraseniaDos;
             const correosCoinciden = correo.trim() === correoDos.trim();
+            const contraseniaFormato = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/.test(contrasenia);
 
             if (!contraseniasCoinciden) {
                 throw new Error("Las contraseñas no coinciden.");
@@ -57,29 +57,33 @@ export default function RegisterPage() {
                 throw new Error("El formato del correo no es válido.");
             }
 
+            if (!contraseniaFormato ) {
+                throw new Error("El formato de la contraseña no es valido") 
+            }
+
             //validaciones en el backend
-          const data = await registerRequest({
-            correo: correo.trim(),
-            contrasenia,
-            nombreUsuario,
-            nombreCompleto,
-            numeroTelefono,
-          });
+            const data = await registerRequest({
+                correo: correo.trim(),
+                contrasenia,
+                nombreUsuario,
+                nombreCompleto,
+                numeroTelefono: numeroTelefono.replace(/\s+/g, ''),
+            });
 
           //caso exito redirige al login
-          router.push("/login");
-          router.refresh();
+            router.push("/login");
+            router.refresh();
         } catch (err) {
-          setError(
+            setError(
             err instanceof Error
-              ? err.message
-              : "Error desconocido." 
-          );
+                ? err.message
+                : "Error desconocido." 
+            );
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      }
-      
+    }
+
     return (
         <main className={styles.main}>
             <div className={styles.container}>
@@ -170,9 +174,10 @@ export default function RegisterPage() {
                         <div className={styles.guidelines}>
                             <p>Requisitos de la contraseña:</p>
                             <ul>
-                                <li>Mínimo 6 caracteres</li>
-                                <li>Usa letras y números</li>
-                                <li>No uses tu nombre completo</li>
+                                <li>Mínimo 8 caracteres</li>
+                                <li>Usar letras, números</li>
+                                <li>Usar al menos una mayuscula, una minuscula, un numero y un simbolo</li>
+                                <li>Prohibido usar # y ?</li>
                             </ul>
                         </div>
                 </div>
@@ -255,7 +260,10 @@ export default function RegisterPage() {
                         id="numeroTelefono"
                         name="numeroTelefono"
                         type="tel"
+                        inputMode="tel"
                         autoComplete="tel"
+                        pattern="^\+?[0-9\s]{8,20}$"
+                        placeholder="Ejemplo de formato: +54 9 11 1234 5678 o 1234 5678"
                         required
                         value={numeroTelefono}
                         onChange={(e) =>
@@ -286,7 +294,7 @@ export default function RegisterPage() {
                 </form>
 
                 <p className={styles.backLinkContainer}>
-                     ¿Ya tenés una cuenta?{" "}
+                    ¿Ya tenés una cuenta?{" "}
                     <Link
                         href="/login"
                         className={styles.backLink}

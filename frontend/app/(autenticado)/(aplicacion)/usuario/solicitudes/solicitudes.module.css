@@ -48,6 +48,11 @@
   color: var(--color-texto-primario);
 }
 
+.estadoCancelada{
+  background-color: var(--color-alertas);
+  color: var(--color-texto-primario);
+}
+
 .estadoPendiente {
   background-color: var(--color-warning);
   color: var(--color-texto-primario);

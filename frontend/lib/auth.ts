@@ -22,6 +22,7 @@ export type RegisterPayload = {
 
 export type RegisterResponse = {
   message: string;
+  
   user?: {
     id: number;
     correo: string;
@@ -104,12 +105,14 @@ export async function registerRequest(
   }
 
   if (!res.ok) {
-    const msg =
-      data.message ||
-      (res.status === 401
-        ? "Campos invalidos o correo/nombre de usuario ya registrado."
-        : `Error al registrar cuenta (${res.status}).`);
-    throw new Error(msg);
+      let msg =
+        data.message ||
+        (res.status === 400
+          ? "Formato de los campos inválido."
+          : res.status === 401
+          ? "Campos invalidos o correo/nombre de usuario ya registrado."
+          : `Error al registrar cuenta (${res.status}).`);
+      throw new Error(msg);
   }
 
   return data;
@@ -136,11 +139,14 @@ export async function resetPasswordRequest(
   }
 
   if (!res.ok) {
-    const msg =
+    let msg =
       data.message ||
-      (res.status === 401
+      (res.status === 400
+        ? "Formato de los campos inválido."
+        : res.status === 401
         ? "Las contraseñas no coinciden o la contraseña actual es incorrecta."
         : `Error al actualizar la contraseña (${res.status}).`);
+    
     throw new Error(msg);
   }
 
@@ -168,11 +174,15 @@ export async function editarPerfilRequest(
   }
 
   if (!res.ok) {
-    const msg =
+    
+    let msg =
       data.message ||
-      (res.status === 401
+      (res.status === 400
+        ? "Formato de los campos inválido."
+        : res.status === 401
         ? "Los datos del perfil son inválidos."
         : `Error al actualizar el perfil (${res.status}).`);
+    
     throw new Error(msg);
   }
 
