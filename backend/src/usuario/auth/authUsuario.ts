@@ -75,26 +75,4 @@ export default class autenticacionUsuario {
       options,
     );
   }
-
-  public async validarToken(token: string): Promise<Usuario> {
-    try {
-      const secret = this.config.get<string>('JWT_SECRET');
-
-      if (!secret) {
-        throw new InternalServerErrorException('JWT no configurado en el servidor');
-      }
-
-      const decoded = verify(token, secret) as { id: string };
-
-      const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
-
-      if (!usuario) {
-        throw new UnauthorizedException('Usuario no encontrado');
-      }
-
-      return usuario;
-    } catch {
-      throw new UnauthorizedException('Token inválido');
-    }
-  }
 }
