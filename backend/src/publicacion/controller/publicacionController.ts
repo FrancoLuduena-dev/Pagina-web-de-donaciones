@@ -10,15 +10,16 @@ import {
   Query,
   Delete,
   Req,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 import { Request } from 'express';
 import { PublicacionService } from '../service/publicacionService';
 import {
   buildPublicacionImagenUrl,
+  MAX_IMAGENES_PUBLICACION,
   publicacionUploadMulterOptions,
 } from '../service/publicacionUploadService';
 import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
@@ -42,15 +43,19 @@ export class PublicacionController {
 
   @UseGuards(AuthGuard)
   @Post('upload')
-  @UseInterceptors(FileInterceptor('imagen', publicacionUploadMulterOptions))
-  subirImagen(
-    @UploadedFile() file: Express.Multer.File,
-  ): { imagenUrl: string } {
-    if (!file) {
+  @UseInterceptors(
+    FilesInterceptor('imagenes', MAX_IMAGENES_PUBLICACION, publicacionUploadMulterOptions),
+  )
+  subirImagenes(
+    @UploadedFiles() files: Express.Multer.File[],
+  ): { imagenUrls: string[] } {
+    if (!files?.length) {
       throw new BadRequestException('No se recibió ninguna imagen');
     }
 
-    return { imagenUrl: buildPublicacionImagenUrl(file.filename) };
+    return {
+      imagenUrls: files.map((file) => buildPublicacionImagenUrl(file.filename)),
+    };
   }
 
   @UseGuards(AuthGuard)
@@ -79,8 +84,8 @@ export class PublicacionController {
   }
 
   @Get(':id')
-  buscarPublicacionPorId(@Param('id') id: string): Promise<Publicacion> {
-    return this.publicacionService.buscarPublicacionPorId(id);
+  buscarPublicacionPorId(@Param('id') id: string) {
+    return this.publicacionService.buscarPublicacionPorIdConCreador(id);
   }
 
   @UseGuards(AuthGuard)
@@ -107,7 +112,7 @@ export class PublicacionController {
     @Param('id') id: string,
     @Req() req: RequestConUsuario,
   ): Promise<Publicacion> {
-    return this.publicacionService.eliminar(id, req.user.id, req.user.rol);
+    return this.publicacionService.eliminar(id, req.user.id);
   }
 
   @UseGuards(AuthGuard)

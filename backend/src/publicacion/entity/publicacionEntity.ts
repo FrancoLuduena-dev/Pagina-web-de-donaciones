@@ -42,8 +42,8 @@ export class Publicacion {
   })
   condicion!: CondicionObjeto;
 
-  @Column()
-  imagenUrl!: string;
+  @Column({ type: 'jsonb', default: [] })
+  imagenUrls!: string[];
 
   @Column({
     type: 'enum',
@@ -127,8 +127,8 @@ export class Publicacion {
       this.descripcion = datos.descripcion;
     }
 
-    if (datos.imagenUrl !== undefined) {
-      this.imagenUrl = datos.imagenUrl;
+    if (datos.imagenUrls !== undefined) {
+      this.imagenUrls = datos.imagenUrls;
     }
 
     if (datos.condicion !== undefined) {

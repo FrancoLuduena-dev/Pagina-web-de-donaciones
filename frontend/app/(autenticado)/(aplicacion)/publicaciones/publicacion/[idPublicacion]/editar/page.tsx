@@ -7,13 +7,19 @@ import RemoteImage from "@/components/RemoteImage";
 import {
   CATEGORIA_IDS,
   CONDICIONES_OBJETO,
+  MAX_IMAGENES_PUBLICACION,
   categoriaIdToEnum,
+  getImagenesPublicacion,
   type CondicionObjeto,
 } from "@/constants/publicacionesBackend";
 import {
+  LOCALIDADES_VICENTE_LOPEZ,
+  MUNICIPIO_VICENTE_LOPEZ,
+} from "@/constants/localidadesVicenteLopez";
+import {
   editarPublicacionRequest,
   obtenerPublicacionRequest,
-  subirImagenPublicacionRequest,
+  subirImagenesPublicacionRequest,
 } from "@/lib/publicaciones";
 import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
 
@@ -26,14 +32,16 @@ export default function EditarPublicacionPage() {
     descripcion: "",
     categoria: CategoriaPublicacion.INDUMENTARIA,
     condicion: "USADO_BUENO" as CondicionObjeto,
-    imagenUrl: "",
+    localidadId: LOCALIDADES_VICENTE_LOPEZ[0].id,
   });
-  const [imagenPreview, setImagenPreview] = useState<string>("");
-  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+  const [imagenesActuales, setImagenesActuales] = useState<string[]>([]);
+  const [archivosNuevos, setArchivosNuevos] = useState<File[]>([]);
+  const [previewsNuevos, setPreviewsNuevos] = useState<string[]>([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
   const [noEncontrada, setNoEncontrada] = useState(false);
+  const [sinPermiso, setSinPermiso] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -42,20 +50,44 @@ export default function EditarPublicacionPage() {
       setCargando(true);
       setError("");
       setNoEncontrada(false);
+      setSinPermiso(false);
 
       try {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
         const publicacion = await obtenerPublicacionRequest(params.idPublicacion);
 
         if (!activo) return;
+
+        const meRes = await fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!meRes.ok) {
+          throw new Error("No se pudo verificar tu sesión.");
+        }
+
+        const usuario = await meRes.json();
+
+        if (!activo) return;
+
+        if (usuario.id !== publicacion.creadorId) {
+          setSinPermiso(true);
+          return;
+        }
 
         setForm({
           titulo: publicacion.titulo,
           descripcion: publicacion.descripcion,
           categoria: categoriaIdToEnum(publicacion.categoriaId),
           condicion: publicacion.condicion as CondicionObjeto,
-          imagenUrl: publicacion.imagenUrl,
+          localidadId: publicacion.localidadId,
         });
-        setImagenPreview(publicacion.imagenUrl);
+        setImagenesActuales(getImagenesPublicacion(publicacion));
       } catch (err) {
         if (!activo) return;
 
@@ -79,16 +111,44 @@ export default function EditarPublicacionPage() {
     return () => {
       activo = false;
     };
-  }, [params.idPublicacion]);
+  }, [params.idPublicacion, router]);
 
-  const manejarArchivo = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const manejarArchivos = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length) return;
 
-    setArchivoImagen(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagenPreview(String(reader.result ?? ""));
-    reader.readAsDataURL(file);
+    const total = imagenesActuales.length + archivosNuevos.length + files.length;
+    if (total > MAX_IMAGENES_PUBLICACION) {
+      setError(`Podés tener hasta ${MAX_IMAGENES_PUBLICACION} imágenes en total.`);
+      return;
+    }
+
+    setError("");
+    const combinados = [...archivosNuevos, ...files];
+    setArchivosNuevos(combinados);
+
+    combinados.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewsNuevos((prev) => {
+          const next = [...prev];
+          next[index] = String(reader.result ?? "");
+          return next;
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    event.target.value = "";
+  };
+
+  const quitarImagenActual = (index: number) => {
+    setImagenesActuales((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const quitarArchivoNuevo = (index: number) => {
+    setArchivosNuevos((prev) => prev.filter((_, i) => i !== index));
+    setPreviewsNuevos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const guardar = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -97,18 +157,24 @@ export default function EditarPublicacionPage() {
     setGuardando(true);
 
     try {
-      let imagenUrl = form.imagenUrl.trim();
+      const urlsSubidas =
+        archivosNuevos.length > 0
+          ? await subirImagenesPublicacionRequest(archivosNuevos)
+          : [];
 
-      if (archivoImagen) {
-        imagenUrl = await subirImagenPublicacionRequest(archivoImagen);
+      const imagenUrls = [...imagenesActuales, ...urlsSubidas];
+
+      if (!imagenUrls.length) {
+        throw new Error("La publicación debe tener al menos una imagen.");
       }
 
       await editarPublicacionRequest(params.idPublicacion, {
         titulo: form.titulo.trim(),
         descripcion: form.descripcion.trim(),
         categoriaId: CATEGORIA_IDS[form.categoria],
+        localidadId: form.localidadId,
         condicion: form.condicion,
-        ...(imagenUrl ? { imagenUrl } : {}),
+        imagenUrls,
       });
 
       router.push(`/publicaciones/publicacion/${params.idPublicacion}`);
@@ -127,11 +193,30 @@ export default function EditarPublicacionPage() {
     return <main style={{ padding: "2rem" }}>Publicación no encontrada.</main>;
   }
 
+  if (sinPermiso) {
+    return (
+      <main style={{ padding: "2rem", maxWidth: 760, margin: "0 auto" }}>
+        <h1>Sin permiso</h1>
+        <p style={{ color: "#4b5563", marginBottom: "1rem" }}>
+          Solo el creador puede editar esta publicación.
+        </p>
+        <Link
+          href={`/publicaciones/publicacion/${params.idPublicacion}`}
+          style={{ color: "#1f6feb", fontWeight: 600 }}
+        >
+          Volver al detalle
+        </Link>
+      </main>
+    );
+  }
+
+  const totalImagenes = imagenesActuales.length + archivosNuevos.length;
+
   return (
     <main style={{ padding: "2rem", maxWidth: 760, margin: "0 auto" }}>
       <h1>Editar publicación</h1>
       <p style={{ color: "#4b5563", marginBottom: "1rem" }}>
-        Los cambios se guardan en el backend. Tenés que ser el creador de la publicación.
+        Podés tener hasta {MAX_IMAGENES_PUBLICACION} imágenes. Tenés que ser el creador.
       </p>
 
       {error ? (
@@ -180,6 +265,22 @@ export default function EditarPublicacionPage() {
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
+          Localidad ({MUNICIPIO_VICENTE_LOPEZ})
+          <select
+            value={form.localidadId}
+            onChange={(e) => setForm({ ...form, localidadId: e.target.value })}
+            style={inputStyle}
+            required
+          >
+            {LOCALIDADES_VICENTE_LOPEZ.map((localidad) => (
+              <option key={localidad.id} value={localidad.id}>
+                {localidad.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label style={{ display: "grid", gap: "0.25rem" }}>
           Condición del objeto
           <select
             value={form.condicion}
@@ -196,47 +297,68 @@ export default function EditarPublicacionPage() {
           </select>
         </label>
 
+        <div style={{ display: "grid", gap: "0.5rem" }}>
+          <p style={{ margin: 0, fontWeight: 500 }}>
+            Imágenes actuales ({totalImagenes}/{MAX_IMAGENES_PUBLICACION})
+          </p>
+          {imagenesActuales.length ? (
+            <div style={previewGridStyle}>
+              {imagenesActuales.map((url, index) => (
+                <div key={url} style={previewItemStyle}>
+                  <div style={{ position: "relative", width: "100%", height: 100 }}>
+                    <RemoteImage src={url} alt={`Imagen ${index + 1}`} fill loading="eager" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => quitarImagenActual(index)}
+                    style={removeButtonStyle}
+                  >
+                    Quitar
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: "#6b7280", margin: 0 }}>No quedan imágenes guardadas.</p>
+          )}
+        </div>
+
         <label style={{ display: "grid", gap: "0.25rem" }}>
-          URL de imagen (opcional si subís un archivo)
+          Agregar imágenes
           <input
-            value={form.imagenUrl}
-            onChange={(e) => {
-              setForm({ ...form, imagenUrl: e.target.value });
-              setImagenPreview(e.target.value);
-              setArchivoImagen(null);
-            }}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={manejarArchivos}
             style={inputStyle}
-            placeholder="https://..."
+            disabled={totalImagenes >= MAX_IMAGENES_PUBLICACION}
           />
         </label>
 
-        <label style={{ display: "grid", gap: "0.25rem" }}>
-          Subir nueva imagen
-          <input type="file" accept="image/*" onChange={manejarArchivo} style={inputStyle} />
-        </label>
-
-        {imagenPreview ? (
-          imagenPreview.startsWith("data:") ? (
-            <img
-              src={imagenPreview}
-              alt="Vista previa"
-              style={{
-                width: "100%",
-                maxWidth: 320,
-                borderRadius: "1rem",
-                objectFit: "cover",
-              }}
-            />
-          ) : (
-            <div style={{ position: "relative", width: 320, height: 220 }}>
-              <RemoteImage
-                src={imagenPreview}
-                alt="Vista previa"
-                fill
-                loading="eager"
-              />
-            </div>
-          )
+        {previewsNuevos.length ? (
+          <div style={previewGridStyle}>
+            {previewsNuevos.map((preview, index) => (
+              <div key={`${preview}-${index}`} style={previewItemStyle}>
+                <img
+                  src={preview}
+                  alt={`Nueva imagen ${index + 1}`}
+                  style={{
+                    width: "100%",
+                    height: 100,
+                    objectFit: "cover",
+                    borderRadius: "0.75rem",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => quitarArchivoNuevo(index)}
+                  style={removeButtonStyle}
+                >
+                  Quitar
+                </button>
+              </div>
+            ))}
+          </div>
         ) : null}
 
         <div style={actionsStyle}>
@@ -260,6 +382,26 @@ const inputStyle: React.CSSProperties = {
   borderRadius: "0.75rem",
   padding: "0.75rem 0.9rem",
   fontSize: "1rem",
+};
+
+const previewGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+  gap: "0.75rem",
+};
+
+const previewItemStyle: React.CSSProperties = {
+  display: "grid",
+  gap: "0.35rem",
+};
+
+const removeButtonStyle: React.CSSProperties = {
+  border: "1px solid #d1d5db",
+  borderRadius: "999px",
+  padding: "0.25rem 0.5rem",
+  background: "white",
+  cursor: "pointer",
+  fontSize: "0.85rem",
 };
 
 const actionsStyle: React.CSSProperties = {

@@ -5,7 +5,10 @@ export class PublicacionResponseDto {
   categoriaId!: string;
   localidadId!: string;
   condicion!: string;
-  imagenUrl!: string;
+  imagenUrls!: string[];
   estado!: string;
+  creadorId!: string;
+  creadorNombreUsuario!: string;
+  creadorNombreCompleto!: string;
   createdAt!: Date;
 }

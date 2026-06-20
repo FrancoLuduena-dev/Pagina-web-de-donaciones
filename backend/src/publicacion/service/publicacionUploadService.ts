@@ -4,6 +4,7 @@ import { extname, join } from 'path';
 import { diskStorage } from 'multer';
 
 const UPLOAD_DIR = join(process.cwd(), 'uploads', 'publicaciones');
+export const MAX_IMAGENES_PUBLICACION = 5;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = /^image\/(jpeg|png|gif|webp)$/;
 

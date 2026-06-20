@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { MAX_IMAGENES_PUBLICACION } from "@/constants/publicacionesBackend";
+
 const backendBase =
   process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
@@ -23,17 +25,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Formulario inválido." }, { status: 400 });
   }
 
-  const imagen = formData.get("imagen");
+  const imagenes = formData
+    .getAll("imagenes")
+    .filter((item): item is File => item instanceof File);
 
-  if (!(imagen instanceof File)) {
+  if (!imagenes.length) {
     return NextResponse.json(
       { message: "No se recibió ninguna imagen." },
       { status: 400 },
     );
   }
 
+  if (imagenes.length > MAX_IMAGENES_PUBLICACION) {
+    return NextResponse.json(
+      { message: `Podés subir hasta ${MAX_IMAGENES_PUBLICACION} imágenes.` },
+      { status: 400 },
+    );
+  }
+
   const backendForm = new FormData();
-  backendForm.append("imagen", imagen);
+  imagenes.forEach((imagen) => backendForm.append("imagenes", imagen));
 
   try {
     const res = await fetch(`${backendBase}/publicaciones/upload`, {

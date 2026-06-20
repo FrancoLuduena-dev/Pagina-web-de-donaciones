@@ -1,9 +1,14 @@
 import Link from "next/link";
 import Gallery from "@/components/Gallery";
+import EliminarPublicacionButton from "@/components/publicaciones/EliminarPublicacionButton";
+import EditarPublicacionLink from "@/components/publicaciones/EditarPublicacionLink";
+import SolicitarPublicacionButton from "@/components/publicaciones/SolicitarPublicacionButton";
 import {
+  getImagenesPublicacion,
   labelCategoriaId,
   labelCondicion,
   labelEstadoPublicacionBackend,
+  zonaRetiroDesdeLocalidadId,
 } from "@/constants/publicacionesBackend";
 import { obtenerPublicacionPorId } from "@/lib/publicaciones";
 import { publicacionesDestacadas } from "@/lib/mockPublicaciones";
@@ -36,7 +41,7 @@ export default async function PublicacionDetailPage({ params }: Props) {
   const publicacionBackend = await obtenerPublicacionPorId(idPublicacion);
 
   if (publicacionBackend) {
-    const fotos = publicacionBackend.imagenUrl ? [publicacionBackend.imagenUrl] : [];
+    const fotos = getImagenesPublicacion(publicacionBackend);
 
     return (
       <main className={styles.main}>
@@ -74,7 +79,9 @@ export default async function PublicacionDetailPage({ params }: Props) {
 
               <article className={styles.detailBlock}>
                 <p className={styles.detailLabel}>Localidad</p>
-                <p className={styles.detailValue}>{publicacionBackend.localidadId}</p>
+                <p className={styles.detailValue}>
+                  {zonaRetiroDesdeLocalidadId(publicacionBackend.localidadId)}
+                </p>
               </article>
             </div>
 
@@ -85,6 +92,15 @@ export default async function PublicacionDetailPage({ params }: Props) {
                   {labelCondicion(publicacionBackend.condicion)}
                 </p>
               </article>
+
+              <article className={styles.detailBlock}>
+                <p className={styles.detailLabel}>Publicado por</p>
+                <p className={styles.detailValue}>
+                  {publicacionBackend.creadorNombreCompleto ??
+                    publicacionBackend.creadorNombreUsuario ??
+                    "Usuario desconocido"}
+                </p>
+              </article>
             </div>
           </section>
 
@@ -92,13 +108,20 @@ export default async function PublicacionDetailPage({ params }: Props) {
             <Link href="/publicaciones" className={styles.backLink}>
               ← Volver a publicaciones
             </Link>
-            <Link
-              href={`/publicaciones/publicacion/${idPublicacion}/editar`}
+            <SolicitarPublicacionButton
+              idPublicacion={idPublicacion}
+              creadorId={publicacionBackend.creadorId}
+              estadoPublicacion={publicacionBackend.estado}
+            />
+            <EditarPublicacionLink
+              idPublicacion={idPublicacion}
+              creadorId={publicacionBackend.creadorId}
               className={styles.backLink}
-              style={{ marginLeft: "0.75rem" }}
-            >
-              Editar publicación
-            </Link>
+            />
+            <EliminarPublicacionButton
+              idPublicacion={idPublicacion}
+              creadorId={publicacionBackend.creadorId}
+            />
           </div>
         </div>
       </main>
@@ -178,13 +201,6 @@ export default async function PublicacionDetailPage({ params }: Props) {
         <div className={styles.actions}>
           <Link href="/publicaciones" className={styles.backLink}>
             ← Volver a publicaciones
-          </Link>
-          <Link
-            href={`/publicaciones/publicacion/${idPublicacion}/editar`}
-            className={styles.backLink}
-            style={{ marginLeft: "0.75rem" }}
-          >
-            Editar publicación
           </Link>
         </div>
       </div>
