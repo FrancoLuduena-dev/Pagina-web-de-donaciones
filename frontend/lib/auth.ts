@@ -22,6 +22,7 @@ export type RegisterPayload = {
 
 export type RegisterResponse = {
   message: string;
+  
   user?: {
     id: number;
     correo: string;
