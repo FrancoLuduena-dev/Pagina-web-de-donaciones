@@ -15,7 +15,7 @@ export default function Navbar() {
       <div className={styles.links}>
         <Link href="/publicaciones">Inicio</Link>
         <Link href="/publicaciones">Explorar publicaciones</Link>
-        <Link href="/como_funciona">Cómo funciona</Link>
+        <Link href="/ayuda">Preguntas Frecuentes</Link>
       </div>
 
       <div className={styles.botonUsuario}>

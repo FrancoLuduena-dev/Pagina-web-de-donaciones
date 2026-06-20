@@ -11,6 +11,10 @@ type Solicitud = {
   creadorPublicacionId?: string;
   mensaje?: string;
   estado: string;
+  motivoRechazo?: string;
+  nombreUsuario?: string;
+  correo?: string;
+  numeroTelefono?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -22,6 +26,9 @@ export default function SolicitudesPage() {
   );
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [motivosRechazo, setMotivosRechazo] = useState<Record<string, string>>(
+    {},
+  );
 
   const titulo = "Mis solicitudes";
 
@@ -109,7 +116,7 @@ export default function SolicitudesPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            motivo: "",
+            motivo: motivosRechazo[solicitudId] ?? "",
           }),
         },
       );
@@ -130,6 +137,43 @@ export default function SolicitudesPage() {
       );
     } catch {
       alert("No se pudo rechazar la solicitud.");
+    }
+  }
+
+  async function cancelarSolicitud(solicitudId: string) {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const respuesta = await fetch(
+        `/api/solicitudes/${solicitudId}/cancelar`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            motivo: "",
+          }),
+        },
+      );
+
+      if (!respuesta.ok) {
+        throw new Error();
+      }
+
+      setSolicitudes(
+        solicitudes.map((solicitud) =>
+          solicitud.id === solicitudId
+            ? {
+                ...solicitud,
+                estado: "CANCELADA",
+              }
+            : solicitud,
+        ),
+      );
+    } catch {
+      alert("No se pudo cancelar la solicitud.");
     }
   }
 
@@ -165,7 +209,17 @@ export default function SolicitudesPage() {
               {solicitudes.map((solicitud) => (
                 <article key={solicitud.id} className={styles.card}>
                   <div className={styles.header}>
-                    <span className={styles.estado}>{solicitud.estado}</span>
+                    <span
+                      className={`${styles.estado} ${
+                        solicitud.estado === "ACEPTADA"
+                          ? styles.estadoAceptada
+                          : solicitud.estado === "RECHAZADA"
+                            ? styles.estadoRechazada
+                            : styles.estadoPendiente
+                      }`}
+                    >
+                      {solicitud.estado}
+                    </span>
                   </div>
 
                   <div className={styles.contenido}>
@@ -188,6 +242,39 @@ export default function SolicitudesPage() {
                       <strong>Fecha:</strong>{" "}
                       {new Date(solicitud.createdAt).toLocaleDateString()}
                     </p>
+                    {solicitud.estado === "RECHAZADA" && (
+                      <p>
+                        <strong>Motivo de rechazo:</strong>{" "}
+                        {solicitud.motivoRechazo?.trim() ||
+                          "No se dio motivo de rechazo."}
+                      </p>
+                    )}
+                    {solicitud.estado === "ACEPTADA" && (
+                      <>
+                        <p>
+                          <strong>Nombre:</strong> {solicitud.nombreUsuario}
+                        </p>
+
+                        <p>
+                          <strong>Correo:</strong> {solicitud.correo}
+                        </p>
+
+                        <p>
+                          <strong>Teléfono:</strong> {solicitud.numeroTelefono}
+                        </p>
+                      </>
+                    )}
+                    {solicitud.estado === "PENDIENTE" && (
+                      <div className={styles.acciones}>
+                        <button
+                          type="button"
+                          className={styles.botonCancelar}
+                          onClick={() => cancelarSolicitud(solicitud.id)}
+                        >
+                          Cancelar solicitud
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </article>
               ))}
@@ -208,7 +295,17 @@ export default function SolicitudesPage() {
               {solicitudesRecibidas.map((solicitud) => (
                 <article key={solicitud.id} className={styles.card}>
                   <div className={styles.header}>
-                    <span className={styles.estado}>{solicitud.estado}</span>
+                    <span
+                      className={`${styles.estado} ${
+                        solicitud.estado === "ACEPTADA"
+                          ? styles.estadoAceptada
+                          : solicitud.estado === "RECHAZADA"
+                            ? styles.estadoRechazada
+                            : styles.estadoPendiente
+                      }`}
+                    >
+                      {solicitud.estado}
+                    </span>
                   </div>
 
                   <div className={styles.contenido}>
@@ -231,7 +328,29 @@ export default function SolicitudesPage() {
                       <strong>Fecha:</strong>{" "}
                       {new Date(solicitud.createdAt).toLocaleDateString()}
                     </p>
+                    {solicitud.estado === "RECHAZADA" && (
+                      <p>
+                        <strong>Motivo de rechazo:</strong>{" "}
+                        {solicitud.motivoRechazo?.trim() ||
+                          "No se dio motivo de rechazo."}
+                      </p>
+                    )}
 
+                    {solicitud.estado === "ACEPTADA" && (
+                      <>
+                        <p>
+                          <strong>Nombre:</strong> {solicitud.nombreUsuario}
+                        </p>
+
+                        <p>
+                          <strong>Correo:</strong> {solicitud.correo}
+                        </p>
+
+                        <p>
+                          <strong>Teléfono:</strong> {solicitud.numeroTelefono}
+                        </p>
+                      </>
+                    )}
                     {solicitud.estado === "PENDIENTE" && (
                       <div className={styles.acciones}>
                         <button
@@ -242,13 +361,28 @@ export default function SolicitudesPage() {
                           Aceptar
                         </button>
 
-                        <button
-                          type="button"
-                          className={styles.botonRechazar}
-                          onClick={() => rechazarSolicitud(solicitud.id)}
-                        >
-                          Rechazar
-                        </button>
+                        <div className={styles.inputConBoton}>
+                          <input
+                            type="text"
+                            placeholder="Motivo de rechazo (opcional)"
+                            value={motivosRechazo[solicitud.id] ?? ""}
+                            onChange={(e) =>
+                              setMotivosRechazo({
+                                ...motivosRechazo,
+                                [solicitud.id]: e.target.value,
+                              })
+                            }
+                            className={styles.inputMotivo}
+                          />
+
+                          <button
+                            type="button"
+                            className={styles.botonRechazar}
+                            onClick={() => rechazarSolicitud(solicitud.id)}
+                          >
+                            Rechazar
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

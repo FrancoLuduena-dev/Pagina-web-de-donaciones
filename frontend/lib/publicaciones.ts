@@ -4,6 +4,7 @@ import type {
   PublicacionBackend,
 } from "@/types/PublicacionBackend";
 import type { CondicionObjeto } from "@/constants/publicacionesBackend";
+import { MAX_IMAGENES_PUBLICACION } from "@/constants/publicacionesBackend";
 
 export type { CrearPublicacionPayload, EditarPublicacionPayload, PublicacionBackend };
 
@@ -15,9 +16,19 @@ function getToken(): string {
   return token;
 }
 
-export async function subirImagenPublicacionRequest(file: File): Promise<string> {
+export async function subirImagenesPublicacionRequest(
+  files: File[],
+): Promise<string[]> {
+  if (!files.length) {
+    return [];
+  }
+
+  if (files.length > MAX_IMAGENES_PUBLICACION) {
+    throw new Error(`Podés subir hasta ${MAX_IMAGENES_PUBLICACION} imágenes.`);
+  }
+
   const formData = new FormData();
-  formData.append("imagen", file);
+  files.forEach((file) => formData.append("imagenes", file));
 
   const res = await fetch("/api/publicaciones/upload", {
     method: "POST",
@@ -25,21 +36,26 @@ export async function subirImagenPublicacionRequest(file: File): Promise<string>
     body: formData,
   });
 
-  let data: { imagenUrl?: string; message?: string | string[] } = {};
+  let data: { imagenUrls?: string[]; message?: string | string[] } = {};
   try {
     data = await res.json();
   } catch {
     throw new Error("Respuesta inválida del servidor.");
   }
 
-  if (!res.ok || !data.imagenUrl) {
+  if (!res.ok || !data.imagenUrls?.length) {
     const msg = Array.isArray(data.message)
       ? data.message.join(", ")
-      : data.message || `Error al subir imagen (${res.status}).`;
+      : data.message || `Error al subir imágenes (${res.status}).`;
     throw new Error(msg);
   }
 
-  return data.imagenUrl;
+  return data.imagenUrls;
+}
+
+export async function subirImagenPublicacionRequest(file: File): Promise<string> {
+  const urls = await subirImagenesPublicacionRequest([file]);
+  return urls[0];
 }
 
 export async function crearPublicacionRequest(
@@ -125,6 +141,30 @@ export async function editarPublicacionRequest(
   }
 
   return data;
+}
+
+export async function eliminarPublicacionRequest(id: string): Promise<void> {
+  const res = await fetch(`/api/publicaciones/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+
+  let data: { message?: string | string[] } = {};
+  try {
+    data = await res.json();
+  } catch {
+    if (!res.ok) {
+      throw new Error(`Error al eliminar publicación (${res.status}).`);
+    }
+    return;
+  }
+
+  if (!res.ok) {
+    const msg = Array.isArray(data.message)
+      ? data.message.join(", ")
+      : data.message || `Error al eliminar publicación (${res.status}).`;
+    throw new Error(msg);
+  }
 }
 
 const backendBase =

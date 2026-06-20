@@ -11,10 +11,19 @@ import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
+import UsuarioService from 'src/usuario/service/usuarioService';
+
+export type PublicacionConCreador = Publicacion & {
+  creadorNombreUsuario: string;
+  creadorNombreCompleto: string;
+};
 
 @Injectable()
 export class PublicacionService {
-  constructor(private readonly publicacionRepository: PublicacionRepository) {}
+  constructor(
+    private readonly publicacionRepository: PublicacionRepository,
+    private readonly usuarioService: UsuarioService,
+  ) {}
 
   async crearPublicacion(
     dto: CrearPublicacionDto,
@@ -26,7 +35,7 @@ export class PublicacionService {
       categoriaId: dto.categoriaId,
       localidadId: dto.localidadId,
       condicion: dto.condicion,
-      imagenUrl: dto.imagenUrl,
+      imagenUrls: dto.imagenUrls,
       creadorId,
     });
 
@@ -70,6 +79,20 @@ export class PublicacionService {
     }
 
     return publicacion;
+  }
+
+  async buscarPublicacionPorIdConCreador(
+    id: string,
+  ): Promise<PublicacionConCreador> {
+    const publicacion = await this.buscarPublicacionPorId(id);
+    const creador = await this.usuarioService.obtenerUsuarioPorId(
+      publicacion.creadorId,
+    );
+
+    return Object.assign(publicacion, {
+      creadorNombreUsuario: creador.nombreUsuario,
+      creadorNombreCompleto: creador.nombreCompleto,
+    });
   }
 
   async reservar(id: string, usuarioId: string): Promise<Publicacion> {
@@ -140,20 +163,12 @@ export class PublicacionService {
     return this.publicacionRepository.guardar(publicacion);
   }
 
-  async eliminar(
-    id: string,
-    usuarioId: string,
-    usuarioRol: rolUsuario,
-  ): Promise<Publicacion> {
+  async eliminar(id: string, usuarioId: string): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    const esCreador = publicacion.creadorId === usuarioId;
-    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
-    const esSuperUsuario = usuarioRol === rolUsuario.usuarioAdministrador;
-
-    if (!esCreador && !esModerador && !esSuperUsuario) {
+    if (publicacion.creadorId !== usuarioId) {
       throw new ForbiddenException(
-        'Solo el creador, un moderador o super usuario puede eliminar la publicación',
+        'Solo el creador puede eliminar la publicación',
       );
     }
 
