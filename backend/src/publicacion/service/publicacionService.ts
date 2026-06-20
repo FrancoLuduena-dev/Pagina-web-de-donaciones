@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Publicacion } from '../entity/publicacionEntity';
 import { PublicacionRepository } from '../repository/publicacionRepository';
-import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
+import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
-import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
 
 @Injectable()
 export class PublicacionService {

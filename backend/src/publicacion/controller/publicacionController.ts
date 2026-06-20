@@ -20,13 +20,13 @@ import {
   buildPublicacionImagenUrl,
   publicacionUploadMulterOptions,
 } from '../service/publicacionUploadService';
-import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
+import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
 import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
-import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
 
 @Controller('publicaciones')
 export class PublicacionController {

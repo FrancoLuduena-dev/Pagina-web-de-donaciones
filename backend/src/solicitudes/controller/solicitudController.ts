@@ -11,11 +11,11 @@ import {
 
 import { SolicitudService } from '../service/solicitudService';
 import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
-import { Solicitud } from '../entity/solicitudEntity';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
 import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
 import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
 import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
+import { SolicitudResponseDto } from '../DTO/solicitudResponse';
 
 @UseGuards(AuthGuard)
 @Controller('solicitudes')
@@ -26,17 +26,19 @@ export class SolicitudController {
   crearSolicitud(
     @Body() dto: CrearSolicitudDto,
     @Req() req: RequestConUsuario,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     return this.solicitudService.crearSolicitud(dto, req.user.id);
   }
 
   @Get('mias')
-  listarMias(@Req() req: RequestConUsuario): Promise<Solicitud[]> {
+  listarMias(@Req() req: RequestConUsuario): Promise<SolicitudResponseDto[]> {
     return this.solicitudService.listarMisSolicitudes(req.user.id);
   }
 
   @Get('recibidas')
-  listarRecibidas(@Req() req: RequestConUsuario): Promise<Solicitud[]> {
+  listarRecibidas(
+    @Req() req: RequestConUsuario,
+  ): Promise<SolicitudResponseDto[]> {
     return this.solicitudService.listarSolicitudesRecibidas(req.user.id);
   }
 
@@ -44,7 +46,7 @@ export class SolicitudController {
   aceptarSolicitud(
     @Param('id') id: string,
     @Req() req: RequestConUsuario,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     return this.solicitudService.aceptarSolicitud(id, req.user.id);
   }
 
@@ -53,7 +55,7 @@ export class SolicitudController {
     @Param('id') id: string,
     @Body() dto: RechazarSolicitudDto,
     @Req() req: RequestConUsuario,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     return this.solicitudService.rechazarSolicitud(id, req.user.id, dto);
   }
 
@@ -61,7 +63,7 @@ export class SolicitudController {
   finalizarSolicitud(
     @Param('id') id: string,
     @Req() req: RequestConUsuario,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     return this.solicitudService.finalizarSolicitud(id, req.user.id);
   }
 
@@ -70,7 +72,7 @@ export class SolicitudController {
     @Param('id') id: string,
     @Body() dto: CancelarSolicitudDto,
     @Req() req: RequestConUsuario,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     return this.solicitudService.cancelarSolicitud(id, req.user.id, dto);
   }
 }

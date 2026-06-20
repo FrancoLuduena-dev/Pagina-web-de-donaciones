@@ -9,6 +9,12 @@ import { EstadoSolicitud } from '../enums/estadoSolicitud';
 
 @Injectable()
 export class SolicitudRepository {
+  private readonly relacionesSolicitud: string[] = [
+    'publicacion',
+    'solicitante',
+    'creadorPublicacion',
+  ];
+
   constructor(
     @InjectRepository(Solicitud)
     private readonly repository: Repository<Solicitud>,
@@ -29,6 +35,7 @@ export class SolicitudRepository {
   buscarPorId(id: string): Promise<Solicitud | null> {
     return this.repository.findOne({
       where: { id },
+      relations: this.relacionesSolicitud,
     });
   }
 
@@ -42,12 +49,14 @@ export class SolicitudRepository {
         solicitanteId,
         estado: In([EstadoSolicitud.PENDIENTE, EstadoSolicitud.ACEPTADA]),
       },
+      relations: this.relacionesSolicitud,
     });
   }
 
   listarMias(solicitanteId: string): Promise<Solicitud[]> {
     return this.repository.find({
       where: { solicitanteId },
+      relations: this.relacionesSolicitud,
       order: { createdAt: 'DESC' },
     });
   }
@@ -55,6 +64,7 @@ export class SolicitudRepository {
   listarRecibidas(creadorPublicacionId: string): Promise<Solicitud[]> {
     return this.repository.find({
       where: { creadorPublicacionId },
+      relations: this.relacionesSolicitud,
       order: { createdAt: 'DESC' },
     });
   }
@@ -65,6 +75,7 @@ export class SolicitudRepository {
         publicacionId,
         estado: EstadoSolicitud.PENDIENTE,
       },
+      relations: this.relacionesSolicitud,
     });
   }
 }

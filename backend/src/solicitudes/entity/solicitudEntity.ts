@@ -18,6 +18,7 @@ import {
 import { EstadoSolicitud } from '../enums/estadoSolicitud';
 import { TRANSICIONES_SOLICITUD } from '../constante/transicionesSolicitud';
 import { Publicacion } from '../../publicacion/entity/publicacionEntity';
+import Usuario from 'src/usuario/entity/usuarioEntity';
 
 @Entity('solicitudes')
 export class Solicitud {
@@ -30,6 +31,14 @@ export class Solicitud {
   @ManyToOne(() => Publicacion, (publicacion) => publicacion.solicitudes)
   @JoinColumn({ name: 'publicacionId' })
   publicacion!: Publicacion;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'solicitanteId' })
+  solicitante!: Usuario;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'creadorPublicacionId' })
+  creadorPublicacion!: Usuario;
 
   @Column()
   solicitanteId!: string;
@@ -123,13 +132,36 @@ export class Solicitud {
   }
 
   rechazar(motivo?: string): void {
+    if (this.estado !== EstadoSolicitud.PENDIENTE) {
+      throw new ConflictException(
+        'Solo se pueden rechazar solicitudes pendientes',
+      );
+    }
+
     this.validarTransicionSolicitud(EstadoSolicitud.RECHAZADA);
     this.motivoRechazo = motivo;
   }
 
   cancelar(motivo?: string): void {
+    if (this.estado !== EstadoSolicitud.PENDIENTE) {
+      throw new ConflictException(
+        'Solo se pueden cancelar solicitudes pendientes',
+      );
+    }
+
     this.validarTransicionSolicitud(EstadoSolicitud.CANCELADA);
     this.motivoCancelacion = motivo;
+  }
+
+  cancelarAceptada(motivo?: string): void {
+    if (this.estado !== EstadoSolicitud.ACEPTADA) {
+      throw new ConflictException(
+        'Solo se puede cancelar una solicitud aceptada',
+      );
+    }
+
+    this.validarTransicionSolicitud(EstadoSolicitud.RECHAZADA);
+    this.motivoRechazo = motivo;
   }
 
   finalizar(): void {

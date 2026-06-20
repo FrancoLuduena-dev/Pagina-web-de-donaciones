@@ -11,6 +11,7 @@ export const TRANSICIONES_SOLICITUD: Record<
   ],
 
   [EstadoSolicitud.ACEPTADA]: [
+    EstadoSolicitud.RECHAZADA,
     EstadoSolicitud.FINALIZADA,
     EstadoSolicitud.EXPIRADA,
     EstadoSolicitud.CANCELADA,

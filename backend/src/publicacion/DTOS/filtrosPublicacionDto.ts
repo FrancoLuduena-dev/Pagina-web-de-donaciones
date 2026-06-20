@@ -1,9 +1,4 @@
-import {
-  IsEnum,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';

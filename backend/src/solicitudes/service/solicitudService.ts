@@ -12,6 +12,7 @@ import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
 import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
 import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
 import { EstadoSolicitud } from '../enums/estadoSolicitud';
+import { SolicitudResponseDto } from '../DTO/solicitudResponse';
 
 @Injectable()
 export class SolicitudService {
@@ -23,7 +24,7 @@ export class SolicitudService {
   async crearSolicitud(
     dto: CrearSolicitudDto,
     solicitanteId: string,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     const publicacion = await this.publicacionService.buscarPublicacionPorId(
       dto.publicacionId,
     );
@@ -53,24 +54,43 @@ export class SolicitudService {
       mensaje: dto.mensaje,
     });
 
-    return this.solicitudRepository.guardar(nuevaSolicitud);
+    const solicitudGuardada =
+      await this.solicitudRepository.guardar(nuevaSolicitud);
+
+    const solicitudCompleta = await this.obtenerSolicitudPorId(
+      solicitudGuardada.id,
+    );
+
+    return this.mapearRespuesta(solicitudCompleta, solicitanteId);
   }
 
-  listarMisSolicitudes(solicitanteId: string): Promise<Solicitud[]> {
-    return this.solicitudRepository.listarMias(solicitanteId);
+  async listarMisSolicitudes(
+    solicitanteId: string,
+  ): Promise<SolicitudResponseDto[]> {
+    const solicitudes =
+      await this.solicitudRepository.listarMias(solicitanteId);
+
+    return solicitudes.map((solicitud) =>
+      this.mapearRespuesta(solicitud, solicitanteId),
+    );
   }
 
-  listarSolicitudesRecibidas(
+  async listarSolicitudesRecibidas(
     creadorPublicacionId: string,
-  ): Promise<Solicitud[]> {
-    return this.solicitudRepository.listarRecibidas(creadorPublicacionId);
+  ): Promise<SolicitudResponseDto[]> {
+    const solicitudes =
+      await this.solicitudRepository.listarRecibidas(creadorPublicacionId);
+
+    return solicitudes.map((solicitud) =>
+      this.mapearRespuesta(solicitud, creadorPublicacionId),
+    );
   }
 
   async rechazarSolicitud(
     solicitudId: string,
     usuarioId: string,
     dto: RechazarSolicitudDto,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
     solicitud.validarCreadorPublicacion(
@@ -80,13 +100,15 @@ export class SolicitudService {
 
     solicitud.rechazar(dto.motivo);
 
-    return this.solicitudRepository.guardar(solicitud);
+    const solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
+
+    return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
 
   async aceptarSolicitud(
     solicitudId: string,
     usuarioId: string,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
     solicitud.validarCreadorPublicacion(
@@ -105,13 +127,15 @@ export class SolicitudService {
 
     await this.publicacionService.guardar(publicacion);
 
-    return this.solicitudRepository.guardar(solicitud);
+    const solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
+
+    return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
 
   async finalizarSolicitud(
     solicitudId: string,
     usuarioId: string,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
     solicitud.validarCreadorPublicacion(
@@ -132,14 +156,16 @@ export class SolicitudService {
     );
 
     await this.publicacionService.guardar(publicacion);
-    return this.solicitudRepository.guardar(solicitud);
-  }
 
+    const solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
+
+    return this.mapearRespuesta(solicitudGuardada, usuarioId);
+  }
   async cancelarSolicitud(
     solicitudId: string,
     usuarioId: string,
     dto: CancelarSolicitudDto,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
     solicitud.validarPuedeCancelarsePor(usuarioId);
@@ -147,9 +173,11 @@ export class SolicitudService {
     const debeLiberarPublicacion =
       solicitud.estado === EstadoSolicitud.ACEPTADA;
 
-    solicitud.cancelar(dto.motivo);
-
     if (debeLiberarPublicacion) {
+      solicitud.cancelarAceptada(
+        dto.motivo ?? 'Solicitud cancelada luego de haber sido aceptada',
+      );
+
       const publicacion = await this.publicacionService.buscarPublicacionPorId(
         solicitud.publicacionId,
       );
@@ -157,9 +185,13 @@ export class SolicitudService {
       publicacion.cancelarReserva();
 
       await this.publicacionService.guardar(publicacion);
+    } else {
+      solicitud.cancelar(dto.motivo);
     }
 
-    return this.solicitudRepository.guardar(solicitud);
+    const solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
+
+    return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
 
   private async obtenerSolicitudPorId(solicitudId: string): Promise<Solicitud> {
@@ -190,5 +222,12 @@ export class SolicitudService {
     }
 
     await this.solicitudRepository.guardarVarias(solicitudesARechazar);
+  }
+
+  private mapearRespuesta(
+    solicitud: Solicitud,
+    usuarioActualId: string,
+  ): SolicitudResponseDto {
+    return SolicitudResponseDto.desdeEntidad(solicitud, usuarioActualId);
   }
 }
