@@ -132,3 +132,24 @@
   color: var(--color-tarjeta);
   font-weight: 600;
 }
+
+.linkPublicacion {
+  color: var(--color-primario);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.linkPublicacion:hover {
+  color: var(--color-primario-hover);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.separador{
+  border: 2px solid var(--color-borde);
+  padding: 0.5rem 1rem;
+}
+
+.datos{
+  font-weight: 600;
+}
