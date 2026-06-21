@@ -13,15 +13,13 @@ import { CrearDenunciaDto } from '../dtos/crearDenunciaDto';
 import { DenunciaDetalleResponseDto } from '../dtos/denunciaDetalleResponseDto';
 import { DenunciaResponseDto } from '../dtos/denunciaResponseDto';
 import { FiltroDenunciaDto } from '../dtos/filtroDenunciaDto';
-import { ResolverDenunciaDto } from '../dtos/resolverDenunciaDto';
 import { TomarDenunciaDto } from '../dtos/tomarDenunciaDto';
-
 import { Denuncia } from '../entity/denunciaEntity';
 import { EstadoDenuncia } from '../enums/estadoDenuncia';
 import { TipoResolucion } from '../enums/tipoResolucion';
-
 import { DenunciaMapper } from '../mapper/denunciaMapper';
 import { DenunciaRepository } from '../repository/denunciaRepository';
+import { ResolverDenunciaDto } from '../dtos/resolverDenunciaDto';
 
 @Injectable()
 export class DenunciaService {

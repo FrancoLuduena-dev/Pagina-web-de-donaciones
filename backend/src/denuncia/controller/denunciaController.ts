@@ -20,10 +20,10 @@ import { CrearDenunciaDto } from '../dtos/crearDenunciaDto';
 import { DenunciaDetalleResponseDto } from '../dtos/denunciaDetalleResponseDto';
 import { DenunciaResponseDto } from '../dtos/denunciaResponseDto';
 import { FiltroDenunciaDto } from '../dtos/filtroDenunciaDto';
-import { ResolverDenunciaDto } from '../dtos/resolverDenunciaDto';
 import { TomarDenunciaDto } from '../dtos/tomarDenunciaDto';
 import { DenunciaService } from '../service/denunciaService';
 import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
+import { ResolverDenunciaDto } from '../dtos/resolverDenunciaDto';
 
 @Controller('denuncias')
 @UseGuards(AuthGuard, StatusGuard, RolesGuard)
