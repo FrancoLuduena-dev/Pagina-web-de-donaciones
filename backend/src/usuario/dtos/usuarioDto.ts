@@ -12,17 +12,23 @@ export default class CrearUsuarioDto {
 
   @IsString()
   @IsNotEmpty({ message: 'El nombre completo es obligatorio' })
-  @Matches(/^(?!.*(;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b))/i)
+  @Matches(/^(?!.*(;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b))/i, {
+    message: 'No se pueden enviar palabras de tipo query'
+  })
   nombreCompleto!: string;
 
   @IsString()
   @IsNotEmpty({ message: 'El nombre de usuario es obligatorio' })
-  @Matches(/^(?!.*(;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b))/i)
+  @Matches(/^(?!.*(;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b))/i, {
+    message: 'No se pueden enviar palabras de tipo query'
+  })
   nombreUsuario!: string;
 
   @IsEmail()
   @IsNotEmpty({ message: 'El correo es obligatorio' })
-  @Matches(/^(?!.*(;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b))/i)
+  @Matches(/^(?!.*(;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b))/i, {
+    message: 'No se pueden enviar palabras de tipo query'
+  })
   correo!: string;
 
   @IsString()

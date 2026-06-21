@@ -1,9 +1,8 @@
 import { Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
-import { sign, verify, Secret, SignOptions } from 'jsonwebtoken';
+import { sign, SignOptions } from 'jsonwebtoken';
 
 import Usuario_Service from '../service/usuarioService';
-import Usuario from '../entity/usuarioEntity';
 
 import crearUsuarioDTO from '../dtos/usuarioDto';
 import logearUsuarioDTO from '../dtos/logearUsuarioDto';
