@@ -8,6 +8,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { PublicacionService } from '../../publicacion/service/publicacionService';
 import { SolicitudCreadaEvent } from '../evento/solicitudCreadaEvent';
+import { SolicitudRechazadaEvent } from '../evento/solicitudRechazadaEvent';
 import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
 import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
 import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
@@ -114,6 +115,16 @@ export class SolicitudService {
     solicitud.rechazar(dto.motivo);
 
     const solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
+
+    this.eventEmitter.emit(
+      EventoDominio.SOLICITUD_RECHAZADA,
+      new SolicitudRechazadaEvent(
+        solicitudGuardada.id,
+        solicitudGuardada.solicitanteId,
+        solicitud.publicacion.titulo,
+        solicitudGuardada.motivoRechazo,
+      ),
+    );
 
     return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
