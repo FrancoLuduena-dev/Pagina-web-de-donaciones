@@ -244,14 +244,12 @@ export default function SolicitudesPage() {
 
                   <div className={styles.contenido}>
                     <p>
-                      <p>
-                        <strong>Publicación:</strong>{" "}
-                        <Link className={styles.linkPublicacion}
-                          href={`/publicaciones/publicacion/${solicitud.publicacionId}`}
-                        >
-                          {solicitud.publicacion?.titulo ?? "Ver publicación"}
-                        </Link>
-                      </p>
+                      <strong>Publicación:</strong>{" "}
+                      <Link className={styles.linkPublicacion}
+                        href={`/publicaciones/publicacion/${solicitud.publicacionId}`}
+                      >
+                        {solicitud.publicacion?.titulo ?? "Ver publicación"}
+                      </Link>
                     </p>
 
                     {solicitud.mensaje && (
@@ -273,19 +271,19 @@ export default function SolicitudesPage() {
                     )}
                     {solicitud.estado === "ACEPTADA" && (
                       <>
-                      <div className={styles.separador}>
-                        <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
-                        <p>
-                          <strong>Nombre:</strong> {solicitud.creadorPublicacion?.nombre}
-                        </p>
+                        <div className={styles.separador}>
+                          <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
+                          <p>
+                            <strong>Nombre:</strong> {solicitud.creadorPublicacion?.nombre}
+                          </p>
 
-                        <p>
-                          <strong>Correo:</strong> {solicitud.creadorPublicacion?.email}
-                        </p>
+                          <p>
+                            <strong>Correo:</strong> {solicitud.creadorPublicacion?.email}
+                          </p>
 
-                        <p>
-                          <strong>Teléfono:</strong> {solicitud.creadorPublicacion?.telefono}
-                        </p>
+                          <p>
+                            <strong>Teléfono:</strong> {solicitud.creadorPublicacion?.telefono}
+                          </p>
                         </div>
                       </>
                     )}
@@ -364,19 +362,19 @@ export default function SolicitudesPage() {
 
                     {solicitud.estado === "ACEPTADA" && (
                       <>
-                      <div className={styles.separador}>
-                        <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
-                        <p>
-                          <strong>Nombre:</strong> {solicitud.solicitante?.nombre}
-                        </p>
+                        <div className={styles.separador}>
+                          <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
+                          <p>
+                            <strong>Nombre:</strong> {solicitud.solicitante?.nombre}
+                          </p>
 
-                        <p>
-                          <strong>Correo:</strong> {solicitud.solicitante?.email}
-                        </p>
+                          <p>
+                            <strong>Correo:</strong> {solicitud.solicitante?.email}
+                          </p>
 
-                        <p>
-                          <strong>Teléfono:</strong> {solicitud.solicitante?.telefono}
-                        </p>
+                          <p>
+                            <strong>Teléfono:</strong> {solicitud.solicitante?.telefono}
+                          </p>
                         </div>
                       </>
                     )}

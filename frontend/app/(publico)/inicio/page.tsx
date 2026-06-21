@@ -3,9 +3,7 @@ import styles from "./home.module.css";
 
 /**
  * Página principal pública de la plataforma.
- *
  * Muestra una introducción al sitio y accesos principales.
- *
  * @returns Página de inicio.
  */
 export default function HomePage() {

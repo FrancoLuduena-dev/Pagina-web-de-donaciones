@@ -18,7 +18,7 @@ export default function Footer() {
           Sobre Nosotros
         </Link>
 
-        <a href={`mailto:${email}`}>
+        <a href={`mailto:${email}`} className={styles.links}>
           Contactanos
         </a>
       </div>

@@ -1,0 +1,56 @@
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.titulo {
+  margin-bottom: 1rem;
+  color: var(--color-texto-principal);
+  font-size: 2rem;
+}
+
+.descripcion {
+  max-width: 800px;
+  margin: 0 auto;
+  color: var(--color-texto-secundario);
+  line-height: 1.7;
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.card {
+  padding: 1.5rem;
+  background-color: var(--color-tarjeta);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+}
+
+.card h2 {
+  margin-bottom: 1rem;
+  color: var(--color-primario);
+}
+
+.card p {
+  color: var(--color-texto-secundario);
+  line-height: 1.7;
+}
+
+.card p + p {
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    align-items: stretch;
+  }
+}
