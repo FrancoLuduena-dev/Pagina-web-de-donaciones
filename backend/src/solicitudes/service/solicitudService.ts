@@ -5,10 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { DataSource } from 'typeorm';
 
 import { PublicacionService } from '../../publicacion/service/publicacionService';
-import { SolicitudCreadaEvent } from '../evento/solicitudCreadaEvent';
-import { SolicitudRechazadaEvent } from '../evento/solicitudRechazadaEvent';
+import { SolicitudCreadaEvent } from '../evento/solicitudCreadaEvento';
+import { SolicitudRechazadaEvent } from '../evento/solicitudRechazadaEvento';
 import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
 import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
 import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
@@ -17,6 +18,8 @@ import { Solicitud } from '../entity/solicitudEntity';
 import { EstadoSolicitud } from '../enums/estadoSolicitud';
 import { SolicitudRepository } from '../repository/solicitudRepository';
 import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
+import { SolicitudAceptadaEvent } from '../evento/solicitudAceptadaEvento';
+import { SolicitudAceptadaCanceladaEvento } from '../evento/solicitudAceptadaCanceladaEvento';
 
 @Injectable()
 export class SolicitudService {
@@ -24,6 +27,7 @@ export class SolicitudService {
     private readonly solicitudRepository: SolicitudRepository,
     private readonly publicacionService: PublicacionService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crearSolicitud(
@@ -149,9 +153,21 @@ export class SolicitudService {
     solicitud.aceptar();
     publicacion.reservar();
 
-    await this.publicacionService.guardar(publicacion);
+    const solicitudGuardada = await this.dataSource.transaction(
+      async (manager) => {
+        await manager.save(publicacion);
+        return manager.save(solicitud);
+      },
+    );
 
-    const solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
+    this.eventEmitter.emit(
+      EventoDominio.SOLICITUD_ACEPTADA,
+      new SolicitudAceptadaEvent(
+        solicitudGuardada.id,
+        solicitudGuardada.solicitanteId,
+        publicacion.titulo,
+      ),
+    );
 
     return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
@@ -197,10 +213,13 @@ export class SolicitudService {
     const debeLiberarPublicacion =
       solicitud.estado === EstadoSolicitud.ACEPTADA;
 
+    let solicitudGuardada: Solicitud;
+
     if (debeLiberarPublicacion) {
-      solicitud.cancelarAceptada(
-        dto.motivo ?? 'Solicitud cancelada luego de haber sido aceptada',
-      );
+      const motivo =
+        dto.motivo ?? 'Solicitud cancelada luego de haber sido aceptada';
+
+      solicitud.cancelarAceptada(motivo);
 
       const publicacion = await this.publicacionService.buscarPublicacionPorId(
         solicitud.publicacionId,
@@ -208,12 +227,24 @@ export class SolicitudService {
 
       publicacion.cancelarReserva();
 
-      await this.publicacionService.guardar(publicacion);
+      solicitudGuardada = await this.dataSource.transaction(async (manager) => {
+        await manager.save(publicacion);
+        return manager.save(solicitud);
+      });
+
+      this.eventEmitter.emit(
+        EventoDominio.SOLICITUD_ACEPTADA_CANCELADA,
+        new SolicitudAceptadaCanceladaEvento(
+          solicitudGuardada.id,
+          solicitudGuardada.solicitanteId,
+          publicacion.titulo,
+          motivo,
+        ),
+      );
     } else {
       solicitud.cancelar(dto.motivo);
+      solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
     }
-
-    const solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
 
     return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }

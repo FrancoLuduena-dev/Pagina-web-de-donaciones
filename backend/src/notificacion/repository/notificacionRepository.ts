@@ -26,6 +26,7 @@ export class NotificacionRepository {
   ): Promise<[Notificacion[], number]> {
     return this.repository.findAndCount({
       where: { destinatarioId },
+      relations: ['solicitud', 'denuncia'],
       order: { creadaEn: 'DESC' },
       skip: (pagina - 1) * limite,
       take: limite,
@@ -50,6 +51,7 @@ export class NotificacionRepository {
         id,
         destinatarioId,
       },
+      relations: ['solicitud', 'denuncia'],
     });
   }
 

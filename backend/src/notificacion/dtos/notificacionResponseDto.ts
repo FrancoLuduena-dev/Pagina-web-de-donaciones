@@ -13,7 +13,9 @@ export class NotificacionResponseDto {
   denunciaId!: string | null;
   creadaEn!: Date;
 
-  static desdeEntidad(notificacion: Notificacion): NotificacionResponseDto {
+  static mapearDesdeEntidad(
+    notificacion: Notificacion,
+  ): NotificacionResponseDto {
     return {
       id: notificacion.id,
       tipo: notificacion.tipo,
@@ -22,7 +24,11 @@ export class NotificacionResponseDto {
       leida: notificacion.leidaEn !== null,
       leidaEn: notificacion.leidaEn,
       solicitudId: notificacion.solicitudId,
-      publicacionId: notificacion.publicacionId,
+      publicacionId:
+        notificacion.publicacionId ??
+        notificacion.solicitud?.publicacionId ??
+        notificacion.denuncia?.publicacionId ??
+        null,
       denunciaId: notificacion.denunciaId,
       creadaEn: notificacion.creadaEn,
     };

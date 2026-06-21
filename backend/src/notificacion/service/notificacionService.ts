@@ -33,7 +33,7 @@ export class NotificacionService {
     const notificacionGuardada =
       await this.notificacionRepository.guardar(notificacion);
 
-    return NotificacionResponseDto.desdeEntidad(notificacionGuardada);
+    return NotificacionResponseDto.mapearDesdeEntidad(notificacionGuardada);
   }
   async listarPropias(
     destinatarioId: string,
@@ -51,7 +51,7 @@ export class NotificacionService {
 
     return {
       notificaciones: notificaciones.map((notificacion) =>
-        NotificacionResponseDto.desdeEntidad(notificacion),
+        NotificacionResponseDto.mapearDesdeEntidad(notificacion),
       ),
       total,
       pagina,
@@ -83,7 +83,7 @@ export class NotificacionService {
     const notificacionGuardada =
       await this.notificacionRepository.guardar(notificacion);
 
-    return NotificacionResponseDto.desdeEntidad(notificacionGuardada);
+    return NotificacionResponseDto.mapearDesdeEntidad(notificacionGuardada);
   }
 
   async marcarTodasComoLeidas(destinatarioId: string): Promise<void> {
