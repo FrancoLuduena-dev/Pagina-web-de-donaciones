@@ -56,6 +56,42 @@ describe('autenticacionUsuario', () => {
         expect(res).toMatchObject({ message: 'Usuario registrado correctamente', user: { id: 1, correo: crear.correo, nombreUsuario: crear.nombreUsuario } });
     });
 
+    it('registrarUsuario: error si no se crea usuario', async () => {
+        (bcrypt.hash as jest.Mock).mockResolvedValue('hashed');
+        (serviceMock.CrearUsuario as jest.Mock).mockResolvedValue(null);
+
+        await expect(
+            auth.registrarUsuario({
+                correo: 'a',
+                contrasenia: 'b',
+                nombreUsuario: 'c'
+            } as any)
+        ).rejects.toThrow('Error al registrar el usuario');
+    });
+
+    it('logearUsuario: error si usuario no existe', async () => {
+        (serviceMock.ObtenerUsuarioPorCorreo as jest.Mock).mockResolvedValue(null);
+
+        await expect(
+            auth.logearUsuario({ correo: 'x', contrasenia: 'x' } as any)
+        ).rejects.toThrow('Correo o contrasenia incorrectos');
+    });
+
+    it('logearUsuario: error si contraseña incorrecta', async () => {
+        (serviceMock.ObtenerUsuarioPorCorreo as jest.Mock).mockResolvedValue({
+            id: 1,
+            correo: 'a',
+            contrasenia: 'hashed',
+            rol: 'USER'
+        });
+
+        (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+        await expect(
+            auth.logearUsuario({ correo: 'a', contrasenia: 'wrong' } as any)
+        ).rejects.toThrow('Correo o contrasenia incorrectos');
+    });
+
     it('logearUsuario: devuelve token cuando credenciales válidas', async () => {
         const datos = { correo: 'a@b.com', contrasenia: 'plain' };
         const usuarioFromDb = { id: 2, correo: datos.correo, contrasenia: 'hashed', rol: 'USER' };
@@ -67,7 +103,15 @@ describe('autenticacionUsuario', () => {
 
         expect(serviceMock.ObtenerUsuarioPorCorreo).toHaveBeenCalledWith(datos.correo);
         expect(bcrypt.compare).toHaveBeenCalledWith('plain', 'hashed');
-        expect(jwt.sign).toHaveBeenCalled();
+        expect(jwt.sign).toHaveBeenCalledWith(
+            {
+                id: 2,
+                correo: datos.correo,
+                rol: 'usuarioNormal',
+            },
+            'test-secret',
+            { expiresIn: '1h' }
+        );
         expect(token).toBe('mocked-token');
     });
 
