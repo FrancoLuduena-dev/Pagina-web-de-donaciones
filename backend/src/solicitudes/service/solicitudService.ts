@@ -4,21 +4,25 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import { Solicitud } from '../entity/solicitudEntity';
-import { SolicitudRepository } from '../repository/solicitudRepository';
 import { PublicacionService } from '../../publicacion/service/publicacionService';
+import { SolicitudCreadaEvent } from '../evento/solicitudCreadaEvent';
 import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
 import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
 import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
-import { EstadoSolicitud } from '../enums/estadoSolicitud';
 import { SolicitudResponseDto } from '../DTO/solicitudResponse';
+import { Solicitud } from '../entity/solicitudEntity';
+import { EstadoSolicitud } from '../enums/estadoSolicitud';
+import { SolicitudRepository } from '../repository/solicitudRepository';
+import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
 
 @Injectable()
 export class SolicitudService {
   constructor(
     private readonly solicitudRepository: SolicitudRepository,
     private readonly publicacionService: PublicacionService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async crearSolicitud(
@@ -56,6 +60,15 @@ export class SolicitudService {
 
     const solicitudGuardada =
       await this.solicitudRepository.guardar(nuevaSolicitud);
+
+    this.eventEmitter.emit(
+      EventoDominio.SOLICITUD_CREADA,
+      new SolicitudCreadaEvent(
+        solicitudGuardada.id,
+        publicacion.creadorId,
+        publicacion.titulo,
+      ),
+    );
 
     const solicitudCompleta = await this.obtenerSolicitudPorId(
       solicitudGuardada.id,
