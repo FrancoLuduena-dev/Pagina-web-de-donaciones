@@ -22,13 +22,13 @@ import {
   MAX_IMAGENES_PUBLICACION,
   publicacionUploadMulterOptions,
 } from '../service/publicacionUploadService';
-import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
+import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
-import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
 
 interface RequestConUsuario extends Request {
   user: {

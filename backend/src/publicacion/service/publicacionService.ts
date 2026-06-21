@@ -6,11 +6,11 @@ import {
 
 import { Publicacion } from '../entity/publicacionEntity';
 import { PublicacionRepository } from '../repository/publicacionRepository';
-import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
+import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
-import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
 import UsuarioService from 'src/usuario/service/usuarioService';
 
 export type PublicacionConCreador = Publicacion & {

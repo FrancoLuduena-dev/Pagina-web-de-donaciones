@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository, ILike } from 'typeorm';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
 
 @Injectable()
 export class PublicacionRepository {
