@@ -16,6 +16,7 @@ type Props = {
   }>;
 
   searchParams: Promise<{
+    q?: string;
     condicion?: string;
     estado?: string;
   }>;
@@ -40,20 +41,17 @@ export default async function CategoriaPage({ params, searchParams }: Props) {
     : undefined;
 
   let publicaciones: ReturnType<typeof mapPublicacionBackendToResumen>[] = [];
-  let error = "";
-  const { condicion, estado } = await searchParams;
+  let error = ""; 
+  const { q, condicion, estado } = await searchParams;
 
   try {
-    // TEST_DESCOMENTAR
-    /*
-const data = await listarPublicacionesDesdeBackend(
-  categoriaId,
-  condicion,
-  estado,
-);
-*/
-    // END_TEST_DESCOMENTAR
-    const data = await listarPublicacionesDesdeBackend(categoriaId);
+    const data = await listarPublicacionesDesdeBackend(
+      categoriaId,
+      condicion,
+      estado,
+      q,
+    );
+    
     publicaciones = data.map(mapPublicacionBackendToResumen);
   } catch {
     error =

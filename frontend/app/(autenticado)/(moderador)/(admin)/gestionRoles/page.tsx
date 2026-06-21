@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styles from "./gestionRoles.module.css";
 import { RolUsuario } from "@/types/RolUsuario";
-import BuscadorUsuario from "@/components/moderacion/buscadorUsuario/Buscadorusuario";
+import BuscadorUsuario from "@/components/moderacion/buscadorUsuario/BuscadorUsuario";
 
 type UsuarioEncontrado = {
   id: string;
@@ -58,12 +58,6 @@ export default function ModeracionPage() {
       });
 
       if (!respuesta.ok) {
-        console.log("STATUS:", respuesta.status);
-
-        const texto = await respuesta.text();
-
-        console.log("BODY:", texto);
-
         throw new Error();
       }
 
@@ -102,26 +96,9 @@ export default function ModeracionPage() {
         }),
       });
 
-      // TEST_DESCOMENTAR
-      /* 
       if (!respuesta.ok) {
         throw new Error("No se pudo actualizar el rol");
       }
-      */
-      // END_TEST_DESCOMENTAR
-
-
-      // MOCK_BORRAR
-      if (!respuesta.ok) {
-        console.log("STATUS:", respuesta.status);
-
-        const texto = await respuesta.text();
-
-        console.log("BODY:", texto);
-
-        throw new Error("No se pudo actualizar el rol");
-      }
-      // END_MOCK_BORRAR
 
       setUsuario({
         ...usuario,

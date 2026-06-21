@@ -76,13 +76,11 @@ export default function MenuUsuario() {
         if (solicitudesResponse.ok) {
           const solicitudes = await solicitudesResponse.json();
 
-          console.log("SOLICITUDES RECIBIDAS:", solicitudes);
 
           const pendientes = solicitudes.filter(
             (solicitud: { estado: string }) => solicitud.estado === "PENDIENTE",
           ).length;
 
-          console.log("PENDIENTES:", pendientes);
           setCantidadNotificaciones(pendientes);
         }
       } catch (error) {

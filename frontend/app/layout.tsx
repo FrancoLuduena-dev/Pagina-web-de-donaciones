@@ -2,7 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Metadata } from 'next';
 import { tituloPagina } from "@/constants/site";
- 
+
 
 export const metadata: Metadata = {
   title: tituloPagina,
@@ -19,8 +19,8 @@ export const viewport = {
  * Crea la variable CSS de fuente la fuente principal  `--font-geist-sans`.
  */
 const geistSans = Geist({
-variable: "--font-geist-sans",
-subsets: ["latin"],
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
 });
 
 /**
@@ -28,9 +28,9 @@ subsets: ["latin"],
  * Inyecta la variable CSS de la fuente secundaria `--font-geist-mono`.
  */
 const geistMono = Geist_Mono({
-variable: "--font-geist-mono",
-subsets: ["latin"],
-  });
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 
 /**
@@ -46,8 +46,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="h-full antialiased">
-      <body className="app-root">{children}</body>
+    <html lang="es" >
+      <body className={`${geistSans.variable} ${geistMono.variable} app-root`}>{children}</body>
     </html>
   );
 }

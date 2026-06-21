@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "./Footer.module.css";
+import { email } from "@/constants/site";
 
 /** Footer de la aplicación. */
 
@@ -17,9 +18,9 @@ export default function Footer() {
           Sobre Nosotros
         </Link>
 
-        <Link href="/contact">
+        <a href={`mailto:${email}`}>
           Contactanos
-        </Link>
+        </a>
       </div>
     </footer>
   );
