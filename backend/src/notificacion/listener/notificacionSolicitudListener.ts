@@ -1,12 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EventoDominio } from '../../compartidos/evento/eventoDominio';
+
 import { SolicitudCreadaEvent } from '../../solicitudes/evento/solicitudCreadaEvento';
-import { TipoNotificacion } from '../enum/tipoNotificacion';
+
 import { NotificacionService } from '../service/notificacionService';
 import { SolicitudRechazadaEvent } from 'src/solicitudes/evento/solicitudRechazadaEvento';
 import { SolicitudAceptadaEvent } from 'src/solicitudes/evento/solicitudAceptadaEvento';
 import { SolicitudAceptadaCanceladaEvento } from 'src/solicitudes/evento/solicitudAceptadaCanceladaEvento';
+import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
+import { SolicitudFinalizadaEvento } from 'src/solicitudes/evento/solicitudFinalizadaEvento';
+import { TipoNotificacion } from '../enum/tipoNotificacion';
 
 @Injectable()
 export class NotificacionSolicitudListener {
@@ -96,6 +99,25 @@ export class NotificacionSolicitudListener {
 
       this.logger.error(
         `No se pudo crear la notificación de cancelación para la solicitud ${evento.solicitudId}: ${detalle}`,
+      );
+    }
+  }
+
+  @OnEvent(EventoDominio.SOLICITUD_FINALIZADA, { async: true })
+  async alFinalizarSolicitud(evento: SolicitudFinalizadaEvento): Promise<void> {
+    try {
+      await this.notificacionService.crear({
+        destinatarioId: evento.destinatarioId,
+        tipo: TipoNotificacion.SOLICITUD_FINALIZADA,
+        titulo: 'Entrega finalizada',
+        mensaje: `La entrega de "${evento.publicacionTitulo}" fue marcada como finalizada.`,
+        solicitudId: evento.solicitudId,
+      });
+    } catch (error: unknown) {
+      const detalle = error instanceof Error ? error.message : String(error);
+
+      this.logger.error(
+        `No se pudo crear la notificación de finalización para la solicitud ${evento.solicitudId}: ${detalle}`,
       );
     }
   }

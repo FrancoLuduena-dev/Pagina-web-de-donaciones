@@ -20,6 +20,7 @@ import { SolicitudRepository } from '../repository/solicitudRepository';
 import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
 import { SolicitudAceptadaEvent } from '../evento/solicitudAceptadaEvento';
 import { SolicitudAceptadaCanceladaEvento } from '../evento/solicitudAceptadaCanceladaEvento';
+import { SolicitudFinalizadaEvento } from '../evento/solicitudFinalizadaEvento';
 
 @Injectable()
 export class SolicitudService {
@@ -171,7 +172,6 @@ export class SolicitudService {
 
     return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
-
   async finalizarSolicitud(
     solicitudId: string,
     usuarioId: string,
@@ -190,14 +190,36 @@ export class SolicitudService {
     solicitud.finalizar();
     publicacion.entregar();
 
-    await this.rechazarSolicitudesPendientesRestantes(
-      solicitud.publicacionId,
-      solicitud.id,
+    const solicitudGuardada = await this.dataSource.transaction(
+      async (manager) => {
+        const solicitudesPendientes = await manager.find(Solicitud, {
+          where: {
+            publicacionId: solicitud.publicacionId,
+            estado: EstadoSolicitud.PENDIENTE,
+          },
+        });
+
+        for (const pendiente of solicitudesPendientes) {
+          pendiente.rechazar('La publicación ya fue entregada');
+        }
+
+        if (solicitudesPendientes.length > 0) {
+          await manager.save(solicitudesPendientes);
+        }
+
+        await manager.save(publicacion);
+        return manager.save(solicitud);
+      },
     );
 
-    await this.publicacionService.guardar(publicacion);
-
-    const solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
+    this.eventEmitter.emit(
+      EventoDominio.SOLICITUD_FINALIZADA,
+      new SolicitudFinalizadaEvento(
+        solicitudGuardada.id,
+        solicitudGuardada.solicitanteId,
+        publicacion.titulo,
+      ),
+    );
 
     return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
