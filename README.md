@@ -21,7 +21,7 @@ Los usuarios pueden publicar objetos para donar, explorar publicaciones realizad
 npm install
 ```
  
-* configuracion de backend
+* configuración de backend
     * Crear en el backend el archivo .env
     * Poner en el archivo .env
 
@@ -34,10 +34,16 @@ npm install
         DB_PASS= **[poner su password de instalacion de postgres]**
     
         DB_NAME=tp_donaciones
+        
+        JWT_SECRET=test123
 
-* configuracion de la base de datos
-    * Crear una base de datos PostgreSQL vacía con el nombre configurado en DB_NAME.
+* configuración de la base de datos
+    * correr en root el script "npm run setup-db" o manualmente crear la base de datos en postgres con el nombre puesto en DB_NAME
     * Las tablas se crearán automáticamente al iniciar el backend por primera vez.
+
+* Configuración del Frontend
+    * crear el archivo .env.local
+    * agregarle NEXT_PUBLIC_API_URL=http://localhost:3000
 
 * Ejecutar la aplicacion completa
     * Desde la carpeta raíz ejecutar
