@@ -2,19 +2,28 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
-  UseGuards,
   Query,
-  Delete,
   Req,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
+import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
+import { StatusGuard } from 'src/compartidos/guards/statusGuard';
+import { AuthGuard } from 'src/usuario/auth/authGuard';
+
+import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
+import { Publicacion } from '../entity/publicacionEntity';
+import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { PublicacionService } from '../service/publicacionService';
 import {
   buildPublicacionImagenUrl,
@@ -22,19 +31,12 @@ import {
   publicacionUploadMulterOptions,
   validarImagenesSubidas,
 } from '../service/publicacionUploadService';
-import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
-import { Publicacion } from '../entity/publicacionEntity';
-import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
-import { AuthGuard } from 'src/usuario/auth/authGuard';
-import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
-import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
 
 @Controller('publicaciones')
 export class PublicacionController {
   constructor(private readonly publicacionService: PublicacionService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Post('upload')
   @UseInterceptors(
     FilesInterceptor(
@@ -57,7 +59,7 @@ export class PublicacionController {
     };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Post()
   crearPublicacion(
     @Body() dto: CrearPublicacionDto,
@@ -87,7 +89,7 @@ export class PublicacionController {
     return this.publicacionService.buscarPublicacionPorIdConCreador(id);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id/pausar')
   pausar(
     @Param('id') id: string,
@@ -96,7 +98,7 @@ export class PublicacionController {
     return this.publicacionService.pausar(id, req.user.id, req.user.rol);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id/reactivar')
   reactivar(
     @Param('id') id: string,
@@ -105,7 +107,7 @@ export class PublicacionController {
     return this.publicacionService.reactivar(id, req.user.id, req.user.rol);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Delete(':id/eliminar')
   eliminar(
     @Param('id') id: string,
@@ -114,7 +116,7 @@ export class PublicacionController {
     return this.publicacionService.eliminar(id, req.user.id, req.user.rol);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id')
   editar(
     @Param('id') id: string,

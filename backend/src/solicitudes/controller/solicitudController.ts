@@ -9,19 +9,22 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { SolicitudService } from '../service/solicitudService';
-import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
-import { AuthGuard } from 'src/usuario/auth/authGuard';
-import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
-import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
 import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
+import { StatusGuard } from 'src/compartidos/guards/statusGuard';
+import { AuthGuard } from 'src/usuario/auth/authGuard';
+
+import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
+import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
+import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
 import { SolicitudResponseDto } from '../DTO/solicitudResponse';
+import { SolicitudService } from '../service/solicitudService';
 
 @UseGuards(AuthGuard)
 @Controller('solicitudes')
 export class SolicitudController {
   constructor(private readonly solicitudService: SolicitudService) {}
 
+  @UseGuards(StatusGuard)
   @Post()
   crearSolicitud(
     @Body() dto: CrearSolicitudDto,
@@ -42,6 +45,7 @@ export class SolicitudController {
     return this.solicitudService.listarSolicitudesRecibidas(req.user.id);
   }
 
+  @UseGuards(StatusGuard)
   @Patch(':id/aceptar')
   aceptarSolicitud(
     @Param('id') id: string,
@@ -50,6 +54,7 @@ export class SolicitudController {
     return this.solicitudService.aceptarSolicitud(id, req.user.id);
   }
 
+  @UseGuards(StatusGuard)
   @Patch(':id/rechazar')
   rechazarSolicitud(
     @Param('id') id: string,
@@ -59,6 +64,7 @@ export class SolicitudController {
     return this.solicitudService.rechazarSolicitud(id, req.user.id, dto);
   }
 
+  @UseGuards(StatusGuard)
   @Patch(':id/finalizar')
   finalizarSolicitud(
     @Param('id') id: string,
@@ -67,6 +73,7 @@ export class SolicitudController {
     return this.solicitudService.finalizarSolicitud(id, req.user.id);
   }
 
+  @UseGuards(StatusGuard)
   @Patch(':id/cancelar')
   cancelarSolicitud(
     @Param('id') id: string,
