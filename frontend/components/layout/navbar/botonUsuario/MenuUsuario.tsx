@@ -76,9 +76,22 @@ export default function MenuUsuario() {
         if (solicitudesResponse.ok) {
           const solicitudes = await solicitudesResponse.json();
 
+          const publicacionesConAceptada = new Set(
+            solicitudes
+              .filter(
+                (solicitud: { estado: string }) =>
+                  solicitud.estado === "ACEPTADA",
+              )
+              .map(
+                (solicitud: { publicacionId: string }) =>
+                  solicitud.publicacionId,
+              ),
+          );
 
           const pendientes = solicitudes.filter(
-            (solicitud: { estado: string }) => solicitud.estado === "PENDIENTE",
+            (solicitud: { estado: string; publicacionId: string }) =>
+              solicitud.estado === "PENDIENTE" &&
+              !publicacionesConAceptada.has(solicitud.publicacionId),
           ).length;
 
           setCantidadNotificaciones(pendientes);
@@ -90,8 +103,10 @@ export default function MenuUsuario() {
 
     cargarUsuario();
 
-    const intervalo = setInterval( cargarUsuario, 10000 )
-    return () => { clearInterval(intervalo) };
+    const intervalo = setInterval(cargarUsuario, 10000);
+    return () => {
+      clearInterval(intervalo);
+    };
   }, [router]);
 
   const cerrarSesion = () => {

@@ -5,9 +5,7 @@ describe("SolicitudesPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    Storage.prototype.getItem = jest
-      .fn()
-      .mockReturnValue("token");
+    Storage.prototype.getItem = jest.fn().mockReturnValue("token");
 
     global.alert = jest.fn();
   });
@@ -20,9 +18,7 @@ describe("SolicitudesPage", () => {
     render(<SolicitudesPage />);
 
     expect(
-      await screen.findByText(
-        "No se pudieron cargar las solicitudes."
-      )
+      await screen.findByText("No se pudieron cargar las solicitudes."),
     ).toBeInTheDocument();
   });
 
@@ -41,15 +37,11 @@ describe("SolicitudesPage", () => {
     render(<SolicitudesPage />);
 
     expect(
-      await screen.findByText(
-        "No realizaste solicitudes."
-      )
+      await screen.findByText("No realizaste solicitudes."),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByText(
-        "Ninguna de tus publicaciones tiene solicitudes."
-      )
+      screen.getByText("Ninguna de tus publicaciones tiene solicitudes."),
     ).toBeInTheDocument();
   });
 
@@ -92,28 +84,22 @@ describe("SolicitudesPage", () => {
 
     render(<SolicitudesPage />);
 
-    expect(
-      await screen.findByText("Mesa")
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Mesa")).toBeInTheDocument();
 
-    expect(
-      screen.getByText("Silla")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Silla")).toBeInTheDocument();
 
-    expect(
-      screen.getByText("Necesito esta mesa")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Necesito esta mesa")).toBeInTheDocument();
 
     expect(
       screen.getByRole("button", {
         name: /cancelar solicitud/i,
-      })
+      }),
     ).toBeInTheDocument();
 
     expect(
       screen.getByRole("button", {
         name: /aceptar/i,
-      })
+      }),
     ).toBeInTheDocument();
   });
 
@@ -149,7 +135,7 @@ describe("SolicitudesPage", () => {
     fireEvent.click(
       await screen.findByRole("button", {
         name: /cancelar solicitud/i,
-      })
+      }),
     );
 
     await waitFor(() => {
@@ -157,7 +143,7 @@ describe("SolicitudesPage", () => {
         "/api/solicitudes/1/cancelar",
         expect.objectContaining({
           method: "PATCH",
-        })
+        }),
       );
     });
   });
@@ -194,7 +180,7 @@ describe("SolicitudesPage", () => {
     fireEvent.click(
       await screen.findByRole("button", {
         name: /aceptar/i,
-      })
+      }),
     );
 
     await waitFor(() => {
@@ -202,7 +188,7 @@ describe("SolicitudesPage", () => {
         "/api/solicitudes/2/aceptar",
         expect.objectContaining({
           method: "PATCH",
-        })
+        }),
       );
     });
   });
@@ -236,21 +222,16 @@ describe("SolicitudesPage", () => {
 
     render(<SolicitudesPage />);
 
-    fireEvent.change(
-      await screen.findByPlaceholderText(
-        /motivo de rechazo/i
-      ),
-      {
-        target: {
-          value: "Ya fue entregado",
-        },
-      }
-    );
+    fireEvent.change(await screen.findByPlaceholderText(/motivo de rechazo/i), {
+      target: {
+        value: "Ya fue entregado",
+      },
+    });
 
     fireEvent.click(
       screen.getByRole("button", {
         name: /rechazar/i,
-      })
+      }),
     );
 
     await waitFor(() => {
@@ -261,7 +242,7 @@ describe("SolicitudesPage", () => {
           body: JSON.stringify({
             motivo: "Ya fue entregado",
           }),
-        })
+        }),
       );
     });
   });
@@ -298,17 +279,11 @@ describe("SolicitudesPage", () => {
 
     render(<SolicitudesPage />);
 
-    expect(
-      await screen.findByText("Juan")
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Juan")).toBeInTheDocument();
 
-    expect(
-      screen.getByText("juan@test.com")
-    ).toBeInTheDocument();
+    expect(screen.getByText("juan@test.com")).toBeInTheDocument();
 
-    expect(
-      screen.getByText("123")
-    ).toBeInTheDocument();
+    expect(screen.getByText("123")).toBeInTheDocument();
   });
 
   it("muestra motivo de rechazo", async () => {
@@ -338,11 +313,7 @@ describe("SolicitudesPage", () => {
 
     render(<SolicitudesPage />);
 
-    expect(
-      await screen.findByText(
-        /objeto reservado/i
-      )
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/objeto reservado/i)).toBeInTheDocument();
   });
 
   it("muestra mensaje por defecto cuando no hay motivo de rechazo", async () => {
@@ -373,9 +344,50 @@ describe("SolicitudesPage", () => {
     render(<SolicitudesPage />);
 
     expect(
-      await screen.findByText(
-        "No se dio motivo de rechazo."
-      )
+      await screen.findByText("No se dio motivo de rechazo."),
     ).toBeInTheDocument();
+  });
+  it("deshabilita aceptar cuando la publicación ya tiene otra solicitud aceptada", async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          {
+            id: "1",
+            publicacionId: "10",
+            estado: "ACEPTADA",
+            createdAt: "2025-01-01T00:00:00Z",
+            updatedAt: "2025-01-01T00:00:00Z",
+            publicacion: {
+              id: "10",
+              titulo: "Mesa",
+            },
+          },
+          {
+            id: "2",
+            publicacionId: "10",
+            estado: "PENDIENTE",
+            createdAt: "2025-01-01T00:00:00Z",
+            updatedAt: "2025-01-01T00:00:00Z",
+            publicacion: {
+              id: "10",
+              titulo: "Mesa",
+            },
+          },
+        ],
+      });
+
+    render(<SolicitudesPage />);
+
+    const boton = await screen.findByRole("button", {
+      name: /Solicitud ya reservada/i,
+    });
+
+    expect(boton).toBeDisabled();
   });
 });

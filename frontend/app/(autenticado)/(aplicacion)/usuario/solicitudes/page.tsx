@@ -111,9 +111,9 @@ export default function SolicitudesPage() {
         solicitudesRecibidas.map((solicitud) =>
           solicitud.id === solicitudId
             ? {
-              ...solicitud,
-              estado: "ACEPTADA",
-            }
+                ...solicitud,
+                estado: "ACEPTADA",
+              }
             : solicitud,
         ),
       );
@@ -148,9 +148,9 @@ export default function SolicitudesPage() {
         solicitudesRecibidas.map((solicitud) =>
           solicitud.id === solicitudId
             ? {
-              ...solicitud,
-              estado: "RECHAZADA",
-            }
+                ...solicitud,
+                estado: "RECHAZADA",
+              }
             : solicitud,
         ),
       );
@@ -185,9 +185,9 @@ export default function SolicitudesPage() {
         solicitudes.map((solicitud) =>
           solicitud.id === solicitudId
             ? {
-              ...solicitud,
-              estado: "CANCELADA",
-            }
+                ...solicitud,
+                estado: "CANCELADA",
+              }
             : solicitud,
         ),
       );
@@ -229,14 +229,15 @@ export default function SolicitudesPage() {
                 <article key={solicitud.id} className={styles.card}>
                   <div className={styles.header}>
                     <span
-                      className={`${styles.estado} ${solicitud.estado === "ACEPTADA"
-                        ? styles.estadoAceptada
-                        : solicitud.estado === "RECHAZADA"
-                          ? styles.estadoRechazada
-                          : solicitud.estado === "CANCELADA"
-                            ? styles.estadoCancelada
-                            : styles.estadoPendiente
-                        }`}
+                      className={`${styles.estado} ${
+                        solicitud.estado === "ACEPTADA"
+                          ? styles.estadoAceptada
+                          : solicitud.estado === "RECHAZADA"
+                            ? styles.estadoRechazada
+                            : solicitud.estado === "CANCELADA"
+                              ? styles.estadoCancelada
+                              : styles.estadoPendiente
+                      }`}
                     >
                       {solicitud.estado}
                     </span>
@@ -245,7 +246,8 @@ export default function SolicitudesPage() {
                   <div className={styles.contenido}>
                     <p>
                       <strong>Publicación:</strong>{" "}
-                      <Link className={styles.linkPublicacion}
+                      <Link
+                        className={styles.linkPublicacion}
                         href={`/publicaciones/publicacion/${solicitud.publicacionId}`}
                       >
                         {solicitud.publicacion?.titulo ?? "Ver publicación"}
@@ -272,17 +274,23 @@ export default function SolicitudesPage() {
                     {solicitud.estado === "ACEPTADA" && (
                       <>
                         <div className={styles.separador}>
-                          <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
+                          <p className={styles.datos}>
+                            {" "}
+                            Datos de Contacto del Solicitante:{" "}
+                          </p>
                           <p>
-                            <strong>Nombre:</strong> {solicitud.creadorPublicacion?.nombre}
+                            <strong>Nombre:</strong>{" "}
+                            {solicitud.creadorPublicacion?.nombre}
                           </p>
 
                           <p>
-                            <strong>Correo:</strong> {solicitud.creadorPublicacion?.email}
+                            <strong>Correo:</strong>{" "}
+                            {solicitud.creadorPublicacion?.email}
                           </p>
 
                           <p>
-                            <strong>Teléfono:</strong> {solicitud.creadorPublicacion?.telefono}
+                            <strong>Teléfono:</strong>{" "}
+                            {solicitud.creadorPublicacion?.telefono}
                           </p>
                         </div>
                       </>
@@ -319,14 +327,15 @@ export default function SolicitudesPage() {
                 <article key={solicitud.id} className={styles.card}>
                   <div className={styles.header}>
                     <span
-                      className={`${styles.estado} ${solicitud.estado === "ACEPTADA"
-                        ? styles.estadoAceptada
-                        : solicitud.estado === "RECHAZADA"
-                          ? styles.estadoRechazada
-                          : solicitud.estado === "CANCELADA"
-                            ? styles.estadoCancelada
-                            : styles.estadoPendiente
-                        }`}
+                      className={`${styles.estado} ${
+                        solicitud.estado === "ACEPTADA"
+                          ? styles.estadoAceptada
+                          : solicitud.estado === "RECHAZADA"
+                            ? styles.estadoRechazada
+                            : solicitud.estado === "CANCELADA"
+                              ? styles.estadoCancelada
+                              : styles.estadoPendiente
+                      }`}
                     >
                       {solicitud.estado}
                     </span>
@@ -335,7 +344,8 @@ export default function SolicitudesPage() {
                   <div className={styles.contenido}>
                     <p>
                       <strong>Publicación:</strong>{" "}
-                      <Link className={styles.linkPublicacion}
+                      <Link
+                        className={styles.linkPublicacion}
                         href={`/publicaciones/publicacion/${solicitud.publicacionId}`}
                       >
                         {solicitud.publicacion?.titulo ?? "Ver publicación"}
@@ -363,55 +373,76 @@ export default function SolicitudesPage() {
                     {solicitud.estado === "ACEPTADA" && (
                       <>
                         <div className={styles.separador}>
-                          <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
+                          <p className={styles.datos}>
+                            {" "}
+                            Datos de Contacto del Solicitante:{" "}
+                          </p>
                           <p>
-                            <strong>Nombre:</strong> {solicitud.solicitante?.nombre}
+                            <strong>Nombre:</strong>{" "}
+                            {solicitud.solicitante?.nombre}
                           </p>
 
                           <p>
-                            <strong>Correo:</strong> {solicitud.solicitante?.email}
+                            <strong>Correo:</strong>{" "}
+                            {solicitud.solicitante?.email}
                           </p>
 
                           <p>
-                            <strong>Teléfono:</strong> {solicitud.solicitante?.telefono}
+                            <strong>Teléfono:</strong>{" "}
+                            {solicitud.solicitante?.telefono}
                           </p>
                         </div>
                       </>
                     )}
-                    {solicitud.estado === "PENDIENTE" && (
-                      <div className={styles.acciones}>
-                        <button
-                          type="button"
-                          className={styles.botonAceptar}
-                          onClick={() => aceptarSolicitud(solicitud.id)}
-                        >
-                          Aceptar
-                        </button>
+                    {solicitud.estado === "PENDIENTE" &&
+                      (() => {
+                        const tieneOtraSolicitudAceptada =
+                          solicitudesRecibidas.some(
+                            (otraSolicitud) =>
+                              otraSolicitud.publicacionId ===
+                                solicitud.publicacionId &&
+                              otraSolicitud.id !== solicitud.id &&
+                              otraSolicitud.estado === "ACEPTADA",
+                          );
 
-                        <div className={styles.inputConBoton}>
-                          <input
-                            type="text"
-                            placeholder="Motivo de rechazo (opcional)"
-                            value={motivosRechazo[solicitud.id] ?? ""}
-                            onChange={(e) =>
-                              setMotivosRechazo({
-                                ...motivosRechazo,
-                                [solicitud.id]: e.target.value,
-                              })
-                            }
-                            className={styles.inputMotivo}
-                          />
+                        return (
+                          <div className={styles.acciones}>
+                            <button
+                              type="button"
+                              className={styles.botonAceptar}
+                              disabled={tieneOtraSolicitudAceptada}
+                              onClick={() => aceptarSolicitud(solicitud.id)}
+                            >
+                              {tieneOtraSolicitudAceptada
+                                ? "Solicitud ya reservada"
+                                : "Aceptar"}
+                            </button>
 
-                          <button
-                            type="button"
-                            className={styles.botonRechazar}
-                            onClick={() => rechazarSolicitud(solicitud.id)}
-                          >
-                            Rechazar
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                            <div className={styles.inputConBoton}>
+                              <input
+                                type="text"
+                                placeholder="Motivo de rechazo (opcional)"
+                                value={motivosRechazo[solicitud.id] ?? ""}
+                                onChange={(e) =>
+                                  setMotivosRechazo({
+                                    ...motivosRechazo,
+                                    [solicitud.id]: e.target.value,
+                                  })
+                                }
+                                className={styles.inputMotivo}
+                              />
+
+                              <button
+                                type="button"
+                                className={styles.botonRechazar}
+                                onClick={() => rechazarSolicitud(solicitud.id)}
+                              >
+                                Rechazar
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })()}
                   </div>
                 </article>
               ))}

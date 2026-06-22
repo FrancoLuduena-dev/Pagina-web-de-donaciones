@@ -19,7 +19,7 @@
 
     "test:frontend:cov": "npm --prefix frontend run test:cov",
     "test:backend:cov": "npm --prefix backend run test:cov",
-    "test:all:coverage": "npm run test:frontend:coverage && npm run test:backend:coverage"
+    "test:all:cov": "npm run test:frontend:cov  && npm run test:backend:cov"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"
