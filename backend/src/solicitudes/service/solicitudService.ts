@@ -11,7 +11,6 @@ import { PublicacionService } from '../../publicacion/service/publicacionService
 import { SolicitudCreadaEvent } from '../evento/solicitudCreadaEvento';
 import { SolicitudRechazadaEvent } from '../evento/solicitudRechazadaEvento';
 import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
-import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
 import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
 import { SolicitudResponseDto } from '../DTO/solicitudResponse';
 import { Solicitud } from '../entity/solicitudEntity';
@@ -21,6 +20,7 @@ import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
 import { SolicitudAceptadaEvent } from '../evento/solicitudAceptadaEvento';
 import { SolicitudAceptadaCanceladaEvento } from '../evento/solicitudAceptadaCanceladaEvento';
 import { SolicitudFinalizadaEvento } from '../evento/solicitudFinalizadaEvento';
+import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
 
 @Injectable()
 export class SolicitudService {
