@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsString,
@@ -9,6 +12,7 @@ import {
 } from 'class-validator';
 
 import { CondicionObjeto } from '../enums/condicionObjeto';
+import { MAX_IMAGENES_PUBLICACION } from '../service/publicacionUploadService';
 
 export class CrearPublicacionDto {
   @IsString()
@@ -31,7 +35,9 @@ export class CrearPublicacionDto {
   @IsEnum(CondicionObjeto)
   condicion!: CondicionObjeto;
 
-  @IsUrl({ require_tld: false })
-  @IsNotEmpty()
-  imagenUrl!: string;
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(MAX_IMAGENES_PUBLICACION)
+  @IsUrl({ require_tld: false }, { each: true })
+  imagenUrls!: string[];
 }

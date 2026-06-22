@@ -1,4 +1,7 @@
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
   IsEnum,
   IsOptional,
   IsString,
@@ -7,6 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { CondicionObjeto } from '../enums/condicionObjeto';
+import { MAX_IMAGENES_PUBLICACION } from '../service/publicacionUploadService';
 
 export class EditarPublicacionDto {
   @IsOptional()
@@ -32,6 +36,9 @@ export class EditarPublicacionDto {
   condicion?: CondicionObjeto;
 
   @IsOptional()
-  @IsUrl({ require_tld: false })
-  imagenUrl?: string;
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(MAX_IMAGENES_PUBLICACION)
+  @IsUrl({ require_tld: false }, { each: true })
+  imagenUrls?: string[];
 }

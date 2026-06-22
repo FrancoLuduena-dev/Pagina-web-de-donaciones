@@ -1,20 +1,25 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import bcrypt from 'bcrypt';
-import { sign, verify, Secret, SignOptions } from 'jsonwebtoken';
+import { sign, SignOptions } from 'jsonwebtoken';
 
 import Usuario_Service from '../service/usuarioService';
-import Usuario from '../entity/usuarioEntity';
 
 import crearUsuarioDTO from '../dtos/usuarioDto';
 import logearUsuarioDTO from '../dtos/logearUsuarioDto';
-
-import { JWT_SECRET, JWT_EXPIRATION } from './authConstants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export default class autenticacionUsuario {
-  constructor(private readonly service: Usuario_Service) {}
+  constructor(
+    private readonly service: Usuario_Service,
+    private readonly config: ConfigService,
+  ) {}
 
-  async registrarUsuario(usuario: crearUsuarioDTO): Promise<Omit<Usuario, 'contrasenia'>> {
+  async registrarUsuario(usuario: crearUsuarioDTO) {
     const hashedPassword = await bcrypt.hash(usuario.contrasenia, 10);
 
     const newUser = await this.service.CrearUsuario({
@@ -26,8 +31,14 @@ export default class autenticacionUsuario {
       throw new UnauthorizedException('Error al registrar el usuario');
     }
 
-    const { contrasenia, ...usuarioSinContrasenia } = newUser;
-    return usuarioSinContrasenia;
+    return {
+      message: 'Usuario registrado correctamente',
+      user: {
+        id: newUser.id,
+        correo: newUser.correo,
+        nombreUsuario: newUser.nombreUsuario,
+      },
+    };
   }
 
   public async logearUsuario(datos: logearUsuarioDTO): Promise<string> {
@@ -46,10 +57,17 @@ export default class autenticacionUsuario {
       throw new UnauthorizedException('Correo o contrasenia incorrectos');
     }
 
-    const secret: Secret = JWT_SECRET;
+    const secret = this.config.get<string>('JWT_SECRET');
+    const expiration = this.config.get<string>('JWT_EXPIRATION') || '1h';
+
+    if (!secret) {
+      throw new InternalServerErrorException(
+        'JWT no configurado en el servidor',
+      );
+    }
 
     const options: SignOptions = {
-      expiresIn: JWT_EXPIRATION as SignOptions['expiresIn'],
+      expiresIn: expiration as SignOptions['expiresIn'],
     };
 
     return sign(
@@ -61,29 +79,5 @@ export default class autenticacionUsuario {
       secret,
       options,
     );
-  }
-
-  public async validarToken(token: string): Promise<Usuario> {
-    try {
-      const decoded = verify(token, JWT_SECRET) as {
-        id: string;
-        correo: string;
-        rol: string;
-      };
-
-      const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
-
-      if (!usuario) {
-        throw new UnauthorizedException('Usuario no encontrado');
-      }
-
-      return usuario;
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-
-      throw new UnauthorizedException('Token inválido');
-    }
   }
 }

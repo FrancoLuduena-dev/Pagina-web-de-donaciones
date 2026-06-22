@@ -3,23 +3,23 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 
 import { Request } from 'express';
-
-import Usuario from '../entity/usuarioEntity';
-import autenticacionUsuario from './authUsuario';
-
-type RequestConUsuario = Request & {
-  user?: Usuario;
-};
+import * as jwt from 'jsonwebtoken';
+import Usuario_Service from '../service/usuarioService';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly authUsuario: autenticacionUsuario) {}
+  constructor(
+    private readonly service: Usuario_Service,
+    private readonly config: ConfigService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<RequestConUsuario>();
+    const request = context.switchToHttp().getRequest<Request>();
 
     const authHeader = request.headers.authorization;
 
@@ -29,10 +29,34 @@ export class AuthGuard implements CanActivate {
 
     const token = authHeader.replace('Bearer ', '').trim();
 
-    const usuario = await this.authUsuario.validarToken(token);
+    try {
+      const secret = this.config.get<string>('JWT_SECRET');
 
-    request.user = usuario;
+      if (!secret) {
+        throw new InternalServerErrorException('JWT no configurado en el servidor');
+      }
 
-    return true;
+      const decoded = jwt.verify(token, secret) as {
+        id: string;
+        correo: string;
+        rol: string;
+      };
+
+      const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
+
+      if (!usuario) {
+        throw new UnauthorizedException('Usuario no encontrado');
+      }
+
+      const requestWithUser = request as Request & {
+        user?: unknown;
+      };
+
+      requestWithUser.user = usuario;
+
+      return true;
+    } catch {
+      throw new UnauthorizedException('Token inválido');
+    }
   }
 }

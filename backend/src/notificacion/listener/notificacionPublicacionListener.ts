@@ -22,6 +22,18 @@ export class NotificacionPublicacionListener {
     );
   }
 
+  @OnEvent(EventoDominio.PUBLICACION_REACTIVADA_MODERACION, { async: true })
+  async alReactivarPublicacion(
+    evento: PublicacionModeradaEvento,
+  ): Promise<void> {
+    await this.crearNotificacion(
+      evento,
+      TipoNotificacion.PUBLICACION_REACTIVADA,
+      'Publicación reactivada',
+      `Tu publicación "${evento.publicacionTitulo}" fue reactivada por moderación.`,
+    );
+  }
+
   @OnEvent(EventoDominio.PUBLICACION_ELIMINADA_MODERACION, { async: true })
   async alEliminarPublicacion(
     evento: PublicacionModeradaEvento,

@@ -21,6 +21,8 @@ import actualizarUsuarioDTO from '../dtos/actualizarUsuarioDto';
 import { CambiarRolDTO } from '../dtos/cambiarRolDto';
 import logearUsuarioDTO from '../dtos/logearUsuarioDto';
 import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
+import registerResponseDto from '../dtos/registerResponseDto';
+
 
 import { AuthGuard } from '../auth/authGuard';
 import { Roles } from 'src/compartidos/decorators/decoratorRol';
@@ -42,7 +44,7 @@ export default class UsuarioController {
   @Post()
   async crearUsuario(
     @Body() usuario: CrearUsuarioDTO,
-  ): Promise<Omit<Usuario, 'contrasenia'>> {
+  ): Promise<registerResponseDto> {
     return this.authService.registrarUsuario(usuario);
   }
 

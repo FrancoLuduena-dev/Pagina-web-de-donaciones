@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Publicacion } from '../entity/publicacionEntity';
 import { PublicacionRepository } from '../repository/publicacionRepository';
 import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
@@ -9,12 +13,19 @@ import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
 import { PublicacionModeradaEvento } from '../evento/publicacionModeradaEvento';
 import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import UsuarioService from 'src/usuario/service/usuarioService';
+
+export type PublicacionConCreador = Publicacion & {
+  creadorNombreUsuario: string;
+  creadorNombreCompleto: string;
+};
 
 @Injectable()
 export class PublicacionService {
   constructor(
     private readonly publicacionRepository: PublicacionRepository,
     private readonly eventEmitter: EventEmitter2,
+    private readonly usuarioService: UsuarioService,
   ) {}
 
   async crearPublicacion(
@@ -27,7 +38,7 @@ export class PublicacionService {
       categoriaId: dto.categoriaId,
       localidadId: dto.localidadId,
       condicion: dto.condicion,
-      imagenUrl: dto.imagenUrl,
+      imagenUrls: dto.imagenUrls,
       creadorId,
     });
 
@@ -70,6 +81,20 @@ export class PublicacionService {
     }
 
     return publicacion;
+  }
+
+  async buscarPublicacionPorIdConCreador(
+    id: string,
+  ): Promise<PublicacionConCreador> {
+    const publicacion = await this.buscarPublicacionPorId(id);
+    const creador = await this.usuarioService.obtenerUsuarioPorId(
+      publicacion.creadorId,
+    );
+
+    return Object.assign(publicacion, {
+      creadorNombreUsuario: creador.nombreUsuario,
+      creadorNombreCompleto: creador.nombreCompleto,
+    });
   }
 
   async reservar(id: string, usuarioId: string): Promise<Publicacion> {
@@ -162,18 +187,14 @@ export class PublicacionService {
     return publicacionGuardada;
   }
 
-  async eliminar(
-    id: string,
-    usuarioId: string,
-    usuarioRol: rolUsuario,
-  ): Promise<Publicacion> {
+  async eliminar(id: string, usuarioId: string): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    publicacion.validarPuedeSerGestionadaPor(
-      usuarioId,
-      usuarioRol,
-      'Solo el creador, un moderador o superusuario puede eliminar la publicación',
-    );
+    if (publicacion.creadorId !== usuarioId) {
+      throw new ForbiddenException(
+        'Solo el creador puede eliminar la publicación',
+      );
+    }
 
     publicacion.eliminar();
 

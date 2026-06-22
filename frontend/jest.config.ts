@@ -1,6 +1,6 @@
 // Importa el helper oficial de Next.js para integrar Jest correctamente
 // Esto adapta automáticamente Jest a cómo funciona Next (SWC, rutas, CSS, etc.)
-import nextJest from 'next/jest'
+import nextJest from 'next/jest.js'
 
 // Importa el tipo de configuración de Jest (solo para TypeScript)
 import type { Config } from 'jest'
@@ -33,6 +33,14 @@ const config: Config = {
   // 📊 Activa la recolección de cobertura de código
   // Muestra cuánto del código está siendo testeado
   collectCoverage: true,
+  collectCoverageFrom: [
+    'app/**/*.{ts,tsx}',
+    'components/**/*.{ts,tsx}',
+    '!**/*.d.ts',
+    '!**/*.test.{ts,tsx}',
+    '!**/*.spec.{ts,tsx}',
+    '!**/node_modules/**',
+  ],
 
 
   // ⚡ Motor usado para medir coverage

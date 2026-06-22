@@ -6,7 +6,10 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "eslint",
-    "docs": "typedoc src"
+    "docs": "typedoc src",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "@jridgewell/remapping": "^2.3.5",
