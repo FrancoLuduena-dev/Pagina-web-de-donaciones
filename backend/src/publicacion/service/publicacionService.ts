@@ -198,7 +198,21 @@ export class PublicacionService {
 
     publicacion.eliminar();
 
-    return this.publicacionRepository.guardar(publicacion);
+    const publicacionGuardada =
+      await this.publicacionRepository.guardar(publicacion);
+
+    if (publicacion.creadorId !== usuarioId) {
+      this.eventEmitter.emit(
+        EventoDominio.PUBLICACION_ELIMINADA_MODERACION,
+        new PublicacionModeradaEvento(
+          publicacionGuardada.id,
+          publicacionGuardada.creadorId,
+          publicacionGuardada.titulo,
+        ),
+      );
+    }
+
+    return publicacionGuardada;
   }
 
   async guardar(publicacion: Publicacion): Promise<Publicacion> {
