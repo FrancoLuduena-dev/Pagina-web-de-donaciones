@@ -20,6 +20,7 @@ import {
   buildPublicacionImagenUrl,
   MAX_IMAGENES_PUBLICACION,
   publicacionUploadMulterOptions,
+  validarImagenesSubidas,
 } from '../service/publicacionUploadService';
 import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
 import { Publicacion } from '../entity/publicacionEntity';
@@ -42,12 +43,14 @@ export class PublicacionController {
       publicacionUploadMulterOptions,
     ),
   )
-  subirImagenes(@UploadedFiles() files: Express.Multer.File[]): {
-    imagenUrls: string[];
-  } {
+  async subirImagenes(
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<{ imagenUrls: string[] }> {
     if (!files?.length) {
       throw new BadRequestException('No se recibió ninguna imagen');
     }
+
+    await validarImagenesSubidas(files);
 
     return {
       imagenUrls: files.map((file) => buildPublicacionImagenUrl(file.filename)),
