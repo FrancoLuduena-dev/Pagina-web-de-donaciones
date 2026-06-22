@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { DataSource, EntityManager } from 'typeorm';
 
 import { PublicacionService } from '../../publicacion/service/publicacionService';
 import { rolUsuario } from '../../usuario/enums/rolUsuario';
@@ -27,6 +28,7 @@ export class DenunciaService {
     private readonly denunciaRepository: DenunciaRepository,
     private readonly publicacionService: PublicacionService,
     private readonly usuarioService: UsuarioService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crearDenuncia(
@@ -86,15 +88,20 @@ export class DenunciaService {
     moderadorId: string,
     dto: TomarDenunciaDto,
   ): Promise<DenunciaResponseDto> {
-    const denuncia = await this.obtenerDenunciaPorId(denunciaId);
+    return this.dataSource.transaction(async (manager) => {
+      const denuncia = await this.obtenerDenunciaPorIdConBloqueo(
+        manager,
+        denunciaId,
+      );
 
-    this.validarVersionDenuncia(denuncia, dto.version);
+      this.validarVersionDenuncia(denuncia, dto.version);
 
-    denuncia.tomar(moderadorId);
+      denuncia.tomar(moderadorId);
 
-    const denunciaGuardada = await this.denunciaRepository.guardar(denuncia);
+      const denunciaGuardada = await manager.save(denuncia);
 
-    return DenunciaMapper.toResponseDto(denunciaGuardada);
+      return DenunciaMapper.toResponseDto(denunciaGuardada);
+    });
   }
 
   async resolverDenuncia(
@@ -102,32 +109,53 @@ export class DenunciaService {
     moderadorId: string,
     dto: ResolverDenunciaDto,
   ): Promise<DenunciaDetalleResponseDto> {
-    const denuncia = await this.obtenerDenunciaPorId(denunciaId);
+    return this.dataSource.transaction(async (manager) => {
+      const denuncia = await this.obtenerDenunciaPorIdConBloqueo(
+        manager,
+        denunciaId,
+      );
 
-    this.validarVersionDenuncia(denuncia, dto.version);
-    this.validarDenunciaNoResuelta(denuncia);
+      this.validarVersionDenuncia(denuncia, dto.version);
+      this.validarDenunciaNoResuelta(denuncia);
 
-    await this.ejecutarAccionResolucion(
-      dto.tipoResolucion,
-      denuncia.publicacionId,
-      denuncia.creadorPublicacionId,
-      moderadorId,
-      dto.detalleResolucion,
-    );
+      await this.ejecutarAccionResolucion(
+        dto.tipoResolucion,
+        denuncia.publicacionId,
+        denuncia.creadorPublicacionId,
+        moderadorId,
+        dto.detalleResolucion,
+      );
 
-    if (!denuncia.moderadorAsignadoId) {
-      denuncia.tomar(moderadorId);
-    }
+      if (!denuncia.moderadorAsignadoId) {
+        denuncia.tomar(moderadorId);
+      }
 
-    denuncia.resolver(dto.tipoResolucion, dto.detalleResolucion);
+      denuncia.resolver(dto.tipoResolucion, dto.detalleResolucion);
 
-    const denunciaGuardada = await this.denunciaRepository.guardar(denuncia);
+      const denunciaGuardada = await manager.save(denuncia);
 
-    return DenunciaMapper.toDetalleResponseDto(denunciaGuardada);
+      return DenunciaMapper.toDetalleResponseDto(denunciaGuardada);
+    });
   }
 
   private async obtenerDenunciaPorId(denunciaId: string): Promise<Denuncia> {
     const denuncia = await this.denunciaRepository.buscarPorId(denunciaId);
+
+    if (!denuncia) {
+      throw new NotFoundException('DENUNCIA_NO_ENCONTRADA');
+    }
+
+    return denuncia;
+  }
+
+  private async obtenerDenunciaPorIdConBloqueo(
+    manager: EntityManager,
+    denunciaId: string,
+  ): Promise<Denuncia> {
+    const denuncia = await manager.findOne(Denuncia, {
+      where: { id: denunciaId },
+      lock: { mode: 'pessimistic_write' },
+    });
 
     if (!denuncia) {
       throw new NotFoundException('DENUNCIA_NO_ENCONTRADA');
