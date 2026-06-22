@@ -6,10 +6,16 @@ import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
+import { PublicacionModeradaEvento } from '../evento/publicacionModeradaEvento';
+import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class PublicacionService {
-  constructor(private readonly publicacionRepository: PublicacionRepository) {}
+  constructor(
+    private readonly publicacionRepository: PublicacionRepository,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async crearPublicacion(
     dto: CrearPublicacionDto,
@@ -107,7 +113,21 @@ export class PublicacionService {
 
     publicacion.pausar();
 
-    return this.publicacionRepository.guardar(publicacion);
+    const publicacionGuardada =
+      await this.publicacionRepository.guardar(publicacion);
+
+    if (publicacion.creadorId !== usuarioId) {
+      this.eventEmitter.emit(
+        EventoDominio.PUBLICACION_PAUSADA_MODERACION,
+        new PublicacionModeradaEvento(
+          publicacionGuardada.id,
+          publicacionGuardada.creadorId,
+          publicacionGuardada.titulo,
+        ),
+      );
+    }
+
+    return publicacionGuardada;
   }
 
   async reactivar(
@@ -125,7 +145,21 @@ export class PublicacionService {
 
     publicacion.reactivar();
 
-    return this.publicacionRepository.guardar(publicacion);
+    const publicacionGuardada =
+      await this.publicacionRepository.guardar(publicacion);
+
+    if (publicacion.creadorId !== usuarioId) {
+      this.eventEmitter.emit(
+        EventoDominio.PUBLICACION_REACTIVADA_MODERACION,
+        new PublicacionModeradaEvento(
+          publicacionGuardada.id,
+          publicacionGuardada.creadorId,
+          publicacionGuardada.titulo,
+        ),
+      );
+    }
+
+    return publicacionGuardada;
   }
 
   async eliminar(

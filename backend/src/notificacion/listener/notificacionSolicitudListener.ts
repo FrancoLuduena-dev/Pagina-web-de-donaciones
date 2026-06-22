@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-
 import { SolicitudCreadaEvent } from '../../solicitudes/evento/solicitudCreadaEvento';
-
 import { NotificacionService } from '../service/notificacionService';
 import { SolicitudRechazadaEvent } from 'src/solicitudes/evento/solicitudRechazadaEvento';
 import { SolicitudAceptadaEvent } from 'src/solicitudes/evento/solicitudAceptadaEvento';

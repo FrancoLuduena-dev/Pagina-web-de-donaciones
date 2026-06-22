@@ -190,8 +190,8 @@ export class SolicitudService {
     solicitud.finalizar();
     publicacion.entregar();
 
-    const solicitudGuardada = await this.dataSource.transaction(
-      async (manager) => {
+    const { solicitudGuardada, solicitudesRechazadas } =
+      await this.dataSource.transaction(async (manager) => {
         const solicitudesPendientes = await manager.find(Solicitud, {
           where: {
             publicacionId: solicitud.publicacionId,
@@ -208,9 +208,25 @@ export class SolicitudService {
         }
 
         await manager.save(publicacion);
-        return manager.save(solicitud);
-      },
-    );
+        const solicitudGuardada = await manager.save(solicitud);
+
+        return {
+          solicitudGuardada,
+          solicitudesRechazadas: solicitudesPendientes,
+        };
+      });
+
+    for (const solicitudRechazada of solicitudesRechazadas) {
+      this.eventEmitter.emit(
+        EventoDominio.SOLICITUD_RECHAZADA,
+        new SolicitudRechazadaEvent(
+          solicitudRechazada.id,
+          solicitudRechazada.solicitanteId,
+          publicacion.titulo,
+          solicitudRechazada.motivoRechazo,
+        ),
+      );
+    }
 
     this.eventEmitter.emit(
       EventoDominio.SOLICITUD_FINALIZADA,
