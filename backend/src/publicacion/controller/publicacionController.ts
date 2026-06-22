@@ -108,7 +108,7 @@ export class PublicacionController {
     @Param('id') id: string,
     @Req() req: RequestConUsuario,
   ): Promise<Publicacion> {
-    return this.publicacionService.eliminar(id, req.user.id);
+    return this.publicacionService.eliminar(id, req.user.id, req.user.rol);
   }
 
   @UseGuards(AuthGuard)

@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Publicacion } from '../entity/publicacionEntity';
 import { PublicacionRepository } from '../repository/publicacionRepository';
 import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
@@ -187,14 +183,18 @@ export class PublicacionService {
     return publicacionGuardada;
   }
 
-  async eliminar(id: string, usuarioId: string): Promise<Publicacion> {
+  async eliminar(
+    id: string,
+    usuarioId: string,
+    usuarioRol: rolUsuario,
+  ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    if (publicacion.creadorId !== usuarioId) {
-      throw new ForbiddenException(
-        'Solo el creador puede eliminar la publicación',
-      );
-    }
+    publicacion.validarPuedeSerGestionadaPor(
+      usuarioId,
+      usuarioRol,
+      'Solo el creador, un moderador o superusuario puede eliminar la publicación',
+    );
 
     publicacion.eliminar();
 
