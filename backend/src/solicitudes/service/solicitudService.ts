@@ -317,6 +317,71 @@ export class SolicitudService {
     await this.solicitudRepository.guardarVarias(solicitudesARechazar);
   }
 
+  async resolverSolicitudesPorPublicacionEliminada(
+    publicacionId: string,
+    publicacionTitulo: string,
+    eliminadaPorModeracion: boolean,
+  ): Promise<number> {
+    const solicitudesActivas =
+      await this.solicitudRepository.buscarActivasPorPublicacion(publicacionId);
+
+    const solicitudesAResolver = solicitudesActivas.filter(
+      (solicitud) =>
+        solicitud.estado === EstadoSolicitud.PENDIENTE ||
+        solicitud.estado === EstadoSolicitud.ACEPTADA,
+    );
+
+    if (solicitudesAResolver.length === 0) {
+      return 0;
+    }
+
+    const motivo = eliminadaPorModeracion
+      ? 'La publicación fue eliminada por moderación'
+      : 'La publicación fue eliminada';
+    const solicitudesAceptadas = new Set(
+      solicitudesAResolver
+        .filter((solicitud) => solicitud.estado === EstadoSolicitud.ACEPTADA)
+        .map((solicitud) => solicitud.id),
+    );
+
+    for (const solicitud of solicitudesAResolver) {
+      if (solicitud.estado === EstadoSolicitud.PENDIENTE) {
+        solicitud.rechazar(motivo);
+      } else {
+        solicitud.cancelarAceptada(motivo);
+      }
+    }
+
+    const solicitudesGuardadas =
+      await this.solicitudRepository.guardarVarias(solicitudesAResolver);
+
+    for (const solicitud of solicitudesGuardadas) {
+      if (solicitudesAceptadas.has(solicitud.id)) {
+        this.eventEmitter.emit(
+          EventoDominio.SOLICITUD_ACEPTADA_CANCELADA,
+          new SolicitudAceptadaCanceladaEvento(
+            solicitud.id,
+            solicitud.solicitanteId,
+            publicacionTitulo,
+            motivo,
+          ),
+        );
+      } else {
+        this.eventEmitter.emit(
+          EventoDominio.SOLICITUD_RECHAZADA,
+          new SolicitudRechazadaEvent(
+            solicitud.id,
+            solicitud.solicitanteId,
+            publicacionTitulo,
+            motivo,
+          ),
+        );
+      }
+    }
+
+    return solicitudesGuardadas.length;
+  }
+
   private mapearRespuesta(
     solicitud: Solicitud,
     usuarioActualId: string,

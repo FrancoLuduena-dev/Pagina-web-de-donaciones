@@ -160,8 +160,8 @@ export class Solicitud {
       );
     }
 
-    this.validarTransicionSolicitud(EstadoSolicitud.RECHAZADA);
-    this.motivoRechazo = motivo;
+    this.validarTransicionSolicitud(EstadoSolicitud.CANCELADA);
+    this.motivoCancelacion = motivo;
   }
 
   finalizar(): void {

@@ -6,6 +6,7 @@ import { SolicitudService } from '../service/solicitudService';
 import { SolicitudController } from '../controller/solicitudController';
 import { PublicacionModule } from 'src/publicacion/module/publicacionModule';
 import { UsuarioModule } from '../../usuario/module/usuarioModule';
+import { PublicacionEliminadaListener } from '../listener/publicacionEliminadaListener';
 
 @Module({
   imports: [
@@ -14,7 +15,11 @@ import { UsuarioModule } from '../../usuario/module/usuarioModule';
     UsuarioModule,
   ],
   controllers: [SolicitudController],
-  providers: [SolicitudService, SolicitudRepository],
+  providers: [
+    SolicitudService,
+    SolicitudRepository,
+    PublicacionEliminadaListener,
+  ],
   exports: [SolicitudService],
 })
 export class SolicitudesModule {}

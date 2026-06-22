@@ -171,6 +171,16 @@ export class Publicacion {
     this.deletedAt = new Date();
   }
 
+  eliminarPorModeracion(): void {
+    if (this.estado === EstadoPublicacion.RESERVADA) {
+      this.estado = EstadoPublicacion.ELIMINADA;
+      this.deletedAt = new Date();
+      return;
+    }
+
+    this.eliminar();
+  }
+
   cancelarReserva(): void {
     this.transicionarA(EstadoPublicacion.DISPONIBLE);
   }

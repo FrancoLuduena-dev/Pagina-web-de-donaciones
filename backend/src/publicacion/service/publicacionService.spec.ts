@@ -52,6 +52,14 @@ describe('PublicacionService - eliminar', () => {
     expect(resultado.estado).toBe(EstadoPublicacion.ELIMINADA);
     expect(resultado.deletedAt).toBeInstanceOf(Date);
     expect(eventEmitter.emit).toHaveBeenCalledWith(
+      EventoDominio.PUBLICACION_ELIMINADA,
+      expect.objectContaining({
+        publicacionId: publicacion.id,
+        publicacionTitulo: publicacion.titulo,
+        eliminadaPorModeracion: true,
+      }),
+    );
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
       EventoDominio.PUBLICACION_ELIMINADA_MODERACION,
       expect.objectContaining({
         publicacionId: publicacion.id,
@@ -61,7 +69,7 @@ describe('PublicacionService - eliminar', () => {
     );
   });
 
-  it('no notifica cuando el creador elimina su propia publicación', async () => {
+  it('procesa solicitudes pero no notifica moderación cuando elimina el creador', async () => {
     const publicacion = crearPublicacion();
     repository.buscarPorId.mockResolvedValue(publicacion);
 
@@ -72,7 +80,17 @@ describe('PublicacionService - eliminar', () => {
     );
 
     expect(repository.guardar).toHaveBeenCalledWith(publicacion);
-    expect(eventEmitter.emit).not.toHaveBeenCalled();
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
+      EventoDominio.PUBLICACION_ELIMINADA,
+      expect.objectContaining({
+        publicacionId: publicacion.id,
+        eliminadaPorModeracion: false,
+      }),
+    );
+    expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+      EventoDominio.PUBLICACION_ELIMINADA_MODERACION,
+      expect.anything(),
+    );
   });
 
   it('no notifica si no se pudo guardar la eliminación', async () => {
@@ -90,6 +108,76 @@ describe('PublicacionService - eliminar', () => {
       ),
     ).rejects.toThrow('No se pudo guardar la publicación');
 
+    expect(eventEmitter.emit).not.toHaveBeenCalled();
+  });
+
+  it('no procesa solicitudes cuando la publicación solamente se pausa', async () => {
+    const publicacion = crearPublicacion();
+    repository.buscarPorId.mockResolvedValue(publicacion);
+
+    await service.pausar(
+      publicacion.id,
+      publicacion.creadorId,
+      rolUsuario.usuarioNormal,
+    );
+
+    expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+      EventoDominio.PUBLICACION_ELIMINADA,
+      expect.anything(),
+    );
+  });
+
+  it('no procesa solicitudes cuando una publicación pausada se reactiva', async () => {
+    const publicacion = crearPublicacion();
+    publicacion.estado = EstadoPublicacion.PAUSADA;
+    repository.buscarPorId.mockResolvedValue(publicacion);
+
+    await service.reactivar(
+      publicacion.id,
+      publicacion.creadorId,
+      rolUsuario.usuarioNormal,
+    );
+
+    expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+      EventoDominio.PUBLICACION_ELIMINADA,
+      expect.anything(),
+    );
+  });
+
+  it('permite a moderación eliminar una publicación reservada', async () => {
+    const publicacion = crearPublicacion();
+    publicacion.estado = EstadoPublicacion.RESERVADA;
+    repository.buscarPorId.mockResolvedValue(publicacion);
+
+    const resultado = await service.eliminar(
+      publicacion.id,
+      '22222222-2222-4222-8222-222222222222',
+      rolUsuario.usuarioModerador,
+    );
+
+    expect(resultado.estado).toBe(EstadoPublicacion.ELIMINADA);
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
+      EventoDominio.PUBLICACION_ELIMINADA,
+      expect.objectContaining({
+        eliminadaPorModeracion: true,
+      }),
+    );
+  });
+
+  it('impide al creador eliminar su publicación reservada', async () => {
+    const publicacion = crearPublicacion();
+    publicacion.estado = EstadoPublicacion.RESERVADA;
+    repository.buscarPorId.mockResolvedValue(publicacion);
+
+    await expect(
+      service.eliminar(
+        publicacion.id,
+        publicacion.creadorId,
+        rolUsuario.usuarioNormal,
+      ),
+    ).rejects.toThrow('No se puede pasar de RESERVADA a ELIMINADA');
+
+    expect(repository.guardar).not.toHaveBeenCalled();
     expect(eventEmitter.emit).not.toHaveBeenCalled();
   });
 

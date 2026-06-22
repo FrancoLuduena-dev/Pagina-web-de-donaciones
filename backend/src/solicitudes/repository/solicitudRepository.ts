@@ -1,5 +1,3 @@
-// src/solicitudes/repository/solicitudRepository.ts
-
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -74,6 +72,16 @@ export class SolicitudRepository {
       where: {
         publicacionId,
         estado: EstadoSolicitud.PENDIENTE,
+      },
+      relations: this.relacionesSolicitud,
+    });
+  }
+
+  buscarActivasPorPublicacion(publicacionId: string): Promise<Solicitud[]> {
+    return this.repository.find({
+      where: {
+        publicacionId,
+        estado: In([EstadoSolicitud.PENDIENTE, EstadoSolicitud.ACEPTADA]),
       },
       relations: this.relacionesSolicitud,
     });

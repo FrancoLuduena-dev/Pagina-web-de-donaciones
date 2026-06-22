@@ -7,6 +7,7 @@ import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
 import { PublicacionModeradaEvento } from '../evento/publicacionModeradaEvento';
+import { PublicacionEliminadaEvento } from '../evento/publicacionEliminadaEvento';
 import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import UsuarioService from 'src/usuario/service/usuarioService';
@@ -196,12 +197,27 @@ export class PublicacionService {
       'Solo el creador, un moderador o superusuario puede eliminar la publicación',
     );
 
-    publicacion.eliminar();
+    const eliminadaPorModeracion = publicacion.creadorId !== usuarioId;
+
+    if (eliminadaPorModeracion) {
+      publicacion.eliminarPorModeracion();
+    } else {
+      publicacion.eliminar();
+    }
 
     const publicacionGuardada =
       await this.publicacionRepository.guardar(publicacion);
 
-    if (publicacion.creadorId !== usuarioId) {
+    this.eventEmitter.emit(
+      EventoDominio.PUBLICACION_ELIMINADA,
+      new PublicacionEliminadaEvento(
+        publicacionGuardada.id,
+        publicacionGuardada.titulo,
+        eliminadaPorModeracion,
+      ),
+    );
+
+    if (eliminadaPorModeracion) {
       this.eventEmitter.emit(
         EventoDominio.PUBLICACION_ELIMINADA_MODERACION,
         new PublicacionModeradaEvento(
