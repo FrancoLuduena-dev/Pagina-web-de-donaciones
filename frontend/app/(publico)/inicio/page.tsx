@@ -24,7 +24,7 @@ export default function HomePage() {
             className={styles.primaryButton}
           >
             Iniciar sesión
-          </Link>
+          </Link> 
 
           <Link
             href="/como_funciona"
@@ -32,6 +32,10 @@ export default function HomePage() {
           >
             ¿Cómo funciona?
           </Link>
+          <Link href="/about" className={styles.primaryButton}>
+            Sobre Nosotros
+          </Link>
+
         </div>
       </div>
     </main>

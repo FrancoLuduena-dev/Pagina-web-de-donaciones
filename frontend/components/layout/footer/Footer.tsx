@@ -14,10 +14,6 @@ export default function Footer() {
       </p>
 
       <div className={styles.links}>
-        <Link href="/about">
-          Sobre Nosotros
-        </Link>
-
         <a href={`mailto:${email}`} className={styles.links}>
           Contactanos
         </a>
