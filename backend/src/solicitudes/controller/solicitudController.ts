@@ -13,10 +13,10 @@ import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
 import { StatusGuard } from 'src/compartidos/guards/statusGuard';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
 
-import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
-import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
-import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
-import { SolicitudResponseDto } from '../DTO/solicitudResponse';
+import { CancelarSolicitudDto } from '../dtos/cancelarSolicitudDto';
+import { CrearSolicitudDto } from '../dtos/crearSolicitudDto';
+import { RechazarSolicitudDto } from '../dtos/rechazarSolicitudDto';
+import { SolicitudResponseDto } from '../dtos/solicitudResponse';
 import { SolicitudService } from '../service/solicitudService';
 
 @UseGuards(AuthGuard)

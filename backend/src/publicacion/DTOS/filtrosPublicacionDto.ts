@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
@@ -17,10 +17,10 @@ export class FiltrosPublicacionDto {
   condicion?: CondicionObjeto;
 
   @IsOptional()
-  @IsUUID()
+  @IsString()
   categoriaId?: string;
 
   @IsOptional()
-  @IsUUID()
+  @IsString()
   localidadId?: string;
 }

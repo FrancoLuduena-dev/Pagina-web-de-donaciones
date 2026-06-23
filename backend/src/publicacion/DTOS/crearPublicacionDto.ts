@@ -8,6 +8,8 @@ import {
   IsString,
   IsUrl,
   IsUUID,
+  Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 
@@ -17,11 +19,16 @@ import { MAX_IMAGENES_PUBLICACION } from '../service/publicacionUploadService';
 export class CrearPublicacionDto {
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, { message: 'El título no puede contener solo espacios' })
   @MinLength(4)
+  @MaxLength(100)
   titulo!: string;
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, {
+    message: 'La descripción no puede contener solo espacios',
+  })
   @MinLength(20)
   descripcion!: string;
 
