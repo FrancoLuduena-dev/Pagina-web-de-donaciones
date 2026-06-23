@@ -7,9 +7,15 @@ export class DenunciaMapper {
     return {
       id: denuncia.id,
       publicacionId: denuncia.publicacionId,
+      denuncianteId: denuncia.denuncianteId,
+      creadorPublicacionId: denuncia.creadorPublicacionId,
+      moderadorAsignadoId: denuncia.moderadorAsignadoId,
       motivo: denuncia.motivo,
+      comentario: denuncia.comentario,
       estado: denuncia.estado,
+      tipoResolucion: denuncia.tipoResolucion,
       fechaCreacion: denuncia.fechaCreacion,
+      fechaActualizacion: denuncia.fechaActualizacion,
       version: denuncia.version,
     };
   }
@@ -18,6 +24,9 @@ export class DenunciaMapper {
     return {
       id: denuncia.id,
       publicacionId: denuncia.publicacionId,
+      denuncianteId: denuncia.denuncianteId,
+      creadorPublicacionId: denuncia.creadorPublicacionId,
+      moderadorAsignadoId: denuncia.moderadorAsignadoId,
       motivo: denuncia.motivo,
       comentario: denuncia.comentario,
       estado: denuncia.estado,
@@ -25,6 +34,7 @@ export class DenunciaMapper {
       detalleResolucion: denuncia.detalleResolucion,
       fechaResolucion: denuncia.fechaResolucion,
       fechaCreacion: denuncia.fechaCreacion,
+      fechaActualizacion: denuncia.fechaActualizacion,
       version: denuncia.version,
     };
   }

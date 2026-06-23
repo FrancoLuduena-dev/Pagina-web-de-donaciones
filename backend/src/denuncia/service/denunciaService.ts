@@ -117,6 +117,7 @@ export class DenunciaService {
 
       this.validarVersionDenuncia(denuncia, dto.version);
       this.validarDenunciaNoResuelta(denuncia);
+      denuncia.validarPuedeResolver(moderadorId);
 
       await this.ejecutarAccionResolucion(
         dto.tipoResolucion,
@@ -126,11 +127,7 @@ export class DenunciaService {
         dto.detalleResolucion,
       );
 
-      if (!denuncia.moderadorAsignadoId) {
-        denuncia.tomar(moderadorId);
-      }
-
-      denuncia.resolver(dto.tipoResolucion, dto.detalleResolucion);
+      denuncia.resolver(moderadorId, dto.tipoResolucion, dto.detalleResolucion);
 
       const denunciaGuardada = await manager.save(denuncia);
 

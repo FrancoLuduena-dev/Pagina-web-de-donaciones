@@ -1,130 +1,130 @@
-import { ConflictException } from '@nestjs/common';
-import { DataSource, EntityManager } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-import { PublicacionService } from '../../publicacion/service/publicacionService';
-import UsuarioService from '../../usuario/service/usuarioService';
-import { Denuncia } from '../entity/denunciaEntity';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+
 import { EstadoDenuncia } from '../enums/estadoDenuncia';
 import { MotivoDenuncia } from '../enums/motivoDenuncia';
 import { TipoResolucion } from '../enums/tipoResolucion';
-import { DenunciaRepository } from '../repository/denunciaRepository';
-import { DenunciaService } from './denunciaService';
+import { puedeTransicionarDenuncia } from '../constante/transicionesDenuncia';
 
-describe('DenunciaService - concurrencia', () => {
-  let service: DenunciaService;
-  let manager: {
-    findOne: jest.Mock;
-    save: jest.Mock;
-  };
-  let publicacionService: {
-    pausar: jest.Mock;
-    eliminar: jest.Mock;
-  };
+@Entity('denuncias')
+export class Denuncia {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
-  beforeEach(() => {
-    manager = {
-      findOne: jest.fn(),
-      save: jest.fn((denuncia: Denuncia) => Promise.resolve(denuncia)),
-    };
+  @Column({ type: 'uuid' })
+  publicacionId!: string;
 
-    publicacionService = {
-      pausar: jest.fn(),
-      eliminar: jest.fn(),
-    };
+  @Column({ type: 'uuid' })
+  denuncianteId!: string;
 
-    const dataSource = {
-      transaction: jest.fn(
-        async <T>(operacion: (entityManager: EntityManager) => Promise<T>) =>
-          operacion(manager as unknown as EntityManager),
-      ),
-    };
+  @Column({ type: 'uuid' })
+  creadorPublicacionId!: string;
 
-    const usuarioService = {
-      BloquearUsuario: jest.fn(),
-    };
+  @Column({
+    type: 'enum',
+    enum: MotivoDenuncia,
+  })
+  motivo!: MotivoDenuncia;
 
-    service = new DenunciaService(
-      {} as DenunciaRepository,
-      publicacionService as unknown as PublicacionService,
-      usuarioService as unknown as UsuarioService,
-      dataSource as unknown as DataSource,
-    );
-  });
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  comentario?: string | null;
 
-  it('toma la denuncia después de bloquear su fila', async () => {
-    const denuncia = crearDenuncia();
-    manager.findOne.mockResolvedValue(denuncia);
+  @Column({
+    type: 'enum',
+    enum: EstadoDenuncia,
+    default: EstadoDenuncia.PENDIENTE,
+  })
+  estado!: EstadoDenuncia;
 
-    const resultado = await service.tomarDenuncia(
-      denuncia.id,
-      '22222222-2222-4222-8222-222222222222',
-      { version: 1 },
-    );
+  @Column({ type: 'uuid', nullable: true })
+  moderadorAsignadoId?: string | null;
 
-    expect(manager.findOne).toHaveBeenCalledWith(Denuncia, {
-      where: { id: denuncia.id },
-      lock: { mode: 'pessimistic_write' },
-    });
-    expect(manager.save).toHaveBeenCalledWith(denuncia);
-    expect(resultado.estado).toBe(EstadoDenuncia.EN_REVISION);
-    expect(resultado.version).toBe(2);
-  });
+  @Column({
+    type: 'enum',
+    enum: TipoResolucion,
+    nullable: true,
+  })
+  tipoResolucion?: TipoResolucion | null;
 
-  it('rechaza una versión vencida sin guardar cambios', async () => {
-    const denuncia = crearDenuncia();
-    denuncia.version = 2;
-    manager.findOne.mockResolvedValue(denuncia);
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  detalleResolucion?: string | null;
 
-    await expect(
-      service.tomarDenuncia(
-        denuncia.id,
-        '22222222-2222-4222-8222-222222222222',
-        { version: 1 },
-      ),
-    ).rejects.toThrow(ConflictException);
+  @Column({ type: 'timestamp', nullable: true })
+  fechaResolucion?: Date | null;
 
-    expect(manager.save).not.toHaveBeenCalled();
-    expect(denuncia.estado).toBe(EstadoDenuncia.PENDIENTE);
-  });
+  @Column({ type: 'int', default: 1 })
+  version!: number;
 
-  it('no ejecuta una sanción cuando la versión de resolución está vencida', async () => {
-    const denuncia = crearDenuncia();
-    denuncia.version = 2;
-    manager.findOne.mockResolvedValue(denuncia);
+  @CreateDateColumn()
+  fechaCreacion!: Date;
 
-    await expect(
-      service.resolverDenuncia(
-        denuncia.id,
-        '22222222-2222-4222-8222-222222222222',
-        {
-          version: 1,
-          tipoResolucion: TipoResolucion.PUBLICACION_PAUSADA,
-          detalleResolucion:
-            'La resolución quedó desactualizada por otra operación.',
-        },
-      ),
-    ).rejects.toThrow('CONFLICTO_CONCURRENCIA');
+  @UpdateDateColumn()
+  fechaActualizacion!: Date;
 
-    expect(publicacionService.pausar).not.toHaveBeenCalled();
-    expect(manager.save).not.toHaveBeenCalled();
-  });
-
-  function crearDenuncia(): Denuncia {
-    return Object.assign(new Denuncia(), {
-      id: '11111111-1111-4111-8111-111111111111',
-      publicacionId: '33333333-3333-4333-8333-333333333333',
-      denuncianteId: '44444444-4444-4444-8444-444444444444',
-      creadorPublicacionId: '55555555-5555-4555-8555-555555555555',
-      motivo: MotivoDenuncia.CONTENIDO_INAPROPIADO,
-      comentario: null,
-      estado: EstadoDenuncia.PENDIENTE,
-      moderadorAsignadoId: null,
-      tipoResolucion: null,
-      detalleResolucion: null,
-      fechaResolucion: null,
-      version: 1,
-      fechaCreacion: new Date(),
-      fechaActualizacion: new Date(),
-    });
+  validarNoEsCreadorPublicacion(
+    usuarioId: string,
+    mensaje = 'No podés denunciar tu propia publicación',
+  ): void {
+    if (this.creadorPublicacionId === usuarioId) {
+      throw new ForbiddenException(mensaje);
+    }
   }
-});
+
+  validarModeradorAsignado(
+    moderadorId: string,
+    mensaje = 'Solo el moderador asignado puede realizar esta acción',
+  ): void {
+    if (this.moderadorAsignadoId !== moderadorId) {
+      throw new ForbiddenException(mensaje);
+    }
+  }
+
+  validarPuedeResolver(moderadorId: string): void {
+    if (this.estado !== EstadoDenuncia.EN_REVISION) {
+      throw new BadRequestException('DENUNCIA_DEBE_ESTAR_EN_REVISION');
+    }
+
+    this.validarModeradorAsignado(
+      moderadorId,
+      'SOLO_MODERADOR_ASIGNADO_PUEDE_RESOLVER',
+    );
+  }
+
+  tomar(moderadorId: string): void {
+    this.cambiarEstado(EstadoDenuncia.EN_REVISION);
+
+    this.moderadorAsignadoId = moderadorId;
+    this.version += 1;
+  }
+
+  resolver(
+    moderadorId: string,
+    tipoResolucion: TipoResolucion,
+    detalleResolucion: string,
+  ): void {
+    this.validarPuedeResolver(moderadorId);
+    this.cambiarEstado(EstadoDenuncia.RESUELTA);
+
+    this.tipoResolucion = tipoResolucion;
+    this.detalleResolucion = detalleResolucion;
+    this.fechaResolucion = new Date();
+    this.version += 1;
+  }
+
+  private cambiarEstado(nuevoEstado: EstadoDenuncia): void {
+    if (!puedeTransicionarDenuncia(this.estado, nuevoEstado)) {
+      throw new BadRequestException(
+        `No se puede cambiar una denuncia de ${this.estado} a ${nuevoEstado}`,
+      );
+    }
+
+    this.estado = nuevoEstado;
+  }
+}

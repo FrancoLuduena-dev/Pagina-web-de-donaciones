@@ -3,6 +3,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsString,
+  Matches,
   MaxLength,
   Min,
   MinLength,
@@ -20,6 +21,9 @@ export class ResolverDenunciaDto {
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/, {
+    message: 'El detalle de resolución no puede contener solo espacios',
+  })
   @MinLength(15)
   @MaxLength(500)
   detalleResolucion!: string;

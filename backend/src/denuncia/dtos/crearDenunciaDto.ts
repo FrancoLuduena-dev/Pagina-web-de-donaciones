@@ -3,6 +3,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -18,6 +19,9 @@ export class CrearDenunciaDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/\S/, {
+    message: 'El comentario no puede contener solo espacios',
+  })
   @MinLength(10)
   @MaxLength(500)
   comentario?: string;

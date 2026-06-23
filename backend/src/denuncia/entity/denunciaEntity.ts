@@ -86,6 +86,17 @@ export class Denuncia {
     }
   }
 
+  validarPuedeResolver(moderadorId: string): void {
+    if (this.estado !== EstadoDenuncia.EN_REVISION) {
+      throw new BadRequestException('DENUNCIA_DEBE_ESTAR_EN_REVISION');
+    }
+
+    this.validarModeradorAsignado(
+      moderadorId,
+      'SOLO_MODERADOR_ASIGNADO_PUEDE_RESOLVER',
+    );
+  }
+
   tomar(moderadorId: string): void {
     this.cambiarEstado(EstadoDenuncia.EN_REVISION);
 
@@ -93,7 +104,12 @@ export class Denuncia {
     this.version += 1;
   }
 
-  resolver(tipoResolucion: TipoResolucion, detalleResolucion: string): void {
+  resolver(
+    moderadorId: string,
+    tipoResolucion: TipoResolucion,
+    detalleResolucion: string,
+  ): void {
+    this.validarPuedeResolver(moderadorId);
     this.cambiarEstado(EstadoDenuncia.RESUELTA);
 
     this.tipoResolucion = tipoResolucion;
