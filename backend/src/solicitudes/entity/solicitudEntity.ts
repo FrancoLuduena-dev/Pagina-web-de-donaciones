@@ -2,11 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
-  ManyToOne,
-  JoinColumn,
 } from 'typeorm';
 
 import {
@@ -15,39 +15,39 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 
-import { EstadoSolicitud } from '../enums/estadoSolicitud';
-import { TRANSICIONES_SOLICITUD } from '../constante/transicionesSolicitud';
 import { Publicacion } from '../../publicacion/entity/publicacionEntity';
-import Usuario from 'src/usuario/entity/usuarioEntity';
+import Usuario from '../../usuario/entity/usuarioEntity';
+import { TRANSICIONES_SOLICITUD } from '../constante/transicionesSolicitud';
+import { EstadoSolicitud } from '../enums/estadoSolicitud';
 
 @Entity('solicitudes')
 export class Solicitud {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ type: 'uuid' })
   publicacionId!: string;
 
   @ManyToOne(() => Publicacion, (publicacion) => publicacion.solicitudes)
   @JoinColumn({ name: 'publicacionId' })
   publicacion!: Publicacion;
 
+  @Column({ type: 'uuid' })
+  solicitanteId!: string;
+
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'solicitanteId' })
   solicitante!: Usuario;
+
+  @Column({ type: 'uuid' })
+  creadorPublicacionId!: string;
 
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'creadorPublicacionId' })
   creadorPublicacion!: Usuario;
 
-  @Column()
-  solicitanteId!: string;
-
-  @Column()
-  creadorPublicacionId!: string;
-
-  @Column({ nullable: true })
-  mensaje?: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  mensaje?: string | null;
 
   @Column({
     type: 'enum',
@@ -56,11 +56,11 @@ export class Solicitud {
   })
   estado!: EstadoSolicitud;
 
-  @Column({ nullable: true })
-  motivoRechazo?: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  motivoRechazo?: string | null;
 
-  @Column({ nullable: true })
-  motivoCancelacion?: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  motivoCancelacion?: string | null;
 
   @VersionColumn()
   version!: number;
@@ -115,20 +115,8 @@ export class Solicitud {
     }
   }
 
-  private validarTransicionSolicitud(nuevoEstado: EstadoSolicitud): void {
-    const transicionesPermitidas = TRANSICIONES_SOLICITUD[this.estado];
-
-    if (!transicionesPermitidas.includes(nuevoEstado)) {
-      throw new BadRequestException(
-        `No se puede cambiar una solicitud de ${this.estado} a ${nuevoEstado}`,
-      );
-    }
-
-    this.estado = nuevoEstado;
-  }
-
   aceptar(): void {
-    this.validarTransicionSolicitud(EstadoSolicitud.ACEPTADA);
+    this.transicionarA(EstadoSolicitud.ACEPTADA);
   }
 
   rechazar(motivo?: string): void {
@@ -138,8 +126,8 @@ export class Solicitud {
       );
     }
 
-    this.validarTransicionSolicitud(EstadoSolicitud.RECHAZADA);
-    this.motivoRechazo = motivo;
+    this.transicionarA(EstadoSolicitud.RECHAZADA);
+    this.motivoRechazo = motivo?.trim() || null;
   }
 
   cancelar(motivo?: string): void {
@@ -149,8 +137,8 @@ export class Solicitud {
       );
     }
 
-    this.validarTransicionSolicitud(EstadoSolicitud.CANCELADA);
-    this.motivoCancelacion = motivo;
+    this.transicionarA(EstadoSolicitud.CANCELADA);
+    this.motivoCancelacion = motivo?.trim() || null;
   }
 
   cancelarAceptada(motivo?: string): void {
@@ -160,15 +148,27 @@ export class Solicitud {
       );
     }
 
-    this.validarTransicionSolicitud(EstadoSolicitud.CANCELADA);
-    this.motivoCancelacion = motivo;
+    this.transicionarA(EstadoSolicitud.CANCELADA);
+    this.motivoCancelacion = motivo?.trim() || null;
   }
 
   finalizar(): void {
-    this.validarTransicionSolicitud(EstadoSolicitud.FINALIZADA);
+    this.transicionarA(EstadoSolicitud.FINALIZADA);
   }
 
   expirar(): void {
-    this.validarTransicionSolicitud(EstadoSolicitud.EXPIRADA);
+    this.transicionarA(EstadoSolicitud.EXPIRADA);
+  }
+
+  private transicionarA(nuevoEstado: EstadoSolicitud): void {
+    const transicionesPermitidas = TRANSICIONES_SOLICITUD[this.estado];
+
+    if (!transicionesPermitidas.includes(nuevoEstado)) {
+      throw new BadRequestException(
+        `No se puede cambiar una solicitud de ${this.estado} a ${nuevoEstado}`,
+      );
+    }
+
+    this.estado = nuevoEstado;
   }
 }

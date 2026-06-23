@@ -21,6 +21,7 @@ import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
 import { SolicitudAceptadaEvent } from '../evento/solicitudAceptadaEvento';
 import { SolicitudAceptadaCanceladaEvento } from '../evento/solicitudAceptadaCanceladaEvento';
 import { SolicitudFinalizadaEvento } from '../evento/solicitudFinalizadaEvento';
+import { Publicacion } from 'src/publicacion/entity/publicacionEntity';
 
 @Injectable()
 export class SolicitudService {
@@ -138,28 +139,41 @@ export class SolicitudService {
     solicitudId: string,
     usuarioId: string,
   ): Promise<SolicitudResponseDto> {
-    const solicitud = await this.obtenerSolicitudPorId(solicitudId);
+    const { solicitudGuardada, publicacion } =
+      await this.dataSource.transaction(async (manager) => {
+        const solicitud = await manager.findOne(Solicitud, {
+          where: { id: solicitudId },
+          lock: { mode: 'pessimistic_write' },
+        });
 
-    solicitud.validarCreadorPublicacion(
-      usuarioId,
-      'Solo el creador puede aceptar solicitudes',
-    );
+        if (!solicitud) {
+          throw new NotFoundException('Solicitud no encontrada');
+        }
 
-    const publicacion = await this.publicacionService.buscarPublicacionPorId(
-      solicitud.publicacionId,
-    );
+        solicitud.validarCreadorPublicacion(
+          usuarioId,
+          'Solo el creador puede aceptar solicitudes',
+        );
 
-    publicacion.validarPuedeRecibirSolicitudes();
+        const publicacion = await manager.findOne(Publicacion, {
+          where: { id: solicitud.publicacionId },
+          lock: { mode: 'pessimistic_write' },
+        });
 
-    solicitud.aceptar();
-    publicacion.reservar();
+        if (!publicacion) {
+          throw new NotFoundException('Publicación no encontrada');
+        }
 
-    const solicitudGuardada = await this.dataSource.transaction(
-      async (manager) => {
+        publicacion.validarPuedeRecibirSolicitudes();
+
+        solicitud.aceptar();
+        publicacion.reservar();
+
         await manager.save(publicacion);
-        return manager.save(solicitud);
-      },
-    );
+        const solicitudGuardada = await manager.save(solicitud);
+
+        return { solicitudGuardada, publicacion };
+      });
 
     this.eventEmitter.emit(
       EventoDominio.SOLICITUD_ACEPTADA,
@@ -170,7 +184,11 @@ export class SolicitudService {
       ),
     );
 
-    return this.mapearRespuesta(solicitudGuardada, usuarioId);
+    const solicitudCompleta = await this.obtenerSolicitudPorId(
+      solicitudGuardada.id,
+    );
+
+    return this.mapearRespuesta(solicitudCompleta, usuarioId);
   }
   async finalizarSolicitud(
     solicitudId: string,

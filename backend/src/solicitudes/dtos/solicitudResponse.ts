@@ -21,9 +21,9 @@ export class SolicitudResponseDto {
   solicitanteId!: string;
   creadorPublicacionId!: string;
   estado!: EstadoSolicitud;
-  mensaje?: string;
-  motivoRechazo?: string;
-  motivoCancelacion?: string;
+  mensaje!: string | null;
+  motivoRechazo!: string | null;
+  motivoCancelacion!: string | null;
   createdAt!: Date;
   updatedAt!: Date;
   publicacion?: PublicacionSolicitudDto;
@@ -45,9 +45,9 @@ export class SolicitudResponseDto {
       solicitanteId: solicitud.solicitanteId,
       creadorPublicacionId: solicitud.creadorPublicacionId,
       estado: solicitud.estado,
-      mensaje: solicitud.mensaje,
-      motivoRechazo: solicitud.motivoRechazo,
-      motivoCancelacion: solicitud.motivoCancelacion,
+      mensaje: solicitud.mensaje ?? null,
+      motivoRechazo: solicitud.motivoRechazo ?? null,
+      motivoCancelacion: solicitud.motivoCancelacion ?? null,
       createdAt: solicitud.createdAt,
       updatedAt: solicitud.updatedAt,
       publicacion: solicitud.publicacion

@@ -3,6 +3,6 @@ export class SolicitudAceptadaCanceladaEvento {
     public readonly solicitudId: string,
     public readonly destinatarioId: string,
     public readonly publicacionTitulo: string,
-    public readonly motivo?: string,
+    public readonly motivo?: string | null,
   ) {}
 }

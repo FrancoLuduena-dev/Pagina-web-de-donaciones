@@ -12,8 +12,8 @@ export class CrearSolicitudDto {
 
   @IsOptional()
   @IsString()
-  @Matches(/^(?:|.*\S.*)$/, {
-    message: 'El mensaje no puede contener solo espacios',
+  @Matches(/\S/, {
+    message: 'El mensaje no puede estar vacío ni contener solo espacios',
   })
   @MaxLength(255)
   mensaje?: string;
