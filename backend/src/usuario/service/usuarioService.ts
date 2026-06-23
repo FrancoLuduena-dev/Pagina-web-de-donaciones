@@ -124,7 +124,7 @@ export default class UsuarioService {
           : usuario.nombreUsuario,
       correo:
         typeof datos.correo === 'string' && datos.correo.trim() !== ''
-          ? datos.correo.trim()
+          ? datos.correo.trim().toLowerCase()
           : usuario.correo,
       numeroTelefono:
         typeof datos.numeroTelefono === 'string' && datos.numeroTelefono.trim() !== ''
@@ -275,6 +275,22 @@ export default class UsuarioService {
       );
     }
 
+    if (usuarioModerador.rol === rolUsuario.usuarioModerador) {
+      if (usuario.rol !== rolUsuario.usuarioNormal) {
+        throw new ForbiddenException(
+          'Un moderador solo puede bloquear usuarios normales',
+        );
+      }
+    }
+
+    if (usuarioModerador.rol === rolUsuario.usuarioAdministrador) {
+      if (usuario.rol === rolUsuario.usuarioAdministrador) {
+        throw new ForbiddenException(
+          'Un administrador no puede bloquear a otro administrador',
+        );
+      }
+    }
+
     if (usuario.estado === estadosUsuario.BLOQUEADO) {
       throw new ConflictException(
         `El usuario con id ${idUsuario} ya se encuentra bloqueado`,
@@ -294,9 +310,10 @@ export default class UsuarioService {
     await this.repo.bloquearUsuario(
       usuario,
       usuarioModerador,
-      datos.razonBloqueo,
+      datos.razonBloqueo.trim(),
     );
   }
+  
 
   public async ListarUsuarios(): Promise<Usuario[]> {
     return this.repo.listarUsuarios();

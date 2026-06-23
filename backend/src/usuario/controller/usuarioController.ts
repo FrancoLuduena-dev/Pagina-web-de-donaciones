@@ -22,6 +22,9 @@ import { CambiarRolDTO } from '../dtos/cambiarRolDto';
 import logearUsuarioDTO from '../dtos/logearUsuarioDto';
 import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
 import registerResponseDto from '../dtos/registerResponseDto';
+import usuarioResponseDto from '../dtos/usuarioResponseDto';
+import { ParseUUIDPipe } from '@nestjs/common';
+import usuarioBloqueadoResponseDto from '../dtos/usuarioBloqueadoResponseDto'
 
 
 import { AuthGuard } from '../auth/authGuard';
@@ -29,6 +32,10 @@ import { Roles } from 'src/compartidos/decorators/decoratorRol';
 import { RolesGuard } from 'src/compartidos/guards/rolesGuard';
 
 import { rolUsuario } from '../enums/rolUsuario';
+import { MiUsuarioResponseDto } from '../dtos/miUsuarioResponseDto';
+import { StatusGuard } from '../../compartidos/guards/statusGuard';
+import { Estados } from 'src/compartidos/decorators/decoratorEstados';
+import { estadosUsuario } from '../enums/estadosUsuario';
 
 interface RequestConUsuario extends Request {
   user: Usuario;
@@ -57,46 +64,63 @@ export default class UsuarioController {
     };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard, RolesGuard)
   @Get()
-  async listarUsuarios(): Promise<Usuario[]> {
+  @Estados(
+    estadosUsuario.ACTIVO
+  )
+  @Roles(
+    rolUsuario.usuarioModerador,
+    rolUsuario.usuarioAdministrador,
+  )
+  async listarUsuarios(): Promise<usuarioResponseDto[]> {
     return this.service.ListarUsuarios();
   }
 
   @UseGuards(AuthGuard)
   @Get('mi')
-  async obtenerMiUsuario(@Req() req: RequestConUsuario): Promise<Usuario> {
+  async obtenerMiUsuario(@Req() req: RequestConUsuario): Promise<MiUsuarioResponseDto> {
     return this.service.obtenerUsuarioPorId(req.user.id);
   }
+
 
   @UseGuards(AuthGuard)
   @Get('nombre/:nombreUsuario')
   async obtenerUsuarioPorNombreUsuario(
     @Param('nombreUsuario') nombreUsuario: string,
-  ): Promise<Usuario | null> {
+  ): Promise<usuarioResponseDto | null> {
     return this.service.ObtenerUsuarioPorNombreUsuario(nombreUsuario);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard, RolesGuard)
+  @Estados (
+    estadosUsuario.ACTIVO
+  )
+  @Roles (
+    rolUsuario.usuarioAdministrador
+  )
   @Get(':id')
-  async obtenerUsuarioPorId(@Param('id') id: string): Promise<Usuario | null> {
+  async obtenerUsuarioPorId(
+    @Param('id', new ParseUUIDPipe()) id: string
+  ): Promise<usuarioResponseDto | null> {
     return this.service.obtenerUsuarioPorId(id);
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
   async borrarUsuario(
-    @Param('id') id: string,
+    @Req() req: RequestConUsuario,
     @Body('contrasenia') contrasenia: string,
   ) {
-    return this.service.EliminarUsuario(id, contrasenia);
+    return this.service.EliminarUsuario(req.user.id, contrasenia);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, StatusGuard, RolesGuard)
+  @Estados(estadosUsuario.ACTIVO)
   @Roles(rolUsuario.usuarioAdministrador)
   @Delete('admin/:id')
   async borrarUsuarioAdmin(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe() ) id: string,
     @Req() req: RequestConUsuario,
   ) {
     return this.service.EliminarUsuarioAdmin(id, req.user.id);
@@ -111,11 +135,16 @@ export default class UsuarioController {
     return this.service.ActualizarUsuario(req.user.id, datos);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(rolUsuario.usuarioAdministrador)
+  @UseGuards(AuthGuard, StatusGuard, RolesGuard)
+  @Estados(
+    estadosUsuario.ACTIVO
+  )
+  @Roles(
+    rolUsuario.usuarioAdministrador
+  )
   @Patch(':id/rol')
   async cambiarRolUsuario(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() datos: CambiarRolDTO,
     @Req() req: RequestConUsuario,
   ) {
@@ -131,14 +160,21 @@ export default class UsuarioController {
     return this.service.ResetearContraseniaUsuario(req.user.id, dto);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(rolUsuario.usuarioModerador, rolUsuario.usuarioAdministrador)
+  @UseGuards(AuthGuard, StatusGuard, RolesGuard)
+  @Estados(
+    estadosUsuario.ACTIVO
+  )
+  @Roles(
+    rolUsuario.usuarioModerador, rolUsuario.usuarioAdministrador
+  )
   @Patch(':id/bloquearUsuario')
   async bloquearUsuario(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() datos: BloquearUsuarioDTO,
     @Req() req: RequestConUsuario,
   ) {
     return this.service.BloquearUsuario(id, req.user.id, datos);
   }
+
+  
 }

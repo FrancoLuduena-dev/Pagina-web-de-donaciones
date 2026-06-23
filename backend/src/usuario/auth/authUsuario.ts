@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { sign, SignOptions } from 'jsonwebtoken';
 
 import Usuario_Service from '../service/usuarioService';
+import { estadosUsuario } from '../enums/estadosUsuario';
 
 import crearUsuarioDTO from '../dtos/usuarioDto';
 import logearUsuarioDTO from '../dtos/logearUsuarioDto';
@@ -19,7 +20,10 @@ export default class autenticacionUsuario {
     const hashedPassword = await bcrypt.hash(usuario.contrasenia, 10);
 
     const newUser = await this.service.CrearUsuario({
-      ...usuario,
+      nombreCompleto: usuario.nombreCompleto.trim(),
+      nombreUsuario: usuario.nombreUsuario.trim(),
+      correo: usuario.correo.trim().toLowerCase(),
+      numeroTelefono: usuario.numeroTelefono.trim(),
       contrasenia: hashedPassword,
     });
 
@@ -38,8 +42,9 @@ export default class autenticacionUsuario {
   }
 
   public async logearUsuario(datos: logearUsuarioDTO): Promise<string> {
+    const correoNormalizado = datos.correo.trim().toLowerCase();
     const usuario = await this.service.ObtenerUsuarioPorCorreo(
-      datos.correo,
+      correoNormalizado,
     );
 
     if (!usuario) {
@@ -53,6 +58,11 @@ export default class autenticacionUsuario {
 
     if (!isValid) {
       throw new UnauthorizedException('Correo o contrasenia incorrectos');
+    }
+
+    if (usuario.estado === estadosUsuario.BLOQUEADO) {
+      const razon = usuario.razonBloqueo?.trim() || 'Sin razón especificada';
+      throw new UnauthorizedException(`Cuenta bloqueada: ${razon}`);
     }
 
     const secret = this.config.get<string>('JWT_SECRET');
