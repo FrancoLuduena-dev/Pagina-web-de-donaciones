@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import {
@@ -10,6 +11,8 @@ import {
 import { PublicacionModule } from './publicacion/module/publicacionModule';
 import { SolicitudesModule } from './solicitudes/module/solicitudModule';
 import { UsuarioModule } from './usuario/module/usuarioModule';
+import { DenunciaModeracionModule } from './denuncia/module/denunciaModeracionModule';
+import { NotificacionModule } from './notificacion/module/notificacionModule';
 
 const configModuleOptions: ConfigModuleOptions = {
   isGlobal: true,
@@ -18,6 +21,7 @@ const configModuleOptions: ConfigModuleOptions = {
 @Module({
   imports: [
     ConfigModule.forRoot(configModuleOptions),
+    EventEmitterModule.forRoot(),
 
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -42,6 +46,8 @@ const configModuleOptions: ConfigModuleOptions = {
     UsuarioModule,
     PublicacionModule,
     SolicitudesModule,
+    DenunciaModeracionModule,
+    NotificacionModule,
   ],
 })
 export class AppModule {}

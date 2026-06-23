@@ -1,16 +1,15 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Publicacion } from '../entity/publicacionEntity';
 import { PublicacionRepository } from '../repository/publicacionRepository';
-import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
+import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
-import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
+import { PublicacionModeradaEvento } from '../evento/publicacionModeradaEvento';
+import { PublicacionEliminadaEvento } from '../evento/publicacionEliminadaEvento';
+import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import UsuarioService from 'src/usuario/service/usuarioService';
 
 export type PublicacionConCreador = Publicacion & {
@@ -22,6 +21,7 @@ export type PublicacionConCreador = Publicacion & {
 export class PublicacionService {
   constructor(
     private readonly publicacionRepository: PublicacionRepository,
+    private readonly eventEmitter: EventEmitter2,
     private readonly usuarioService: UsuarioService,
   ) {}
 
@@ -60,11 +60,10 @@ export class PublicacionService {
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    if (publicacion.creadorId !== usuarioId) {
-      throw new ForbiddenException(
-        'Solo el creador puede editar la publicación',
-      );
-    }
+    publicacion.validarCreador(
+      usuarioId,
+      'Solo el creador puede editar la publicación',
+    );
 
     publicacion.editar(dto);
 
@@ -98,9 +97,10 @@ export class PublicacionService {
   async reservar(id: string, usuarioId: string): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    if (publicacion.creadorId === usuarioId) {
-      throw new ForbiddenException('No podés reservar tu propia publicación');
-    }
+    publicacion.validarNoEsCreador(
+      usuarioId,
+      'No podés reservar tu propia publicación',
+    );
 
     publicacion.reservar();
 
@@ -110,9 +110,10 @@ export class PublicacionService {
   async cancelarReserva(id: string, usuarioId: string): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    if (publicacion.creadorId !== usuarioId) {
-      throw new ForbiddenException('Solo el creador puede cancelar la reserva');
-    }
+    publicacion.validarCreador(
+      usuarioId,
+      'Solo el creador puede cancelar la reserva',
+    );
 
     publicacion.cancelarReserva();
 
@@ -126,19 +127,29 @@ export class PublicacionService {
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    const esCreador = publicacion.creadorId === usuarioId;
-    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
-    const esAdministrador = usuarioRol === rolUsuario.usuarioAdministrador;
-
-    if (!esCreador && !esModerador && !esAdministrador) {
-      throw new ForbiddenException(
-        'Solo el creador, un moderador o un superusuario puede pausar la publicación',
-      );
-    }
+    publicacion.validarPuedeSerGestionadaPor(
+      usuarioId,
+      usuarioRol,
+      'Solo el creador, un moderador o un superusuario puede pausar la publicación',
+    );
 
     publicacion.pausar();
 
-    return this.publicacionRepository.guardar(publicacion);
+    const publicacionGuardada =
+      await this.publicacionRepository.guardar(publicacion);
+
+    if (publicacion.creadorId !== usuarioId) {
+      this.eventEmitter.emit(
+        EventoDominio.PUBLICACION_PAUSADA_MODERACION,
+        new PublicacionModeradaEvento(
+          publicacionGuardada.id,
+          publicacionGuardada.creadorId,
+          publicacionGuardada.titulo,
+        ),
+      );
+    }
+
+    return publicacionGuardada;
   }
 
   async reactivar(
@@ -148,33 +159,76 @@ export class PublicacionService {
   ): Promise<Publicacion> {
     const publicacion = await this.buscarPublicacionPorId(id);
 
-    const esCreador = publicacion.creadorId === usuarioId;
-    const esModerador = usuarioRol === rolUsuario.usuarioModerador;
-    const esAdministrador = usuarioRol === rolUsuario.usuarioAdministrador;
-
-    if (!esCreador && !esModerador && !esAdministrador) {
-      throw new ForbiddenException(
-        'Solo el creador, un moderador o un superusuario puede reactivar la publicación',
-      );
-    }
+    publicacion.validarPuedeSerGestionadaPor(
+      usuarioId,
+      usuarioRol,
+      'Solo el creador, un moderador o un superusuario puede reactivar la publicación',
+    );
 
     publicacion.reactivar();
 
-    return this.publicacionRepository.guardar(publicacion);
-  }
-
-  async eliminar(id: string, usuarioId: string): Promise<Publicacion> {
-    const publicacion = await this.buscarPublicacionPorId(id);
+    const publicacionGuardada =
+      await this.publicacionRepository.guardar(publicacion);
 
     if (publicacion.creadorId !== usuarioId) {
-      throw new ForbiddenException(
-        'Solo el creador puede eliminar la publicación',
+      this.eventEmitter.emit(
+        EventoDominio.PUBLICACION_REACTIVADA_MODERACION,
+        new PublicacionModeradaEvento(
+          publicacionGuardada.id,
+          publicacionGuardada.creadorId,
+          publicacionGuardada.titulo,
+        ),
       );
     }
 
-    publicacion.eliminar();
+    return publicacionGuardada;
+  }
 
-    return this.publicacionRepository.guardar(publicacion);
+  async eliminar(
+    id: string,
+    usuarioId: string,
+    usuarioRol: rolUsuario,
+  ): Promise<Publicacion> {
+    const publicacion = await this.buscarPublicacionPorId(id);
+
+    publicacion.validarPuedeSerGestionadaPor(
+      usuarioId,
+      usuarioRol,
+      'Solo el creador, un moderador o superusuario puede eliminar la publicación',
+    );
+
+    const eliminadaPorModeracion = publicacion.creadorId !== usuarioId;
+
+    if (eliminadaPorModeracion) {
+      publicacion.eliminarPorModeracion();
+    } else {
+      publicacion.eliminar();
+    }
+
+    const publicacionGuardada =
+      await this.publicacionRepository.guardar(publicacion);
+
+    this.eventEmitter.emit(
+      EventoDominio.PUBLICACION_ELIMINADA,
+      new PublicacionEliminadaEvento(
+        publicacionGuardada.id,
+        publicacionGuardada.titulo,
+        eliminadaPorModeracion,
+      ),
+    );
+
+    if (eliminadaPorModeracion) {
+      this.eventEmitter.emit(
+        EventoDominio.PUBLICACION_ELIMINADA_MODERACION,
+        new PublicacionModeradaEvento(
+          publicacionGuardada.id,
+          publicacionGuardada.creadorId,
+          publicacionGuardada.titulo,
+        ),
+      );
+    }
+
+    return publicacionGuardada;
   }
 
   async guardar(publicacion: Publicacion): Promise<Publicacion> {

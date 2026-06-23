@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { sign, SignOptions } from 'jsonwebtoken';
 
@@ -38,7 +42,7 @@ export default class autenticacionUsuario {
         correo: newUser.correo,
         nombreUsuario: newUser.nombreUsuario,
       },
-  };
+    };
   }
 
   public async logearUsuario(datos: logearUsuarioDTO): Promise<string> {
@@ -69,10 +73,14 @@ export default class autenticacionUsuario {
     const expiration = this.config.get<string>('JWT_EXPIRATION') || '1h';
 
     if (!secret) {
-      throw new InternalServerErrorException('JWT no configurado en el servidor');
+      throw new InternalServerErrorException(
+        'JWT no configurado en el servidor',
+      );
     }
 
-    const options: SignOptions = { expiresIn: expiration as SignOptions['expiresIn'] };
+    const options: SignOptions = {
+      expiresIn: expiration as SignOptions['expiresIn'],
+    };
 
     return sign(
       {

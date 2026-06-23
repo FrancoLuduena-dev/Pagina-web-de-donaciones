@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository, ILike } from 'typeorm';
+import { FindOptionsWhere, ILike, IsNull, Repository } from 'typeorm';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
 
 @Injectable()
 export class PublicacionRepository {
@@ -30,15 +30,29 @@ export class PublicacionRepository {
   }
 
   listarPublico(filtros: FiltrosPublicacionDto): Promise<Publicacion[]> {
-    const { q, categoriaId } = filtros;
+    const { q, categoriaId, localidadId, condicion, estado } = filtros;
 
-    if (!q) {
+    if (estado === EstadoPublicacion.ELIMINADA) {
+      throw new BadRequestException(
+        'Las publicaciones eliminadas no se muestran en el listado público',
+      );
+    }
+
+    const estadoFiltro = estado ?? EstadoPublicacion.DISPONIBLE;
+
+    const filtrosBase: FindOptionsWhere<Publicacion> = {
+      estado: estadoFiltro,
+      deletedAt: IsNull(),
+      ...(categoriaId ? { categoriaId } : {}),
+      ...(localidadId ? { localidadId } : {}),
+      ...(condicion ? { condicion } : {}),
+    };
+
+    const textoBusqueda = q?.trim();
+
+    if (!textoBusqueda) {
       return this.repository.find({
-        where: {
-          estado: EstadoPublicacion.DISPONIBLE,
-          deletedAt: IsNull(),
-          ...(categoriaId ? { categoriaId } : {}),
-        },
+        where: filtrosBase,
         order: {
           createdAt: 'DESC',
         },
@@ -48,16 +62,12 @@ export class PublicacionRepository {
     return this.repository.find({
       where: [
         {
-          estado: EstadoPublicacion.DISPONIBLE,
-          deletedAt: IsNull(),
-          ...(categoriaId ? { categoriaId } : {}),
-          titulo: ILike(`%${q}%`),
+          ...filtrosBase,
+          titulo: ILike(`%${textoBusqueda}%`),
         },
         {
-          estado: EstadoPublicacion.DISPONIBLE,
-          deletedAt: IsNull(),
-          ...(categoriaId ? { categoriaId } : {}),
-          descripcion: ILike(`%${q}%`),
+          ...filtrosBase,
+          descripcion: ILike(`%${textoBusqueda}%`),
         },
       ],
       order: {

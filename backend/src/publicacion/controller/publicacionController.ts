@@ -2,63 +2,64 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
-  UseGuards,
   Query,
-  Delete,
   Req,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
-import { Request } from 'express';
+import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
+import { StatusGuard } from 'src/compartidos/guards/statusGuard';
+import { AuthGuard } from 'src/usuario/auth/authGuard';
+
+import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
+import { Publicacion } from '../entity/publicacionEntity';
+import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { PublicacionService } from '../service/publicacionService';
 import {
   buildPublicacionImagenUrl,
   MAX_IMAGENES_PUBLICACION,
   publicacionUploadMulterOptions,
+  validarImagenesSubidas,
 } from '../service/publicacionUploadService';
-import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
-import { Publicacion } from '../entity/publicacionEntity';
-import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
-import { AuthGuard } from 'src/usuario/auth/authGuard';
-import { rolUsuario } from 'src/usuario/enums/rolUsuario';
-import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
-
-interface RequestConUsuario extends Request {
-  user: {
-    id: string;
-    rol: rolUsuario;
-  };
-}
 
 @Controller('publicaciones')
 export class PublicacionController {
   constructor(private readonly publicacionService: PublicacionService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Post('upload')
   @UseInterceptors(
-    FilesInterceptor('imagenes', MAX_IMAGENES_PUBLICACION, publicacionUploadMulterOptions),
+    FilesInterceptor(
+      'imagenes',
+      MAX_IMAGENES_PUBLICACION,
+      publicacionUploadMulterOptions,
+    ),
   )
-  subirImagenes(
+  async subirImagenes(
     @UploadedFiles() files: Express.Multer.File[],
-  ): { imagenUrls: string[] } {
+  ): Promise<{ imagenUrls: string[] }> {
     if (!files?.length) {
       throw new BadRequestException('No se recibió ninguna imagen');
     }
+
+    await validarImagenesSubidas(files);
 
     return {
       imagenUrls: files.map((file) => buildPublicacionImagenUrl(file.filename)),
     };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Post()
   crearPublicacion(
     @Body() dto: CrearPublicacionDto,
@@ -88,7 +89,7 @@ export class PublicacionController {
     return this.publicacionService.buscarPublicacionPorIdConCreador(id);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id/pausar')
   pausar(
     @Param('id') id: string,
@@ -97,7 +98,7 @@ export class PublicacionController {
     return this.publicacionService.pausar(id, req.user.id, req.user.rol);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id/reactivar')
   reactivar(
     @Param('id') id: string,
@@ -106,16 +107,16 @@ export class PublicacionController {
     return this.publicacionService.reactivar(id, req.user.id, req.user.rol);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Delete(':id/eliminar')
   eliminar(
     @Param('id') id: string,
     @Req() req: RequestConUsuario,
   ): Promise<Publicacion> {
-    return this.publicacionService.eliminar(id, req.user.id);
+    return this.publicacionService.eliminar(id, req.user.id, req.user.rol);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id')
   editar(
     @Param('id') id: string,

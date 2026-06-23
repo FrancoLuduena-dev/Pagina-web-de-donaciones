@@ -22,8 +22,9 @@ export default function MenuUsuario() {
   const [usuario, setUsuario] = useState<UsuarioNavbar | null>(null);
 
   const menuRef = useRef<HTMLDivElement>(null);
+  const [cantidadPendientes, setCantidadPendientes] = useState(0);
 
-  const [cantidadNotificaciones, setCantidadNotificaciones] = useState(0);
+  const [cantidadNoLeidas, setCantidadNoLeidas] = useState(0);
 
   useEffect(() => {
     const cerrarMenu = (event: MouseEvent) => {
@@ -40,6 +41,7 @@ export default function MenuUsuario() {
   }, []);
 
   useEffect(() => {
+
     const cargarUsuario = async () => {
       try {
         const token = localStorage.getItem("access_token");
@@ -67,23 +69,74 @@ export default function MenuUsuario() {
           correo: datos.correo,
           rol: datos.rol,
         });
-        const solicitudesResponse = await fetch("/api/solicitudes/recibidas", {
-          headers: {
-            Authorization: `Bearer ${token}`,
+
+        const solicitudesResponse = await fetch(
+          "/api/solicitudes/recibidas",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
 
         if (solicitudesResponse.ok) {
-          const solicitudes = await solicitudesResponse.json();
+          const solicitudes =
+            await solicitudesResponse.json();
 
-          console.log("SOLICITUDES RECIBIDAS:", solicitudes);
+          const publicacionesConAceptada =
+            new Set(
+              solicitudes
+                .filter(
+                  (solicitud: {
+                    estado: string;
+                  }) =>
+                    solicitud.estado ===
+                    "ACEPTADA",
+                )
+                .map(
+                  (solicitud: {
+                    publicacionId: string;
+                  }) =>
+                    solicitud.publicacionId,
+                ),
+            );
 
-          const pendientes = solicitudes.filter(
-            (solicitud: { estado: string }) => solicitud.estado === "PENDIENTE",
-          ).length;
+          const pendientes =
+            solicitudes.filter(
+              (solicitud: {
+                estado: string;
+                publicacionId: string;
+              }) =>
+                solicitud.estado ===
+                "PENDIENTE" &&
+                !publicacionesConAceptada.has(
+                  solicitud.publicacionId,
+                ),
+            ).length;
 
-          console.log("PENDIENTES:", pendientes);
-          setCantidadNotificaciones(pendientes);
+          setCantidadPendientes(
+            pendientes,
+          );
+        }
+
+        const notificacionesResponse =
+          await fetch(
+            "/api/notificaciones/no-leidas/cantidad",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+        if (notificacionesResponse.ok) {
+          const datosNotificaciones =
+            await notificacionesResponse.json();
+
+          setCantidadNoLeidas(
+            datosNotificaciones.cantidad ??
+            0,
+          );
         }
       } catch (error) {
         console.error(error);
@@ -92,8 +145,10 @@ export default function MenuUsuario() {
 
     cargarUsuario();
 
-    const intervalo = setInterval( cargarUsuario, 10000 )
-    return () => { clearInterval(intervalo) };
+    const intervalo = setInterval(cargarUsuario, 10000);
+    return () => {
+      clearInterval(intervalo);
+    };
   }, [router]);
 
   const cerrarSesion = () => {
@@ -105,6 +160,10 @@ export default function MenuUsuario() {
   if (!usuario) {
     return null;
   }
+
+  const cantidadTotal =
+    cantidadPendientes +
+    cantidadNoLeidas;
 
   return (
     <div className={estilos.menuUsuario} ref={menuRef}>
@@ -121,9 +180,9 @@ export default function MenuUsuario() {
           {usuario.nombreUsuario}
         </span>
 
-        {cantidadNotificaciones > 0 && (
+        {cantidadTotal > 0 && (
           <span className={estilos.menuUsuarioBadge}>
-            {cantidadNotificaciones}
+            {cantidadTotal}
           </span>
         )}
 
@@ -157,9 +216,26 @@ export default function MenuUsuario() {
               >
                 <span>Mis Solicitudes</span>
 
-                {cantidadNotificaciones > 0 && (
+                {cantidadPendientes > 0 && (
                   <span className={estilos.menuUsuarioItemBadge}>
-                    {cantidadNotificaciones}
+                    {cantidadPendientes}
+                  </span>
+                )}
+              </Link>
+
+              <Link
+                href="/usuario/notificaciones"
+                className={estilos.menuUsuarioItem}
+              >
+                <span>Notificaciones</span>
+
+                {cantidadNoLeidas > 0 && (
+                  <span
+                    className={
+                      estilos.menuUsuarioItemBadge
+                    }
+                  >
+                    {cantidadNoLeidas}
                   </span>
                 )}
               </Link>
@@ -168,10 +244,10 @@ export default function MenuUsuario() {
 
           {(usuario.rol === RolUsuario.usuarioModerador ||
             usuario.rol === RolUsuario.usuarioAdministrador) && (
-            <Link href="/denuncias" className={estilos.menuUsuarioItem}>
-              Denuncias
-            </Link>
-          )}
+              <Link href="/denuncias" className={estilos.menuUsuarioItem}>
+                Denuncias
+              </Link>
+            )}
 
           {usuario.rol === RolUsuario.usuarioAdministrador && (
             <Link href="/gestionRoles" className={estilos.menuUsuarioItem}>

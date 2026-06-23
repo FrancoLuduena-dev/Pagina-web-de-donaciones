@@ -4,25 +4,38 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Solicitud } from '../entity/solicitudEntity';
-import { SolicitudRepository } from '../repository/solicitudRepository';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { DataSource } from 'typeorm';
+
 import { PublicacionService } from '../../publicacion/service/publicacionService';
-import { CrearSolicitudDto } from '../DTO/crearSolicitudDto';
-import { RechazarSolicitudDto } from '../DTO/rechazarSolicitudDto';
-import { CancelarSolicitudDto } from '../DTO/cancelarSolicitudDto';
+import { SolicitudCreadaEvent } from '../evento/solicitudCreadaEvento';
+import { SolicitudRechazadaEvent } from '../evento/solicitudRechazadaEvento';
+import { CrearSolicitudDto } from '../dtos/crearSolicitudDto';
+import { RechazarSolicitudDto } from '../dtos/rechazarSolicitudDto';
+import { CancelarSolicitudDto } from '../dtos/cancelarSolicitudDto';
+import { SolicitudResponseDto } from '../dtos/solicitudResponse';
+import { Solicitud } from '../entity/solicitudEntity';
 import { EstadoSolicitud } from '../enums/estadoSolicitud';
+import { SolicitudRepository } from '../repository/solicitudRepository';
+import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
+import { SolicitudAceptadaEvent } from '../evento/solicitudAceptadaEvento';
+import { SolicitudAceptadaCanceladaEvento } from '../evento/solicitudAceptadaCanceladaEvento';
+import { SolicitudFinalizadaEvento } from '../evento/solicitudFinalizadaEvento';
+import { Publicacion } from 'src/publicacion/entity/publicacionEntity';
 
 @Injectable()
 export class SolicitudService {
   constructor(
     private readonly solicitudRepository: SolicitudRepository,
     private readonly publicacionService: PublicacionService,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crearSolicitud(
     dto: CrearSolicitudDto,
     solicitanteId: string,
-  ): Promise<Solicitud> {
+  ): Promise<SolicitudResponseDto> {
     const publicacion = await this.publicacionService.buscarPublicacionPorId(
       dto.publicacionId,
     );
@@ -52,99 +65,267 @@ export class SolicitudService {
       mensaje: dto.mensaje,
     });
 
-    return this.solicitudRepository.guardar(nuevaSolicitud);
+    const solicitudGuardada =
+      await this.solicitudRepository.guardar(nuevaSolicitud);
+
+    this.eventEmitter.emit(
+      EventoDominio.SOLICITUD_CREADA,
+      new SolicitudCreadaEvent(
+        solicitudGuardada.id,
+        publicacion.creadorId,
+        publicacion.titulo,
+      ),
+    );
+
+    const solicitudCompleta = await this.obtenerSolicitudPorId(
+      solicitudGuardada.id,
+    );
+
+    return this.mapearRespuesta(solicitudCompleta, solicitanteId);
   }
 
-  listarMisSolicitudes(solicitanteId: string): Promise<Solicitud[]> {
-    return this.solicitudRepository.listarMias(solicitanteId);
+  async listarMisSolicitudes(
+    solicitanteId: string,
+  ): Promise<SolicitudResponseDto[]> {
+    const solicitudes =
+      await this.solicitudRepository.listarMias(solicitanteId);
+
+    return solicitudes.map((solicitud) =>
+      this.mapearRespuesta(solicitud, solicitanteId),
+    );
   }
 
-  listarSolicitudesRecibidas(
+  async listarSolicitudesRecibidas(
     creadorPublicacionId: string,
-  ): Promise<Solicitud[]> {
-    return this.solicitudRepository.listarRecibidas(creadorPublicacionId);
+  ): Promise<SolicitudResponseDto[]> {
+    const solicitudes =
+      await this.solicitudRepository.listarRecibidas(creadorPublicacionId);
+
+    return solicitudes.map((solicitud) =>
+      this.mapearRespuesta(solicitud, creadorPublicacionId),
+    );
   }
+
   async rechazarSolicitud(
     solicitudId: string,
     usuarioId: string,
     dto: RechazarSolicitudDto,
-  ): Promise<Solicitud> {
-    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
+  ): Promise<SolicitudResponseDto> {
+    const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
-    if (!solicitud) {
-      throw new NotFoundException('Solicitud no encontrada');
-    }
-
-    if (solicitud.creadorPublicacionId !== usuarioId) {
-      throw new ForbiddenException(
-        'Solo el creador puede rechazar solicitudes',
-      );
-    }
+    solicitud.validarCreadorPublicacion(
+      usuarioId,
+      'Solo el creador puede rechazar solicitudes',
+    );
 
     solicitud.rechazar(dto.motivo);
 
-    return this.solicitudRepository.guardar(solicitud);
+    const solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
+
+    this.eventEmitter.emit(
+      EventoDominio.SOLICITUD_RECHAZADA,
+      new SolicitudRechazadaEvent(
+        solicitudGuardada.id,
+        solicitudGuardada.solicitanteId,
+        solicitud.publicacion.titulo,
+        solicitudGuardada.motivoRechazo,
+      ),
+    );
+
+    return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
 
   async aceptarSolicitud(
     solicitudId: string,
     usuarioId: string,
-  ): Promise<Solicitud> {
-    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
+  ): Promise<SolicitudResponseDto> {
+    const { solicitudGuardada, publicacion } =
+      await this.dataSource.transaction(async (manager) => {
+        const solicitud = await manager.findOne(Solicitud, {
+          where: { id: solicitudId },
+          lock: { mode: 'pessimistic_write' },
+        });
 
-    if (!solicitud) {
-      throw new NotFoundException('Solicitud no encontrada');
-    }
+        if (!solicitud) {
+          throw new NotFoundException('Solicitud no encontrada');
+        }
 
-    if (solicitud.creadorPublicacionId !== usuarioId) {
-      throw new ForbiddenException('Solo el creador puede aceptar solicitudes');
-    }
+        solicitud.validarCreadorPublicacion(
+          usuarioId,
+          'Solo el creador puede aceptar solicitudes',
+        );
 
-    const publicacion = await this.publicacionService.buscarPublicacionPorId(
-      solicitud.publicacionId,
+        const publicacion = await manager.findOne(Publicacion, {
+          where: { id: solicitud.publicacionId },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        if (!publicacion) {
+          throw new NotFoundException('Publicación no encontrada');
+        }
+
+        publicacion.validarPuedeRecibirSolicitudes();
+
+        solicitud.aceptar();
+        publicacion.reservar();
+
+        await manager.save(publicacion);
+        const solicitudGuardada = await manager.save(solicitud);
+
+        return { solicitudGuardada, publicacion };
+      });
+
+    this.eventEmitter.emit(
+      EventoDominio.SOLICITUD_ACEPTADA,
+      new SolicitudAceptadaEvent(
+        solicitudGuardada.id,
+        solicitudGuardada.solicitanteId,
+        publicacion.titulo,
+      ),
     );
 
-    publicacion.validarPuedeRecibirSolicitudes();
+    const solicitudCompleta = await this.obtenerSolicitudPorId(
+      solicitudGuardada.id,
+    );
 
-    publicacion.reservar();
-
-    solicitud.aceptar();
-
-    await this.publicacionService.guardar(publicacion);
-
-    return this.solicitudRepository.guardar(solicitud);
+    return this.mapearRespuesta(solicitudCompleta, usuarioId);
   }
   async finalizarSolicitud(
     solicitudId: string,
     usuarioId: string,
-  ): Promise<Solicitud> {
-    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
+  ): Promise<SolicitudResponseDto> {
+    const solicitud = await this.obtenerSolicitudPorId(solicitudId);
 
-    if (!solicitud) {
-      throw new NotFoundException('Solicitud no encontrada');
-    }
-
-    if (solicitud.creadorPublicacionId !== usuarioId) {
-      throw new ForbiddenException(
-        'Solo el creador puede finalizar la entrega',
-      );
-    }
+    solicitud.validarCreadorPublicacion(
+      usuarioId,
+      'Solo el creador puede finalizar la entrega',
+    );
 
     const publicacion = await this.publicacionService.buscarPublicacionPorId(
       solicitud.publicacionId,
     );
 
     solicitud.finalizar();
-
     publicacion.entregar();
 
-    const solicitudesPendientes =
-      await this.solicitudRepository.buscarPendientesPorPublicacion(
+    const { solicitudGuardada, solicitudesRechazadas } =
+      await this.dataSource.transaction(async (manager) => {
+        const solicitudesPendientes = await manager.find(Solicitud, {
+          where: {
+            publicacionId: solicitud.publicacionId,
+            estado: EstadoSolicitud.PENDIENTE,
+          },
+        });
+
+        for (const pendiente of solicitudesPendientes) {
+          pendiente.rechazar('La publicación ya fue entregada');
+        }
+
+        if (solicitudesPendientes.length > 0) {
+          await manager.save(solicitudesPendientes);
+        }
+
+        await manager.save(publicacion);
+        const solicitudGuardada = await manager.save(solicitud);
+
+        return {
+          solicitudGuardada,
+          solicitudesRechazadas: solicitudesPendientes,
+        };
+      });
+
+    for (const solicitudRechazada of solicitudesRechazadas) {
+      this.eventEmitter.emit(
+        EventoDominio.SOLICITUD_RECHAZADA,
+        new SolicitudRechazadaEvent(
+          solicitudRechazada.id,
+          solicitudRechazada.solicitanteId,
+          publicacion.titulo,
+          solicitudRechazada.motivoRechazo,
+        ),
+      );
+    }
+
+    this.eventEmitter.emit(
+      EventoDominio.SOLICITUD_FINALIZADA,
+      new SolicitudFinalizadaEvento(
+        solicitudGuardada.id,
+        solicitudGuardada.solicitanteId,
+        publicacion.titulo,
+      ),
+    );
+
+    return this.mapearRespuesta(solicitudGuardada, usuarioId);
+  }
+  async cancelarSolicitud(
+    solicitudId: string,
+    usuarioId: string,
+    dto: CancelarSolicitudDto,
+  ): Promise<SolicitudResponseDto> {
+    const solicitud = await this.obtenerSolicitudPorId(solicitudId);
+
+    solicitud.validarPuedeCancelarsePor(usuarioId);
+
+    const debeLiberarPublicacion =
+      solicitud.estado === EstadoSolicitud.ACEPTADA;
+
+    let solicitudGuardada: Solicitud;
+
+    if (debeLiberarPublicacion) {
+      const motivo =
+        dto.motivo ?? 'Solicitud cancelada luego de haber sido aceptada';
+
+      solicitud.cancelarAceptada(motivo);
+
+      const publicacion = await this.publicacionService.buscarPublicacionPorId(
         solicitud.publicacionId,
       );
 
+      publicacion.cancelarReserva();
+
+      solicitudGuardada = await this.dataSource.transaction(async (manager) => {
+        await manager.save(publicacion);
+        return manager.save(solicitud);
+      });
+
+      this.eventEmitter.emit(
+        EventoDominio.SOLICITUD_ACEPTADA_CANCELADA,
+        new SolicitudAceptadaCanceladaEvento(
+          solicitudGuardada.id,
+          solicitudGuardada.solicitanteId,
+          publicacion.titulo,
+          motivo,
+        ),
+      );
+    } else {
+      solicitud.cancelar(dto.motivo);
+      solicitudGuardada = await this.solicitudRepository.guardar(solicitud);
+    }
+
+    return this.mapearRespuesta(solicitudGuardada, usuarioId);
+  }
+
+  private async obtenerSolicitudPorId(solicitudId: string): Promise<Solicitud> {
+    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
+
+    if (!solicitud) {
+      throw new NotFoundException('Solicitud no encontrada');
+    }
+
+    return solicitud;
+  }
+
+  private async rechazarSolicitudesPendientesRestantes(
+    publicacionId: string,
+    solicitudFinalizadaId: string,
+  ): Promise<void> {
+    const solicitudesPendientes =
+      await this.solicitudRepository.buscarPendientesPorPublicacion(
+        publicacionId,
+      );
+
     const solicitudesARechazar = solicitudesPendientes.filter(
-      (pendiente) => pendiente.id !== solicitud.id,
+      (pendiente) => pendiente.id !== solicitudFinalizadaId,
     );
 
     for (const pendiente of solicitudesARechazar) {
@@ -152,68 +333,77 @@ export class SolicitudService {
     }
 
     await this.solicitudRepository.guardarVarias(solicitudesARechazar);
-
-    await this.publicacionService.guardar(publicacion);
-
-    return this.solicitudRepository.guardar(solicitud);
-  }
-  async cancelarSolicitud(
-    solicitudId: string,
-    usuarioId: string,
-    dto: CancelarSolicitudDto,
-  ): Promise<Solicitud> {
-    const solicitud = await this.solicitudRepository.buscarPorId(solicitudId);
-
-    if (!solicitud) {
-      throw new NotFoundException('Solicitud no encontrada');
-    }
-
-    this.validarCancelacionSolicitud(solicitud, usuarioId);
-
-    const debeLiberarPublicacion =
-      solicitud.estado === EstadoSolicitud.ACEPTADA;
-
-    solicitud.cancelar(dto.motivo);
-
-    if (debeLiberarPublicacion) {
-      const publicacion = await this.publicacionService.buscarPublicacionPorId(
-        solicitud.publicacionId,
-      );
-
-      publicacion.cancelarReserva();
-
-      await this.publicacionService.guardar(publicacion);
-    }
-
-    return this.solicitudRepository.guardar(solicitud);
   }
 
-  private validarCancelacionSolicitud(
+  async resolverSolicitudesPorPublicacionEliminada(
+    publicacionId: string,
+    publicacionTitulo: string,
+    eliminadaPorModeracion: boolean,
+  ): Promise<number> {
+    const solicitudesActivas =
+      await this.solicitudRepository.buscarActivasPorPublicacion(publicacionId);
+
+    const solicitudesAResolver = solicitudesActivas.filter(
+      (solicitud) =>
+        solicitud.estado === EstadoSolicitud.PENDIENTE ||
+        solicitud.estado === EstadoSolicitud.ACEPTADA,
+    );
+
+    if (solicitudesAResolver.length === 0) {
+      return 0;
+    }
+
+    const motivo = eliminadaPorModeracion
+      ? 'La publicación fue eliminada por moderación'
+      : 'La publicación fue eliminada';
+    const solicitudesAceptadas = new Set(
+      solicitudesAResolver
+        .filter((solicitud) => solicitud.estado === EstadoSolicitud.ACEPTADA)
+        .map((solicitud) => solicitud.id),
+    );
+
+    for (const solicitud of solicitudesAResolver) {
+      if (solicitud.estado === EstadoSolicitud.PENDIENTE) {
+        solicitud.rechazar(motivo);
+      } else {
+        solicitud.cancelarAceptada(motivo);
+      }
+    }
+
+    const solicitudesGuardadas =
+      await this.solicitudRepository.guardarVarias(solicitudesAResolver);
+
+    for (const solicitud of solicitudesGuardadas) {
+      if (solicitudesAceptadas.has(solicitud.id)) {
+        this.eventEmitter.emit(
+          EventoDominio.SOLICITUD_ACEPTADA_CANCELADA,
+          new SolicitudAceptadaCanceladaEvento(
+            solicitud.id,
+            solicitud.solicitanteId,
+            publicacionTitulo,
+            motivo,
+          ),
+        );
+      } else {
+        this.eventEmitter.emit(
+          EventoDominio.SOLICITUD_RECHAZADA,
+          new SolicitudRechazadaEvent(
+            solicitud.id,
+            solicitud.solicitanteId,
+            publicacionTitulo,
+            motivo,
+          ),
+        );
+      }
+    }
+
+    return solicitudesGuardadas.length;
+  }
+
+  private mapearRespuesta(
     solicitud: Solicitud,
-    usuarioId: string,
-  ): void {
-    const esSolicitante = solicitud.solicitanteId === usuarioId;
-    const esCreador = solicitud.creadorPublicacionId === usuarioId;
-
-    if (
-      solicitud.estado !== EstadoSolicitud.PENDIENTE &&
-      solicitud.estado !== EstadoSolicitud.ACEPTADA
-    ) {
-      throw new ConflictException(
-        'Solo se pueden cancelar solicitudes pendientes o aceptadas',
-      );
-    }
-
-    if (solicitud.estado === EstadoSolicitud.PENDIENTE && !esSolicitante) {
-      throw new ForbiddenException(
-        'Solo el solicitante puede cancelar una solicitud pendiente',
-      );
-    }
-
-    if (solicitud.estado === EstadoSolicitud.ACEPTADA && !esCreador) {
-      throw new ForbiddenException(
-        'Solo el creador puede cancelar una solicitud aceptada',
-      );
-    }
+    usuarioActualId: string,
+  ): SolicitudResponseDto {
+    return SolicitudResponseDto.desdeEntidad(solicitud, usuarioActualId);
   }
 }

@@ -1,14 +1,20 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+
 import { ROLES_KEY } from 'src/compartidos/decorators/decoratorRol';
+import Usuario from 'src/usuario/entity/usuarioEntity';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 
-interface RequestConUsuario extends Request {
-  user: {
-    rol: rolUsuario;
-  };
-}
+type RequestConUsuario = Request & {
+  user?: Usuario;
+};
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -20,14 +26,23 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    if (!rolesRequeridos) {
+    if (!rolesRequeridos || rolesRequeridos.length === 0) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest<RequestConUsuario>();
+    const usuario = request.user;
 
-    const user = request.user;
+    if (!usuario) {
+      throw new UnauthorizedException('Usuario no autenticado');
+    }
 
-    return rolesRequeridos.includes(user.rol);
+    if (!rolesRequeridos.includes(usuario.rol)) {
+      throw new ForbiddenException(
+        'No tenés permisos para realizar esta acción',
+      );
+    }
+
+    return true;
   }
 }
