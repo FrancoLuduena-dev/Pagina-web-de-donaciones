@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Gallery from "@/components/Gallery";
+import CambiarEstadoPublicacionButton from "@/components/publicaciones/CambiarEstadoPublicacionButton";
 import EliminarPublicacionButton from "@/components/publicaciones/EliminarPublicacionButton";
 import EditarPublicacionLink from "@/components/publicaciones/EditarPublicacionLink";
 import SolicitarPublicacionButton from "@/components/publicaciones/SolicitarPublicacionButton";
@@ -117,6 +118,11 @@ export default async function PublicacionDetailPage({ params }: Props) {
               idPublicacion={idPublicacion}
               creadorId={publicacionBackend.creadorId}
               className={styles.backLink}
+            />
+            <CambiarEstadoPublicacionButton
+              idPublicacion={idPublicacion}
+              creadorId={publicacionBackend.creadorId}
+              estadoPublicacion={publicacionBackend.estado}
             />
             <EliminarPublicacionButton
               idPublicacion={idPublicacion}

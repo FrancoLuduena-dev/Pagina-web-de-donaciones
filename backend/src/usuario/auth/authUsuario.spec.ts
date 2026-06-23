@@ -107,7 +107,7 @@ describe('autenticacionUsuario', () => {
             {
                 id: 2,
                 correo: datos.correo,
-                rol: 'usuarioNormal',
+                rol: 'USER',
             },
             'test-secret',
             { expiresIn: '1h' }
