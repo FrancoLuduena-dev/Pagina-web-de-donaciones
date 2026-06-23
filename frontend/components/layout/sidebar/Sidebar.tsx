@@ -210,7 +210,9 @@ export default function Sidebar() {
             Otros
           </Link>
         </li>
+      </ul>
 
+      <div className={styles.filters}>
         <div className={styles.filaFiltro}>
           <label htmlFor="condicion" className={styles.labelFiltro}>
             Condición:
@@ -246,7 +248,7 @@ export default function Sidebar() {
             <option value="ENTREGADA">Entregadas</option>
           </select>
         </div>
-      </ul>
+      </div>
     </nav>
   );
 }

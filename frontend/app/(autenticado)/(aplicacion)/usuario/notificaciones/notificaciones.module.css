@@ -1,0 +1,85 @@
+.main {
+  padding: 2rem;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.titulo {
+  font-size: 2rem;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card {
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.cardHeader {
+  margin-bottom: 0.75rem;
+}
+
+.estado {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.estadoNueva {
+  background: var(--color-secundario-highlight);
+}
+
+.estadoLeida {
+  background: var(--color-borde);
+}
+
+.cardTitulo {
+  margin-bottom: 0.5rem;
+}
+
+.fecha {
+  color: var(--color-texto-secundario);
+  margin-top: 0.75rem;
+}
+
+.acciones {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.link {
+  color: var(--color-primario);
+  text-decoration: none;
+}
+
+.botonLeida,
+.botonTodas {
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  background: var(--color-primario);
+  color: var(--color-texto-blanco);
+}
+
+.vacio {
+  text-align: center;
+  padding: 2rem;
+}

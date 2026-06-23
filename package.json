@@ -9,7 +9,9 @@
     "dev:front": "npm run dev -w frontend",
     "dev:back": "npm run start:dev -w backend",
     "dev": "concurrently \"npm run dev -w frontend\" \"npm run start:dev -w backend\"",
+    
     "setup-db": "npm run setup-db -w backend",
+    
     "test:frontend": "npm --prefix frontend test",
     "test:backend": "npm --prefix backend test",
     "test:all": "npm run test:frontend && npm run test:backend",
@@ -19,7 +21,7 @@
 
     "test:frontend:cov": "npm --prefix frontend run test:cov",
     "test:backend:cov": "npm --prefix backend run test:cov",
-    "test:all:coverage": "npm run test:frontend:coverage && npm run test:backend:coverage"
+    "test:all:cov": "npm run test:frontend:cov  && npm run test:backend:cov"
   },
   "devDependencies": {
     "concurrently": "^10.0.3"

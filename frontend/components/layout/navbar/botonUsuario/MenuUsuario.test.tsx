@@ -36,22 +36,21 @@ const mockFetchUsuario = (rol: RolUsuario) => {
 };
 
 describe("MenuUsuario", () => {
-
   beforeEach(() => {
-  jest.clearAllMocks();
+    jest.clearAllMocks();
 
-  Storage.prototype.getItem = jest.fn(() => "token-falso");
+    Storage.prototype.getItem = jest.fn(() => "token-falso");
 
-  jest.spyOn(global, "setInterval")
-    .mockImplementation(() => 1 as any);
+    jest
+      .spyOn(global, "setInterval")
+      .mockReturnValue(1 as unknown as ReturnType<typeof setInterval>);
 
-  jest.spyOn(global, "clearInterval")
-    .mockImplementation(() => {});
-});
+    jest.spyOn(global, "clearInterval").mockImplementation(() => {});
+  });
 
-afterEach(() => {
-  jest.restoreAllMocks();
-});
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
   it("muestra las opciones de usuario normal", async () => {
     mockFetchUsuario(RolUsuario.usuarioNormal);
@@ -64,24 +63,16 @@ afterEach(() => {
 
     fireEvent.click(screen.getByRole("button"));
 
-    expect(
-      screen.getByText("Panel de usuario")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Panel de usuario")).toBeInTheDocument();
+
+    expect(screen.getByText("Mis publicaciones")).toBeInTheDocument();
+
+    expect(screen.getByText("Mis Solicitudes")).toBeInTheDocument();
+
+    expect(screen.queryByText("Denuncias")).not.toBeInTheDocument();
 
     expect(
-      screen.getByText("Mis publicaciones")
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByText("Mis Solicitudes")
-    ).toBeInTheDocument();
-
-    expect(
-      screen.queryByText("Denuncias")
-    ).not.toBeInTheDocument();
-
-    expect(
-      screen.queryByText("Gestión de roles de usuario")
+      screen.queryByText("Gestión de roles de usuario"),
     ).not.toBeInTheDocument();
   });
 
@@ -96,17 +87,46 @@ afterEach(() => {
 
     fireEvent.click(screen.getByRole("button"));
 
+    expect(screen.getByText("Denuncias")).toBeInTheDocument();
+
+    expect(screen.queryByText("Panel de usuario")).not.toBeInTheDocument();
+
     expect(
-      screen.getByText("Denuncias")
-    ).toBeInTheDocument();
+      screen.queryByText("Gestión de roles de usuario"),
+    ).not.toBeInTheDocument();
+  });
+  it("no cuenta pendientes de publicaciones que ya tienen una solicitud aceptada", async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: "1",
+          nombreUsuario: "usuario1",
+          correo: "usuario@test.com",
+          rol: RolUsuario.usuarioNormal,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          {
+            id: "1",
+            publicacionId: "pub1",
+            estado: "ACEPTADA",
+          },
+          {
+            id: "2",
+            publicacionId: "pub1",
+            estado: "PENDIENTE",
+          },
+        ],
+      });
 
-  expect(
-    screen.queryByText("Panel de usuario")
-  ).not.toBeInTheDocument();
+    render(<MenuUsuario />);
 
-  expect(
-    screen.queryByText("Gestión de roles de usuario")
-  ).not.toBeInTheDocument();
-});
+    await screen.findByText("usuario1");
 
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+  });
 });
