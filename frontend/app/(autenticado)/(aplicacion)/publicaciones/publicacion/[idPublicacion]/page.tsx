@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Gallery from "@/components/Gallery";
+import CancelarReservaButton from "@/components/publicaciones/CancelarReservaButton";
 import CambiarEstadoPublicacionButton from "@/components/publicaciones/CambiarEstadoPublicacionButton";
 import EliminarPublicacionButton from "@/components/publicaciones/EliminarPublicacionButton";
+import MarcarEntregadaButton from "@/components/publicaciones/MarcarEntregadaButton";
 import EditarPublicacionLink from "@/components/publicaciones/EditarPublicacionLink";
 import SolicitarPublicacionButton from "@/components/publicaciones/SolicitarPublicacionButton";
 import {
@@ -117,6 +119,7 @@ export default async function PublicacionDetailPage({ params }: Props) {
             <EditarPublicacionLink
               idPublicacion={idPublicacion}
               creadorId={publicacionBackend.creadorId}
+              estadoPublicacion={publicacionBackend.estado}
               className={styles.backLink}
             />
             <CambiarEstadoPublicacionButton
@@ -124,9 +127,20 @@ export default async function PublicacionDetailPage({ params }: Props) {
               creadorId={publicacionBackend.creadorId}
               estadoPublicacion={publicacionBackend.estado}
             />
+            <CancelarReservaButton
+              idPublicacion={idPublicacion}
+              creadorId={publicacionBackend.creadorId}
+              estadoPublicacion={publicacionBackend.estado}
+            />
+            <MarcarEntregadaButton
+              idPublicacion={idPublicacion}
+              creadorId={publicacionBackend.creadorId}
+              estadoPublicacion={publicacionBackend.estado}
+            />
             <EliminarPublicacionButton
               idPublicacion={idPublicacion}
               creadorId={publicacionBackend.creadorId}
+              estadoPublicacion={publicacionBackend.estado}
             />
           </div>
         </div>

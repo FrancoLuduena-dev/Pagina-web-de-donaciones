@@ -46,6 +46,32 @@ export class SolicitudController {
   }
 
   @UseGuards(StatusGuard)
+  @Patch('publicacion/:publicacionId/entregar')
+  finalizarEntregaPublicacion(
+    @Param('publicacionId') publicacionId: string,
+    @Req() req: RequestConUsuario,
+  ): Promise<SolicitudResponseDto> {
+    return this.solicitudService.finalizarEntregaPorPublicacion(
+      publicacionId,
+      req.user.id,
+    );
+  }
+
+  @UseGuards(StatusGuard)
+  @Patch('publicacion/:publicacionId/cancelar-reserva')
+  cancelarReservaPublicacion(
+    @Param('publicacionId') publicacionId: string,
+    @Body() dto: CancelarSolicitudDto,
+    @Req() req: RequestConUsuario,
+  ): Promise<SolicitudResponseDto> {
+    return this.solicitudService.cancelarReservaPorPublicacion(
+      publicacionId,
+      req.user.id,
+      dto,
+    );
+  }
+
+  @UseGuards(StatusGuard)
   @Patch(':id/aceptar')
   aceptarSolicitud(
     @Param('id') id: string,

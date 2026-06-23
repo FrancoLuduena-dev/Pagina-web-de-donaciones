@@ -34,6 +34,16 @@
   color: #fff;
 }
 
+.botonEntregada {
+  border-color: #059669;
+  color: #059669;
+}
+
+.botonEntregada:hover:not(:disabled) {
+  background: #059669;
+  color: #fff;
+}
+
 .boton:disabled {
   opacity: 0.6;
   cursor: not-allowed;

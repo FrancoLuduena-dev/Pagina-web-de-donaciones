@@ -62,7 +62,11 @@ export default class UsuarioService {
     /* validar que el usuario exista */
     /* pedirle que confirme la contrasenia al usuario*/
 
-    const usuario = await this.obtenerUsuarioPorId(idUsuario);
+    const usuario = await this.repo.buscarPorIdConContrasenia(idUsuario);
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con id ${idUsuario} no encontrado`);
+    }
 
     const contraseniaValida = await bcrypt.compare(
       contrasenia,
@@ -176,7 +180,7 @@ export default class UsuarioService {
   public async ObtenerUsuarioPorCorreo(
     correo: string,
   ): Promise<Usuario | null> {
-    return this.repo.buscarPorEmail(correo);
+    return this.repo.buscarPorEmailConContrasenia(correo);
   }
 
   public async CambiarRolUsuario(
@@ -221,7 +225,11 @@ export default class UsuarioService {
     validar que la contrasenia nueva no sea igual a la actual
     */
 
-    const usuario = await this.obtenerUsuarioPorId(idUsuario);
+    const usuario = await this.repo.buscarPorIdConContrasenia(idUsuario);
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con id ${idUsuario} no encontrado`);
+    }
 
     const contraseniaValida = await bcrypt.compare(
       actualizarContraseniaDto.contraseniaActual,

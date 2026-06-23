@@ -11,11 +11,13 @@ import styles from "./EliminarPublicacionButton.module.css";
 type EliminarPublicacionButtonProps = {
   idPublicacion: string;
   creadorId: string;
+  estadoPublicacion: string;
 };
 
 export default function EliminarPublicacionButton({
   idPublicacion,
   creadorId,
+  estadoPublicacion,
 }: EliminarPublicacionButtonProps) {
   const router = useRouter();
   const [puedeEliminar, setPuedeEliminar] = useState(false);
@@ -55,7 +57,12 @@ export default function EliminarPublicacionButton({
     return () => {
       activo = false;
     };
-  }, [creadorId]);
+  }, [creadorId, estadoPublicacion]);
+
+  const puedeEliminarEnEsteEstado =
+    estadoPublicacion === "DISPONIBLE" ||
+    estadoPublicacion === "PAUSADA" ||
+    esModeracion;
 
   const eliminar = async () => {
     const confirmar = window.confirm(
@@ -82,7 +89,7 @@ export default function EliminarPublicacionButton({
     }
   };
 
-  if (!puedeEliminar) {
+  if (!puedeEliminar || !puedeEliminarEnEsteEstado) {
     return null;
   }
 
