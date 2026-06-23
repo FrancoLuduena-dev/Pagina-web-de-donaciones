@@ -8,8 +8,6 @@
 
 > **Autor(es):** [De Marte Melisa, De Oto Marcelo, Leguizamon Tobias, Ludueña Franco]
 
-> **Estado:** `Borrador`
-
 ---
 
 ## Índice
