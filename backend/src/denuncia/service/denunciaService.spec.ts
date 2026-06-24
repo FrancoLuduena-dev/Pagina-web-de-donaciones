@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
@@ -89,9 +88,7 @@ describe('DenunciaService', () => {
   let publicacionService: PublicacionServiceMock;
   let usuarioService: UsuarioServiceMock;
   let manager: ManagerMock;
-  let transactionMock: jest.MockedFunction<
-    <T>(operacion: (manager: EntityManager) => Promise<T>) => Promise<T>
-  >;
+  let transactionCalls: number;
 
   beforeEach(() => {
     repository = {
@@ -131,15 +128,15 @@ describe('DenunciaService', () => {
         (denuncia: Denuncia): Promise<Denuncia> => Promise.resolve(denuncia),
       ),
     };
-
-    const ejecutarTransaccion = <T>(
-      operacion: (manager: EntityManager) => Promise<T>,
-    ): Promise<T> => operacion(manager as unknown as EntityManager);
-
-    transactionMock = jest.fn(ejecutarTransaccion);
+    transactionCalls = 0;
 
     const dataSourceMock = {
-      transaction: transactionMock,
+      transaction: <T>(
+        operacion: (manager: EntityManager) => Promise<T>,
+      ): Promise<T> => {
+        transactionCalls += 1;
+        return operacion(manager as unknown as EntityManager);
+      },
     };
 
     service = new DenunciaService(
@@ -334,7 +331,7 @@ describe('DenunciaService', () => {
         },
       );
 
-      expect(transactionMock).toHaveBeenCalledTimes(1);
+      expect(transactionCalls).toBe(1);
       expect(manager.findOne).toHaveBeenCalledWith(Denuncia, {
         where: { id: denuncia.id },
         lock: { mode: 'pessimistic_write' },
