@@ -1,0 +1,27 @@
+@startuml
+title Secuencia: Resolver denuncia
+actor Moderador
+participant "Frontend (API)" as Front
+participant "DenunciaController" as Controller
+participant "DenunciaService" as Service
+database "Base de datos" as DB
+participant "PublicacionService" as PubService
+participant "UsuarioService" as UserService
+
+Moderador -> Front: POST /denuncias/{id}/resolver (dto)
+Front -> Controller: resolverDenuncia(req,user,id,dto)
+Controller -> Service: resolverDenuncia(id, user.id, dto)
+activate Service
+Service -> DB: SELECT FOR UPDATE denuncia (obtenerDenunciaPorIdConBloqueo)
+DB --> Service: denuncia
+Service -> Service: validarVersionDenuncia / validarDenunciaNoResuelta
+Service -> PubService: (si tipo=PAUSADA) pausar(publicacionId,...)
+Service -> PubService: (si tipo=ELIMINADA) eliminar(publicacionId,...)
+Service -> UserService: (si tipo=USUARIO_BLOQUEADO) BloquearUsuario(creadorId,...)
+Service -> DB: save(denuncia.resolver())
+DB --> Service: denuncia guardada
+Service --> Controller: DenunciaDetalleResponseDto
+deactivate Service
+Controller --> Front: 200 OK (detalle)
+Front --> Moderador: respuesta
+@enduml

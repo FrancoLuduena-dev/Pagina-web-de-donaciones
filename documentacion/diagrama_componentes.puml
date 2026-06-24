@@ -1,0 +1,24 @@
+@startuml
+package "Sistema" {
+  [Frontend Next.js] as Frontend
+  [Backend API (NestJS)] as Backend
+  database "Postgres (TypeORM)" as DB
+  [Servicios externos] as External
+}
+
+Frontend --> Backend: HTTP/REST
+Backend --> DB: TypeORM (queries)
+Backend --> External: Envío de eventos / emails
+
+component Frontend {
+  [App pages]
+  [Componentes UI]
+}
+component Backend {
+  [Controllers]
+  [Services]
+  [Repositories]
+  [Eventos / Listeners]
+}
+
+@enduml
