@@ -18,81 +18,51 @@ function getToken(): string {
   const token = localStorage.getItem("access_token");
 
   if (!token) {
-    throw new Error(
-      "Tenés que iniciar sesión para denunciar una publicación.",
-    );
+    throw new Error("Tenés que iniciar sesión para denunciar una publicación.");
   }
 
   return token;
 }
 
-function mapDenunciaError(
-  message: string,
-  status: number,
-): string {
-  if (
-    message.includes(
-      "DENUNCIA_DUPLICADA",
-    )
-  ) {
+function mapDenunciaError(message: string, status: number): string {
+  if (message.includes("DENUNCIA_DUPLICADA")) {
     return "Ya denunciaste esta publicación.";
   }
 
-  if (
-    message.includes(
-      "NO_PUEDE_DENUNCIAR_PROPIA_PUBLICACION",
-    )
-  ) {
+  if (message.includes("NO_PUEDE_DENUNCIAR_PROPIA_PUBLICACION")) {
     return "No podés denunciar tu propia publicación.";
   }
 
-  if (
-    message.includes(
-      "El comentario no puede contener solo espacios",
-    )
-  ) {
+  if (message.includes("El comentario no puede contener solo espacios")) {
     return "El comentario no puede contener solo espacios.";
   }
 
   if (status === 400) {
-    return (
-      message ||
-      "Revisá los datos de la denuncia."
-    );
+    return message || "Revisá los datos de la denuncia.";
   }
 
   if (status === 403) {
-    return (
-      message ||
-      "No tenés permiso para denunciar esta publicación."
-    );
+    return message || "No tenés permiso para denunciar esta publicación.";
   }
 
   if (status === 404) {
     return "La publicación no existe o ya no está disponible.";
   }
 
-  return (
-    message ||
-    `Error al enviar la denuncia (${status}).`
-  );
+  return message || `Error al enviar la denuncia (${status}).`;
 }
 
 export async function crearDenunciaRequest(
   payload: CrearDenunciaPayload,
 ): Promise<DenunciaBackend> {
-  const res = await fetch(
-    "/api/denuncias",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json",
-        Authorization: `Bearer ${getToken()}`,
-      },
-      body: JSON.stringify(payload),
+  const res = await fetch("/api/denuncias", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
     },
-  );
+    body: JSON.stringify(payload),
+  });
 
   let data: DenunciaBackend & {
     message?: string | string[];
@@ -101,45 +71,29 @@ export async function crearDenunciaRequest(
   try {
     data = await res.json();
   } catch {
-    throw new Error(
-      "Respuesta inválida del servidor.",
-    );
+    throw new Error("Respuesta inválida del servidor.");
   }
 
   if (!res.ok) {
-    const raw = Array.isArray(
-      data.message,
-    )
+    const raw = Array.isArray(data.message)
       ? data.message.join(", ")
       : data.message || "";
 
-    throw new Error(
-      mapDenunciaError(
-        raw,
-        res.status,
-      ),
-    );
+    throw new Error(mapDenunciaError(raw, res.status));
   }
 
   return data;
 }
 
-export async function obtenerDenuncias(
-  token: string,
-): Promise<Denuncia[]> {
-  const response = await fetch(
-    "/api/denuncias",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+export async function obtenerDenuncias(token: string): Promise<Denuncia[]> {
+  const response = await fetch("/api/denuncias", {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  );
+  });
 
   if (!response.ok) {
-    throw new Error(
-      "No se pudieron obtener las denuncias",
-    );
+    throw new Error("No se pudieron obtener las denuncias");
   }
 
   return response.json();
@@ -150,24 +104,42 @@ export async function tomarDenuncia(
   version: number,
   token: string,
 ): Promise<void> {
-  const response = await fetch(
-    `/api/denuncias/${id}/tomar`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type":
-          "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        version,
-      }),
+  const response = await fetch(`/api/denuncias/${id}/tomar`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-  );
+    body: JSON.stringify({
+      version,
+    }),
+  });
 
   if (!response.ok) {
-    throw new Error(
-      "No se pudo tomar la denuncia",
-    );
+    throw new Error("No se pudo tomar la denuncia");
+  }
+}
+export async function resolverDenuncia(
+  id: string,
+  version: number,
+  tipoResolucion: string,
+  detalleResolucion: string,
+  token: string,
+): Promise<void> {
+  const response = await fetch(`/api/denuncias/${id}/resolver`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      version,
+      tipoResolucion,
+      detalleResolucion,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("No se pudo resolver la denuncia");
   }
 }

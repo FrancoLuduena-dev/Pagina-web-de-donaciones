@@ -159,4 +159,34 @@ it("mantiene el texto original para estados desconocidos", () => {
     ),
   ).toBeInTheDocument();
 });
+it(
+  "ejecuta onResolver al hacer click",
+  () => {
+    const onResolver =
+      jest.fn();
+
+    render(
+      <DenunciaCard
+        denuncia={{
+          ...denunciaMock,
+          estado: "EN_REVISION",
+        }}
+        mostrarBotonResolver
+        onResolver={onResolver}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByText(
+        "Resolver denuncia",
+      ),
+    );
+
+    expect(
+      onResolver,
+    ).toHaveBeenCalledTimes(
+      1,
+    );
+  },
+);
 });

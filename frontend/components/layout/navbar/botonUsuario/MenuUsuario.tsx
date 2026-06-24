@@ -22,14 +22,13 @@ interface UsuarioNavbar {
 
 export default function MenuUsuario() {
   const router = useRouter();
-
   const [abierto, setAbierto] = useState(false);
   const [usuario, setUsuario] = useState<UsuarioNavbar | null>(null);
-
   const menuRef = useRef<HTMLDivElement>(null);
   const [cantidadPendientes, setCantidadPendientes] = useState(0);
-
   const [cantidadNoLeidas, setCantidadNoLeidas] = useState(0);
+  const [cantidadDenunciasPendientes, setCantidadDenunciasPendientes] =
+    useState(0);
 
   useEffect(() => {
     const cerrarMenu = (event: MouseEvent) => {
@@ -46,7 +45,6 @@ export default function MenuUsuario() {
   }, []);
 
   useEffect(() => {
-
     const cargarUsuario = async () => {
       try {
         const datos = await obtenerUsuarioActualRequest();
@@ -70,8 +68,38 @@ export default function MenuUsuario() {
           return;
         }
 
-        const solicitudesResponse = await fetch(
-          "/api/solicitudes/recibidas",
+        const solicitudesResponse = await fetch("/api/solicitudes/recibidas", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (solicitudesResponse.ok) {
+          const solicitudes = await solicitudesResponse.json();
+
+          const publicacionesConAceptada = new Set(
+            solicitudes
+              .filter(
+                (solicitud: { estado: string }) =>
+                  solicitud.estado === "ACEPTADA",
+              )
+              .map(
+                (solicitud: { publicacionId: string }) =>
+                  solicitud.publicacionId,
+              ),
+          );
+
+          const pendientes = solicitudes.filter(
+            (solicitud: { estado: string; publicacionId: string }) =>
+              solicitud.estado === "PENDIENTE" &&
+              !publicacionesConAceptada.has(solicitud.publicacionId),
+          ).length;
+
+          setCantidadPendientes(pendientes);
+        }
+
+        const notificacionesResponse = await fetch(
+          "/api/notificaciones/no-leidas/cantidad",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -79,64 +107,30 @@ export default function MenuUsuario() {
           },
         );
 
-        if (solicitudesResponse.ok) {
-          const solicitudes =
-            await solicitudesResponse.json();
+        if (notificacionesResponse.ok) {
+          const datosNotificaciones = await notificacionesResponse.json();
 
-          const publicacionesConAceptada =
-            new Set(
-              solicitudes
-                .filter(
-                  (solicitud: {
-                    estado: string;
-                  }) =>
-                    solicitud.estado ===
-                    "ACEPTADA",
-                )
-                .map(
-                  (solicitud: {
-                    publicacionId: string;
-                  }) =>
-                    solicitud.publicacionId,
-                ),
-            );
+          setCantidadNoLeidas(datosNotificaciones.cantidad ?? 0);
+        }
+        if (
+          datos.rol === RolUsuario.usuarioModerador ||
+          datos.rol === RolUsuario.usuarioAdministrador
+        ) {
+          const denunciasResponse = await fetch("/api/denuncias", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-          const pendientes =
-            solicitudes.filter(
-              (solicitud: {
-                estado: string;
-                publicacionId: string;
-              }) =>
-                solicitud.estado ===
-                "PENDIENTE" &&
-                !publicacionesConAceptada.has(
-                  solicitud.publicacionId,
-                ),
+          if (denunciasResponse.ok) {
+            const denuncias = await denunciasResponse.json();
+
+            const pendientes = denuncias.filter(
+              (denuncia: { estado: string }) => denuncia.estado === "PENDIENTE",
             ).length;
 
-          setCantidadPendientes(
-            pendientes,
-          );
-        }
-
-        const notificacionesResponse =
-          await fetch(
-            "/api/notificaciones/no-leidas/cantidad",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            },
-          );
-
-        if (notificacionesResponse.ok) {
-          const datosNotificaciones =
-            await notificacionesResponse.json();
-
-          setCantidadNoLeidas(
-            datosNotificaciones.cantidad ??
-            0,
-          );
+            setCantidadDenunciasPendientes(pendientes);
+          }
         }
       } catch {
         // Fallo transitorio al cargar datos del menú; se reintenta en el intervalo.
@@ -161,8 +155,7 @@ export default function MenuUsuario() {
   }
 
   const cantidadTotal =
-    cantidadPendientes +
-    cantidadNoLeidas;
+    cantidadPendientes + cantidadNoLeidas + cantidadDenunciasPendientes;
 
   return (
     <div className={estilos.menuUsuario} ref={menuRef}>
@@ -180,9 +173,7 @@ export default function MenuUsuario() {
         </span>
 
         {cantidadTotal > 0 && (
-          <span className={estilos.menuUsuarioBadge}>
-            {cantidadTotal}
-          </span>
+          <span className={estilos.menuUsuarioBadge}>{cantidadTotal}</span>
         )}
 
         <span className={estilos.menuUsuarioFlecha}>▼</span>
@@ -229,11 +220,7 @@ export default function MenuUsuario() {
                 <span>Notificaciones</span>
 
                 {cantidadNoLeidas > 0 && (
-                  <span
-                    className={
-                      estilos.menuUsuarioItemBadge
-                    }
-                  >
+                  <span className={estilos.menuUsuarioItemBadge}>
                     {cantidadNoLeidas}
                   </span>
                 )}
@@ -243,10 +230,16 @@ export default function MenuUsuario() {
 
           {(usuario.rol === RolUsuario.usuarioModerador ||
             usuario.rol === RolUsuario.usuarioAdministrador) && (
-              <Link href="/denuncias" className={estilos.menuUsuarioItem}>
-                Denuncias
-              </Link>
-            )}
+            <Link href="/denuncias" className={estilos.menuUsuarioItem}>
+              <span>Denuncias</span>
+
+              {cantidadDenunciasPendientes > 0 && (
+                <span className={estilos.menuUsuarioItemBadge}>
+                  {cantidadDenunciasPendientes}
+                </span>
+              )}
+            </Link>
+          )}
 
           {usuario.rol === RolUsuario.usuarioAdministrador && (
             <Link href="/gestionRoles" className={estilos.menuUsuarioItem}>

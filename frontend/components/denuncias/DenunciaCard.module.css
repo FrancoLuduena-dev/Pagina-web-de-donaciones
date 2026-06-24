@@ -69,3 +69,32 @@
 .botonTomar:hover {
   background: var(--color-primario-hover);
 }
+.botonResolver {
+  align-self: flex-start;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+
+  border: none;
+  border-radius: 0.5rem;
+
+  background: var(--color-secundario);
+  color: var(--color-texto-blanco);
+
+  cursor: pointer;
+}
+
+.botonResolver:hover {
+  opacity: 0.9;
+}
+.linkPublicacion {
+  display: inline-block;
+  margin-top: 0.75rem;
+
+  color: var(--color-primario);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.linkPublicacion:hover {
+  text-decoration: underline;
+}

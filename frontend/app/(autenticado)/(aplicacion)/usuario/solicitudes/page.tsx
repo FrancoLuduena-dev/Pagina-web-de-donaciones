@@ -122,79 +122,81 @@ export default function SolicitudesPage() {
     }
   }
 
-  async function rechazarSolicitud(solicitudId: string) {
-    try {
-      const token = localStorage.getItem("access_token");
+ async function rechazarSolicitud(solicitudId: string) {
+  try {
+    const token = localStorage.getItem("access_token");
 
-      const respuesta = await fetch(
-        `/api/solicitudes/${solicitudId}/rechazar`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            motivo: motivosRechazo[solicitudId] ?? "",
-          }),
+    const motivo = motivosRechazo[solicitudId]?.trim();
+
+    const respuesta = await fetch(
+      `/api/solicitudes/${solicitudId}/rechazar`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      );
-
-      if (!respuesta.ok) {
-        throw new Error();
-      }
-
-      setSolicitudesRecibidas(
-        solicitudesRecibidas.map((solicitud) =>
-          solicitud.id === solicitudId
-            ? {
-                ...solicitud,
-                estado: "RECHAZADA",
-              }
-            : solicitud,
+        body: JSON.stringify(
+          motivo
+            ? { motivo }
+            : {},
         ),
-      );
-    } catch {
-      alert("No se pudo rechazar la solicitud.");
+      },
+    );
+
+    if (!respuesta.ok) {
+      throw new Error();
     }
+
+    setSolicitudesRecibidas(
+      solicitudesRecibidas.map((solicitud) =>
+        solicitud.id === solicitudId
+          ? {
+              ...solicitud,
+              estado: "RECHAZADA",
+            }
+          : solicitud,
+      ),
+    );
+  } catch {
+    alert("No se pudo rechazar la solicitud.");
   }
+}
 
-  async function cancelarSolicitud(solicitudId: string) {
-    try {
-      const token = localStorage.getItem("access_token");
+ async function cancelarSolicitud(solicitudId: string) {
+  try {
+    const token = localStorage.getItem("access_token");
 
-      const respuesta = await fetch(
-        `/api/solicitudes/${solicitudId}/cancelar`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            motivo: "",
-          }),
+    const respuesta = await fetch(
+      `/api/solicitudes/${solicitudId}/cancelar`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({}),
+      },
+    );
 
-      if (!respuesta.ok) {
-        throw new Error();
-      }
-
-      setSolicitudes(
-        solicitudes.map((solicitud) =>
-          solicitud.id === solicitudId
-            ? {
-                ...solicitud,
-                estado: "CANCELADA",
-              }
-            : solicitud,
-        ),
-      );
-    } catch {
-      alert("No se pudo cancelar la solicitud.");
+    if (!respuesta.ok) {
+      throw new Error();
     }
+
+    setSolicitudes(
+      solicitudes.map((solicitud) =>
+        solicitud.id === solicitudId
+          ? {
+              ...solicitud,
+              estado: "CANCELADA",
+            }
+          : solicitud,
+      ),
+    );
+  } catch {
+    alert("No se pudo cancelar la solicitud.");
   }
+}
 
   if (cargando) {
     return (
