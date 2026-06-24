@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { obtenerUsuarioActualRequest } from "@/lib/auth";
+import { getAccessToken, obtenerUsuarioActualRequest } from "@/lib/auth";
 
 export default function LayoutAutenticado({
   children,
@@ -15,16 +15,19 @@ export default function LayoutAutenticado({
 
   useEffect(() => {
     async function verificarSesion() {
-      try {
-        const usuario = await obtenerUsuarioActualRequest();
-        if (!usuario) {
-          router.replace("/login");
-          return;
-        }
+      const usuario = await obtenerUsuarioActualRequest();
+      if (usuario) {
         setEstaAutenticado(true);
-      } catch {
-        router.replace("/login");
+        return;
       }
+
+      if (!getAccessToken()) {
+        router.replace("/login");
+        return;
+      }
+
+      // Token presente pero el backend no respondió: no expulsar al usuario.
+      setEstaAutenticado(true);
     }
 
     void verificarSesion();
