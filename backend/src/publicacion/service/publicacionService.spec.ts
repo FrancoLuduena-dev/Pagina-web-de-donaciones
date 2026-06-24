@@ -34,7 +34,7 @@ describe('PublicacionService - eliminar', () => {
     service = new PublicacionService(
       repository as unknown as PublicacionRepository,
       eventEmitter as unknown as EventEmitter2,
-      {} as unknown as UsuarioService,
+      { registrarPublicacionesEliminadasPorModeracion: jest.fn() } as unknown as UsuarioService,
     );
   });
 

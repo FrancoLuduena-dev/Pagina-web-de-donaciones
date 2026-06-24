@@ -43,6 +43,8 @@ describe('autenticacionUsuario', () => {
         const crear = {
             correo: 'a@b.com',
             nombreUsuario: 'user',
+            nombreCompleto: 'Usuario de prueba',
+            numeroTelefono: '+123456789',
             contrasenia: 'plain',
         };
 
@@ -63,8 +65,10 @@ describe('autenticacionUsuario', () => {
         await expect(
             auth.registrarUsuario({
                 correo: 'a',
-                contrasenia: 'b',
-                nombreUsuario: 'c'
+                nombreUsuario: 'c',
+                nombreCompleto: 'Usuario de prueba',
+                numeroTelefono: '+123456789',
+                contrasenia: 'b'
             } as any)
         ).rejects.toThrow('Error al registrar el usuario');
     });

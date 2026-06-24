@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, MinLength, IsEmail, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export default class logearUsuarioDTO {

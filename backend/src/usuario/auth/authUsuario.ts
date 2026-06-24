@@ -21,6 +21,17 @@ export default class autenticacionUsuario {
   ) {}
 
   async registrarUsuario(usuario: crearUsuarioDTO) {
+    if (
+      !usuario ||
+      !usuario.contrasenia ||
+      !usuario.nombreCompleto ||
+      !usuario.nombreUsuario ||
+      !usuario.correo ||
+      !usuario.numeroTelefono
+    ) {
+      throw new UnauthorizedException('Error al registrar el usuario');
+    }
+
     const hashedPassword = await bcrypt.hash(usuario.contrasenia, 10);
 
     const newUser = await this.service.CrearUsuario({
