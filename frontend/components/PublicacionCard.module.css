@@ -116,7 +116,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   text-align: center;
-  color: white;
+  color: var(--color-texto-blanco);
   background-color: var(--color-primario);
   transition: background-color 0.2s ease;
 }

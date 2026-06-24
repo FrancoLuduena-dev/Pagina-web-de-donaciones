@@ -187,7 +187,30 @@ export default function MenuUsuario() {
             <span>{usuario.correo}</span>
           </div>
 
-          {usuario.rol === RolUsuario.usuarioNormal && (
+         {usuario.rol === RolUsuario.usuarioAdministrador && (
+            <Link href="/gestionRoles" className={estilos.menuUsuarioItem}>
+              Gestión de roles de usuario
+            </Link>
+          )}
+
+
+         {(usuario.rol === RolUsuario.usuarioModerador ||
+            usuario.rol === RolUsuario.usuarioAdministrador) && (
+            <Link href="/denuncias" className={estilos.menuModItem}>
+              <span>Denuncias</span>
+
+              {cantidadDenunciasPendientes > 0 && (
+                <span className={estilos.menuUsuarioItemBadge}>
+                  {cantidadDenunciasPendientes}
+                </span>
+              )}
+            </Link>
+          )}
+
+
+
+
+          {usuario && (
             <>
               <Link href="/usuario" className={estilos.menuUsuarioItem}>
                 Panel de usuario
@@ -226,25 +249,6 @@ export default function MenuUsuario() {
                 )}
               </Link>
             </>
-          )}
-
-          {(usuario.rol === RolUsuario.usuarioModerador ||
-            usuario.rol === RolUsuario.usuarioAdministrador) && (
-            <Link href="/denuncias" className={estilos.menuUsuarioItem}>
-              <span>Denuncias</span>
-
-              {cantidadDenunciasPendientes > 0 && (
-                <span className={estilos.menuUsuarioItemBadge}>
-                  {cantidadDenunciasPendientes}
-                </span>
-              )}
-            </Link>
-          )}
-
-          {usuario.rol === RolUsuario.usuarioAdministrador && (
-            <Link href="/gestionRoles" className={estilos.menuUsuarioItem}>
-              Gestión de roles de usuario
-            </Link>
           )}
 
           <Link href="/usuario/editar" className={estilos.menuUsuarioItem}>

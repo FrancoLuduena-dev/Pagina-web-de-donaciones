@@ -21,7 +21,7 @@
   height: 2.25rem;
   border-radius: 999px;
   background: var(--color-primario);
-  color: white;
+  color: var(--color-texto-blanco);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,8 +38,8 @@
   min-width: 1.25rem;
   height: 1.25rem;
   border-radius: 999px;
-  background: var(--color-alertas);
-  color: white;
+  background: var(--color-secundario);
+  color: var(--color-texto-blanco);
   font-size: 0.75rem;
   display: flex;
   align-items: center;
@@ -98,12 +98,29 @@
   background: var(--color-fondo);
 }
 
+.menuModItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  text-decoration: none;
+  color: var(--color-texto-principal);
+  transition: background-color 0.2s ease;
+  font-weight: 700;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.menuModItem:hover {
+  background: var(--color-fondo);
+}
+
+
 .menuUsuarioItemBadge {
   min-width: 1.25rem;
   height: 1.25rem;
   border-radius: 999px;
-  background: var(--color-alertas);
-  color: white;
+  background: var(--color-secundario);
+  color: var(--color-texto-blanco);
   font-size: 0.75rem;
   display: flex;
   align-items: center;

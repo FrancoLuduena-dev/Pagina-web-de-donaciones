@@ -119,7 +119,7 @@
   padding: 0.95rem 1.4rem;
   border-radius: 0.95rem;
   background: var(--color-primario);
-  color: white;
+  color: var(--color-texto-blanco);
   font-weight: 700;
   transition: background 0.2s ease;
 }
