@@ -124,3 +124,14 @@
 .link:hover {
   background-color: var(--color-primario-hover);
 }
+
+.linkInactivo {
+  margin-top: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  color: var(--color-texto-secundario);
+  background-color: var(--color-fondo);
+}

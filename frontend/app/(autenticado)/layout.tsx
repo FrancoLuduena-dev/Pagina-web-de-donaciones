@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { obtenerUsuarioActualRequest } from "@/lib/auth";
 
 export default function LayoutAutenticado({
   children,
@@ -13,12 +14,20 @@ export default function LayoutAutenticado({
   const [estaAutenticado, setEstaAutenticado] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.replace("/login");
-    } else {
-      setEstaAutenticado(true);
+    async function verificarSesion() {
+      try {
+        const usuario = await obtenerUsuarioActualRequest();
+        if (!usuario) {
+          router.replace("/login");
+          return;
+        }
+        setEstaAutenticado(true);
+      } catch {
+        router.replace("/login");
+      }
     }
+
+    void verificarSesion();
   }, [router]);
   // Mientras verifica, evitamos el "flash" de contenido protegido
   if (estaAutenticado === null) {

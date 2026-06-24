@@ -13,7 +13,8 @@ import styles from "./PublicacionCard.module.css";
 
 type PublicacionCardProps = {
   publicacion: PublicacionResumen;
-  href?: string;
+  /** Pasá `null` para ocultar el enlace (ej. publicaciones eliminadas). */
+  href?: string | null;
 };
 
 export default function PublicacionCard({
@@ -31,7 +32,10 @@ export default function PublicacionCard({
     estadoDonacion,
   } = publicacion;
 
-  const linkHref = href ?? `/publicaciones/publicacion/${idPublicacion}`;
+  const linkHref =
+    href === null
+      ? null
+      : (href ?? `/publicaciones/publicacion/${idPublicacion}`);
   const disponible = estadoPublicacion === EstadoPublicacion.DISPONIBLE;
 
   return (
@@ -68,9 +72,13 @@ export default function PublicacionCard({
           </span>
         </div>
 
-        <Link href={linkHref} className={styles.link}>
-          Ver publicación
-        </Link>
+        {linkHref ? (
+          <Link href={linkHref} className={styles.link}>
+            Ver publicación
+          </Link>
+        ) : (
+          <span className={styles.linkInactivo}>No disponible</span>
+        )}
       </div>
     </article>
   );

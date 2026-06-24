@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 
 import estilos from "./MenuUsuario.module.css";
 import { RolUsuario } from "@/types/RolUsuario";
+import {
+  clearSession,
+  obtenerUsuarioActualRequest,
+} from "@/lib/auth";
 
 interface UsuarioNavbar {
   id: string;
@@ -44,31 +48,24 @@ export default function MenuUsuario() {
 
     const cargarUsuario = async () => {
       try {
-        const token = localStorage.getItem("access_token");
+        const datos = await obtenerUsuarioActualRequest();
 
-        if (!token) {
-          router.push("/login");
+        if (!datos) {
+          router.replace("/login");
           return;
         }
-
-        const respuesta = await fetch("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!respuesta.ok) {
-          throw new Error("No se pudo obtener el usuario");
-        }
-
-        const datos = await respuesta.json();
 
         setUsuario({
           id: datos.id,
           nombreUsuario: datos.nombreUsuario,
           correo: datos.correo,
-          rol: datos.rol,
+          rol: datos.rol as RolUsuario,
         });
+
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          return;
+        }
 
         const solicitudesResponse = await fetch(
           "/api/solicitudes/recibidas",
@@ -152,8 +149,7 @@ export default function MenuUsuario() {
   }, [router]);
 
   const cerrarSesion = () => {
-    localStorage.removeItem("access_token");
-
+    clearSession();
     router.push("/login");
   };
 
@@ -204,7 +200,7 @@ export default function MenuUsuario() {
               </Link>
 
               <Link
-                href="/mis_publicaciones"
+                href="/usuario/publicaciones"
                 className={estilos.menuUsuarioItem}
               >
                 Mis publicaciones
