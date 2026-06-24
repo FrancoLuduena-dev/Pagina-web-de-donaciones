@@ -198,10 +198,6 @@ export class DenunciaService {
           moderadorId,
           rolUsuario.usuarioModerador,
         );
-        await this.usuarioService.registrarPublicacionEliminadaPorModeracion(
-          creadorPublicacionId,
-          moderadorId,
-        );
         return;
 
       case TipoResolucion.USUARIO_BLOQUEADO:
