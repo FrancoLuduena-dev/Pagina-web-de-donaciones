@@ -13,6 +13,7 @@ import actualizarUsuarioDTO from '../dtos/actualizarUsuarioDto';
 import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
 import { CambiarRolDTO } from '../dtos/cambiarRolDto';
 import { BloquearUsuarioDTO } from '../dtos/bloquearUsuarioDto';
+import actualizarPublicacionesBloqueadasDto from '../dtos/actualizarPublicacionesBloqueadasDto';
 
 import bcrypt from 'bcrypt';
 
@@ -214,6 +215,37 @@ export default class UsuarioService {
     }
 
     await this.repo.cambiarRolUsuario(idUsuario, datos.rol);
+  }
+
+  public async registrarPublicacionesEliminadasPorModeracion(
+    idUsuario: string,
+  ): Promise<void> {
+    const usuario = await this.obtenerUsuarioPorId(idUsuario);
+
+    if(usuario.rol !== 'usuarioModerador' && usuario.rol !== 'usuarioAdministrador'){
+      throw new ForbiddenException('Solo un moderador o administrado puede registrar publicaciones eliminadas por moderacion')
+    }
+
+    if (usuario.estado === estadosUsuario.BLOQUEADO) {
+      return;
+    }
+
+    const cantidadActual = usuario.cantidadPublicacionesBloqueadas || 0;
+    const nuevaCantidad = cantidadActual + 1;
+
+    const datosActualizacion: actualizarPublicacionesBloqueadasDto = {
+      cantidadPublicacionesBloqueadas: nuevaCantidad,
+      razonBloqueo: usuario.razonBloqueo,
+      estado: usuario.estado
+    };
+
+    if (nuevaCantidad >= 3) {
+      datosActualizacion.estado = estadosUsuario.BLOQUEADO;
+      datosActualizacion.razonBloqueo =
+        'Bloqueado automáticamente tras 3 publicaciones eliminadas por moderación';
+    }
+
+    await this.repo.actualizarUsuario(idUsuario, datosActualizacion);
   }
 
   public async ResetearContraseniaUsuario(

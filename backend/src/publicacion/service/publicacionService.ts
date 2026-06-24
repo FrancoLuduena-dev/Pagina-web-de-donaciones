@@ -218,6 +218,10 @@ export class PublicacionService {
     );
 
     if (eliminadaPorModeracion) {
+      await this.usuarioService.registrarPublicacionesEliminadasPorModeracion(
+        publicacionGuardada.creadorId,
+      );
+
       this.eventEmitter.emit(
         EventoDominio.PUBLICACION_ELIMINADA_MODERACION,
         new PublicacionModeradaEvento(
