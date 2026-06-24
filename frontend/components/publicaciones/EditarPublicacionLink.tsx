@@ -6,15 +6,20 @@ import { useEffect, useState } from "react";
 type EditarPublicacionLinkProps = {
   idPublicacion: string;
   creadorId: string;
+  estadoPublicacion: string;
   className?: string;
 };
 
 export default function EditarPublicacionLink({
   idPublicacion,
   creadorId,
+  estadoPublicacion,
   className,
 }: EditarPublicacionLinkProps) {
   const [puedeEditar, setPuedeEditar] = useState(false);
+
+  const estadoPermiteEditar =
+    estadoPublicacion === "DISPONIBLE" || estadoPublicacion === "PAUSADA";
 
   useEffect(() => {
     let activo = true;
@@ -42,9 +47,9 @@ export default function EditarPublicacionLink({
     return () => {
       activo = false;
     };
-  }, [creadorId]);
+  }, [creadorId, estadoPublicacion]);
 
-  if (!puedeEditar) {
+  if (!puedeEditar || !estadoPermiteEditar) {
     return null;
   }
 

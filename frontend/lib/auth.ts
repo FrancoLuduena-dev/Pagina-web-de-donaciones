@@ -195,3 +195,55 @@ export function persistSession(data: LoginResponse): void {
     localStorage.setItem("access_token", token);
   }
 }
+
+export function clearSession(): void {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("access_token");
+  }
+}
+
+export function getAccessToken(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return localStorage.getItem("access_token");
+}
+
+export type UsuarioActual = {
+  id: string;
+  nombreUsuario: string;
+  correo: string;
+  rol: string;
+  nombreCompleto?: string;
+  estado?: string;
+};
+
+/** Devuelve el usuario logueado, `null` si no hay sesión o el token ya no es válido. */
+export async function obtenerUsuarioActualRequest(): Promise<UsuarioActual | null> {
+  const token = getAccessToken();
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const res = await fetch("/api/auth/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      clearSession();
+      return null;
+    }
+
+    // Backend caído o error temporal: no borrar la sesión ni lanzar error.
+    if (!res.ok) {
+      return null;
+    }
+
+    return (await res.json()) as UsuarioActual;
+  } catch {
+    return null;
+  }
+}

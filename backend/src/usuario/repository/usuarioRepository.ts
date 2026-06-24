@@ -30,8 +30,24 @@ export default class UsuarioRepository {
     return this.repository.findOneBy({ correo: email });
   }
 
+  async buscarPorEmailConContrasenia(email: string): Promise<Usuario | null> {
+    return this.repository
+      .createQueryBuilder('usuario')
+      .addSelect('usuario.contrasenia')
+      .where('usuario.correo = :email', { email })
+      .getOne();
+  }
+
   async buscarPorUsername(nombreUsuario: string): Promise<Usuario | null> {
     return this.repository.findOneBy({ nombreUsuario });
+  }
+
+  async buscarPorIdConContrasenia(id: string): Promise<Usuario | null> {
+    return this.repository
+      .createQueryBuilder('usuario')
+      .addSelect('usuario.contrasenia')
+      .where('usuario.id = :id', { id })
+      .getOne();
   }
 
   async actualizarUsuario(

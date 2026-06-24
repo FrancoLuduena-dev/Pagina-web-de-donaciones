@@ -4,20 +4,24 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { eliminarPublicacionRequest } from "@/lib/publicaciones";
+import { RolUsuario } from "@/types/RolUsuario";
 
 import styles from "./EliminarPublicacionButton.module.css";
 
 type EliminarPublicacionButtonProps = {
   idPublicacion: string;
   creadorId: string;
+  estadoPublicacion: string;
 };
 
 export default function EliminarPublicacionButton({
   idPublicacion,
   creadorId,
+  estadoPublicacion,
 }: EliminarPublicacionButtonProps) {
   const router = useRouter();
   const [puedeEliminar, setPuedeEliminar] = useState(false);
+  const [esModeracion, setEsModeracion] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,7 +40,13 @@ export default function EliminarPublicacionButton({
         if (!res.ok || !activo) return;
 
         const usuario = await res.json();
-        setPuedeEliminar(usuario.id === creadorId);
+        const esCreador = usuario.id === creadorId;
+        const esMod =
+          usuario.rol === RolUsuario.usuarioModerador ||
+          usuario.rol === RolUsuario.usuarioAdministrador;
+
+        setPuedeEliminar(esCreador || esMod);
+        setEsModeracion(esMod && !esCreador);
       } catch {
         // Sin permiso visible si falla la verificación
       }
@@ -47,11 +57,18 @@ export default function EliminarPublicacionButton({
     return () => {
       activo = false;
     };
-  }, [creadorId]);
+  }, [creadorId, estadoPublicacion]);
+
+  const puedeEliminarEnEsteEstado =
+    estadoPublicacion === "DISPONIBLE" ||
+    estadoPublicacion === "PAUSADA" ||
+    esModeracion;
 
   const eliminar = async () => {
     const confirmar = window.confirm(
-      "¿Eliminar esta publicación? No se va a poder deshacer.",
+      esModeracion
+        ? "¿Eliminar esta publicación por moderación? No se va a poder deshacer."
+        : "¿Eliminar esta publicación? No se va a poder deshacer.",
     );
 
     if (!confirmar) return;
@@ -72,7 +89,7 @@ export default function EliminarPublicacionButton({
     }
   };
 
-  if (!puedeEliminar) {
+  if (!puedeEliminar || !puedeEliminarEnEsteEstado) {
     return null;
   }
 
@@ -84,7 +101,11 @@ export default function EliminarPublicacionButton({
         onClick={eliminar}
         disabled={eliminando}
       >
-        {eliminando ? "Eliminando..." : "Eliminar publicación"}
+        {eliminando
+          ? "Eliminando..."
+          : esModeracion
+            ? "Eliminar (moderación)"
+            : "Eliminar publicación"}
       </button>
       {error ? <p className={styles.error}>{error}</p> : null}
     </div>

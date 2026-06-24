@@ -13,6 +13,7 @@ import actualizarUsuarioDTO from '../dtos/actualizarUsuarioDto';
 import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
 import { CambiarRolDTO } from '../dtos/cambiarRolDto';
 import { BloquearUsuarioDTO } from '../dtos/bloquearUsuarioDto';
+import actualizarPublicacionesBloqueadasDto from '../dtos/actualizarPublicacionesBloqueadasDto';
 
 import bcrypt from 'bcrypt';
 
@@ -62,7 +63,11 @@ export default class UsuarioService {
     /* validar que el usuario exista */
     /* pedirle que confirme la contrasenia al usuario*/
 
-    const usuario = await this.obtenerUsuarioPorId(idUsuario);
+    const usuario = await this.repo.buscarPorIdConContrasenia(idUsuario);
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con id ${idUsuario} no encontrado`);
+    }
 
     const contraseniaValida = await bcrypt.compare(
       contrasenia,
@@ -124,7 +129,7 @@ export default class UsuarioService {
           : usuario.nombreUsuario,
       correo:
         typeof datos.correo === 'string' && datos.correo.trim() !== ''
-          ? datos.correo.trim()
+          ? datos.correo.trim().toLowerCase()
           : usuario.correo,
       numeroTelefono:
         typeof datos.numeroTelefono === 'string' && datos.numeroTelefono.trim() !== ''
@@ -176,7 +181,7 @@ export default class UsuarioService {
   public async ObtenerUsuarioPorCorreo(
     correo: string,
   ): Promise<Usuario | null> {
-    return this.repo.buscarPorEmail(correo);
+    return this.repo.buscarPorEmailConContrasenia(correo);
   }
 
   public async CambiarRolUsuario(
@@ -212,6 +217,37 @@ export default class UsuarioService {
     await this.repo.cambiarRolUsuario(idUsuario, datos.rol);
   }
 
+  public async registrarPublicacionesEliminadasPorModeracion(
+    idUsuario: string,
+  ): Promise<void> {
+    const usuario = await this.obtenerUsuarioPorId(idUsuario);
+
+    if(usuario.rol !== 'usuarioModerador' && usuario.rol !== 'usuarioAdministrador'){
+      throw new ForbiddenException('Solo un moderador o administrado puede registrar publicaciones eliminadas por moderacion')
+    }
+
+    if (usuario.estado === estadosUsuario.BLOQUEADO) {
+      return;
+    }
+
+    const cantidadActual = usuario.cantidadPublicacionesBloqueadas || 0;
+    const nuevaCantidad = cantidadActual + 1;
+
+    const datosActualizacion: actualizarPublicacionesBloqueadasDto = {
+      cantidadPublicacionesBloqueadas: nuevaCantidad,
+      razonBloqueo: usuario.razonBloqueo,
+      estado: usuario.estado
+    };
+
+    if (nuevaCantidad >= 3) {
+      datosActualizacion.estado = estadosUsuario.BLOQUEADO;
+      datosActualizacion.razonBloqueo =
+        'Bloqueado automáticamente tras 3 publicaciones eliminadas por moderación';
+    }
+
+    await this.repo.actualizarUsuario(idUsuario, datosActualizacion);
+  }
+
   public async ResetearContraseniaUsuario(
     idUsuario: string,
     actualizarContraseniaDto: actualizarContraseniaDTO,
@@ -221,7 +257,11 @@ export default class UsuarioService {
     validar que la contrasenia nueva no sea igual a la actual
     */
 
-    const usuario = await this.obtenerUsuarioPorId(idUsuario);
+    const usuario = await this.repo.buscarPorIdConContrasenia(idUsuario);
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con id ${idUsuario} no encontrado`);
+    }
 
     const contraseniaValida = await bcrypt.compare(
       actualizarContraseniaDto.contraseniaActual,
@@ -275,6 +315,22 @@ export default class UsuarioService {
       );
     }
 
+    if (usuarioModerador.rol === rolUsuario.usuarioModerador) {
+      if (usuario.rol !== rolUsuario.usuarioNormal) {
+        throw new ForbiddenException(
+          'Un moderador solo puede bloquear usuarios normales',
+        );
+      }
+    }
+
+    if (usuarioModerador.rol === rolUsuario.usuarioAdministrador) {
+      if (usuario.rol === rolUsuario.usuarioAdministrador) {
+        throw new ForbiddenException(
+          'Un administrador no puede bloquear a otro administrador',
+        );
+      }
+    }
+
     if (usuario.estado === estadosUsuario.BLOQUEADO) {
       throw new ConflictException(
         `El usuario con id ${idUsuario} ya se encuentra bloqueado`,
@@ -294,9 +350,10 @@ export default class UsuarioService {
     await this.repo.bloquearUsuario(
       usuario,
       usuarioModerador,
-      datos.razonBloqueo,
+      datos.razonBloqueo.trim(),
     );
   }
+  
 
   public async ListarUsuarios(): Promise<Usuario[]> {
     return this.repo.listarUsuarios();

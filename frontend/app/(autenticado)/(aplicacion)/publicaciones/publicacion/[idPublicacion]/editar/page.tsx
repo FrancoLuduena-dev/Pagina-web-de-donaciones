@@ -23,6 +23,13 @@ import {
 } from "@/lib/publicaciones";
 import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
 
+function parseUrlsTexto(texto: string): string[] {
+  return texto
+    .split("\n")
+    .map((linea) => linea.trim())
+    .filter(Boolean);
+}
+
 export default function EditarPublicacionPage() {
   const params = useParams<{ idPublicacion: string }>();
   const router = useRouter();
@@ -35,6 +42,7 @@ export default function EditarPublicacionPage() {
     localidadId: LOCALIDADES_VICENTE_LOPEZ[0].id,
   });
   const [imagenesActuales, setImagenesActuales] = useState<string[]>([]);
+  const [urlsImagen, setUrlsImagen] = useState("");
   const [archivosNuevos, setArchivosNuevos] = useState<File[]>([]);
   const [previewsNuevos, setPreviewsNuevos] = useState<string[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -117,7 +125,7 @@ export default function EditarPublicacionPage() {
     const files = Array.from(event.target.files ?? []);
     if (!files.length) return;
 
-    const total = imagenesActuales.length + archivosNuevos.length + files.length;
+    const total = imagenesActuales.length + parseUrlsTexto(urlsImagen).length + archivosNuevos.length + files.length;
     if (total > MAX_IMAGENES_PUBLICACION) {
       setError(`Podés tener hasta ${MAX_IMAGENES_PUBLICACION} imágenes en total.`);
       return;
@@ -157,15 +165,20 @@ export default function EditarPublicacionPage() {
     setGuardando(true);
 
     try {
+      const urlsManuales = parseUrlsTexto(urlsImagen);
       const urlsSubidas =
         archivosNuevos.length > 0
           ? await subirImagenesPublicacionRequest(archivosNuevos)
           : [];
 
-      const imagenUrls = [...imagenesActuales, ...urlsSubidas];
+      const imagenUrls = [...imagenesActuales, ...urlsSubidas, ...urlsManuales];
 
       if (!imagenUrls.length) {
         throw new Error("La publicación debe tener al menos una imagen.");
+      }
+
+      if (imagenUrls.length > MAX_IMAGENES_PUBLICACION) {
+        throw new Error(`Podés tener hasta ${MAX_IMAGENES_PUBLICACION} imágenes en total.`);
       }
 
       await editarPublicacionRequest(params.idPublicacion, {
@@ -210,7 +223,8 @@ export default function EditarPublicacionPage() {
     );
   }
 
-  const totalImagenes = imagenesActuales.length + archivosNuevos.length;
+  const urlsManualesCount = parseUrlsTexto(urlsImagen).length;
+  const totalImagenes = imagenesActuales.length + urlsManualesCount + archivosNuevos.length;
 
   return (
     <main style={{ padding: "2rem", maxWidth: 760, margin: "0 auto" }}>
@@ -324,7 +338,19 @@ export default function EditarPublicacionPage() {
         </div>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
-          Agregar imágenes
+          URLs de imagen (opcional, una por línea)
+          <textarea
+            value={urlsImagen}
+            onChange={(e) => setUrlsImagen(e.target.value)}
+            rows={3}
+            style={inputStyle}
+            placeholder={"https://...\nhttps://..."}
+            disabled={totalImagenes >= MAX_IMAGENES_PUBLICACION}
+          />
+        </label>
+
+        <label style={{ display: "grid", gap: "0.25rem" }}>
+          Agregar imágenes ({totalImagenes}/{MAX_IMAGENES_PUBLICACION})
           <input
             type="file"
             accept="image/*"

@@ -83,7 +83,6 @@ export class PublicacionRepository {
     return this.repository.find({
       where: {
         creadorId,
-        deletedAt: IsNull(),
         ...(estado ? { estado } : {}),
       },
       order: {

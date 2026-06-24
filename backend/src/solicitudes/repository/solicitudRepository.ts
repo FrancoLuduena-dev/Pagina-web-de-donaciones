@@ -86,4 +86,16 @@ export class SolicitudRepository {
       relations: this.relacionesSolicitud,
     });
   }
+
+  buscarAceptadaPorPublicacion(
+    publicacionId: string,
+  ): Promise<Solicitud | null> {
+    return this.repository.findOne({
+      where: {
+        publicacionId,
+        estado: EstadoSolicitud.ACEPTADA,
+      },
+      relations: this.relacionesSolicitud,
+    });
+  }
 }

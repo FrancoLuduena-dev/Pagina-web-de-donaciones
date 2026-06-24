@@ -58,23 +58,6 @@ describe("Sidebar", () => {
   expect(pushMock).toHaveBeenCalled();
 });
 
-  it("cambia el filtro de estado", () => {
-    render(<Sidebar />);
-
-    fireEvent.change(
-      screen.getByLabelText("Estado:"),
-      {
-        target: {
-          value: "PAUSADA",
-        },
-      }
-    );
-
-    expect(pushMock).toHaveBeenCalledWith(
-      "/publicaciones?estado=PAUSADA"
-    );
-  });
-
   it("abre y cierra el menu movil", () => {
     render(<Sidebar />);
 

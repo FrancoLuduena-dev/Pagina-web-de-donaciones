@@ -257,6 +257,44 @@ export class SolicitudService {
 
     return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
+
+  async finalizarEntregaPorPublicacion(
+    publicacionId: string,
+    usuarioId: string,
+  ): Promise<SolicitudResponseDto> {
+    const solicitud =
+      await this.solicitudRepository.buscarAceptadaPorPublicacion(
+        publicacionId,
+      );
+
+    if (!solicitud) {
+      throw new NotFoundException(
+        'No hay una solicitud aceptada para esta publicación',
+      );
+    }
+
+    return this.finalizarSolicitud(solicitud.id, usuarioId);
+  }
+
+  async cancelarReservaPorPublicacion(
+    publicacionId: string,
+    usuarioId: string,
+    dto: CancelarSolicitudDto,
+  ): Promise<SolicitudResponseDto> {
+    const solicitud =
+      await this.solicitudRepository.buscarAceptadaPorPublicacion(
+        publicacionId,
+      );
+
+    if (!solicitud) {
+      throw new NotFoundException(
+        'No hay una solicitud aceptada para esta publicación',
+      );
+    }
+
+    return this.cancelarSolicitud(solicitud.id, usuarioId, dto);
+  }
+
   async cancelarSolicitud(
     solicitudId: string,
     usuarioId: string,

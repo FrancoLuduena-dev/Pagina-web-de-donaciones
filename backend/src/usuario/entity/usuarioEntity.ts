@@ -35,6 +35,7 @@ export default class Usuario {
 
   @Column({
     length: 255,
+    select: false,
   })
   contrasenia!: string;
 

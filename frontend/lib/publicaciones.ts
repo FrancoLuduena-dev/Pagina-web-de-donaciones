@@ -143,6 +143,54 @@ export async function editarPublicacionRequest(
   return data;
 }
 
+export async function pausarPublicacionRequest(id: string): Promise<PublicacionBackend> {
+  const res = await fetch(`/api/publicaciones/${id}/pausar`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+
+  let data: PublicacionBackend & { message?: string | string[] } = {} as PublicacionBackend;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error("Respuesta inválida del servidor.");
+  }
+
+  if (!res.ok) {
+    const msg = Array.isArray(data.message)
+      ? data.message.join(", ")
+      : data.message || `Error al pausar publicación (${res.status}).`;
+    throw new Error(msg);
+  }
+
+  return data;
+}
+
+export async function reactivarPublicacionRequest(
+  id: string,
+): Promise<PublicacionBackend> {
+  const res = await fetch(`/api/publicaciones/${id}/reactivar`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+
+  let data: PublicacionBackend & { message?: string | string[] } = {} as PublicacionBackend;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error("Respuesta inválida del servidor.");
+  }
+
+  if (!res.ok) {
+    const msg = Array.isArray(data.message)
+      ? data.message.join(", ")
+      : data.message || `Error al reactivar publicación (${res.status}).`;
+    throw new Error(msg);
+  }
+
+  return data;
+}
+
 export async function eliminarPublicacionRequest(id: string): Promise<void> {
   const res = await fetch(`/api/publicaciones/${id}`, {
     method: "DELETE",
@@ -225,6 +273,32 @@ export async function listarPublicacionesDesdeBackend(
   }
 
   return res.json();
+}
+
+export async function listarMisPublicacionesRequest(
+  estado?: string,
+): Promise<PublicacionBackend[]> {
+  const params = estado ? `?estado=${encodeURIComponent(estado)}` : "";
+  const res = await fetch(`/api/publicaciones/mias${params}`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+
+  let data: PublicacionBackend[] | { message?: string | string[] } = [];
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error("Respuesta inválida del servidor.");
+  }
+
+  if (!res.ok) {
+    const msg = Array.isArray((data as { message?: string[] }).message)
+      ? (data as { message: string[] }).message.join(", ")
+      : (data as { message?: string }).message ||
+        `Error al listar tus publicaciones (${res.status}).`;
+    throw new Error(msg);
+  }
+
+  return data as PublicacionBackend[];
 }
 
 export async function listarPublicacionesRequest(): Promise<PublicacionBackend[]> {

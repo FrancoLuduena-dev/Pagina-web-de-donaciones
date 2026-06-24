@@ -7,6 +7,7 @@ import bcrypt from 'bcrypt';
 import { sign, SignOptions } from 'jsonwebtoken';
 
 import Usuario_Service from '../service/usuarioService';
+import { estadosUsuario } from '../enums/estadosUsuario';
 
 import crearUsuarioDTO from '../dtos/usuarioDto';
 import logearUsuarioDTO from '../dtos/logearUsuarioDto';
@@ -20,10 +21,24 @@ export default class autenticacionUsuario {
   ) {}
 
   async registrarUsuario(usuario: crearUsuarioDTO) {
+    if (
+      !usuario ||
+      !usuario.contrasenia ||
+      !usuario.nombreCompleto ||
+      !usuario.nombreUsuario ||
+      !usuario.correo ||
+      !usuario.numeroTelefono
+    ) {
+      throw new UnauthorizedException('Error al registrar el usuario');
+    }
+
     const hashedPassword = await bcrypt.hash(usuario.contrasenia, 10);
 
     const newUser = await this.service.CrearUsuario({
-      ...usuario,
+      nombreCompleto: usuario.nombreCompleto.trim(),
+      nombreUsuario: usuario.nombreUsuario.trim(),
+      correo: usuario.correo.trim().toLowerCase(),
+      numeroTelefono: usuario.numeroTelefono.trim(),
       contrasenia: hashedPassword,
     });
 
@@ -42,7 +57,10 @@ export default class autenticacionUsuario {
   }
 
   public async logearUsuario(datos: logearUsuarioDTO): Promise<string> {
-    const usuario = await this.service.ObtenerUsuarioPorCorreo(datos.correo);
+    const correoNormalizado = datos.correo.trim().toLowerCase();
+    const usuario = await this.service.ObtenerUsuarioPorCorreo(
+      correoNormalizado,
+    );
 
     if (!usuario) {
       throw new UnauthorizedException('Correo o contrasenia incorrectos');
@@ -55,6 +73,11 @@ export default class autenticacionUsuario {
 
     if (!isValid) {
       throw new UnauthorizedException('Correo o contrasenia incorrectos');
+    }
+
+    if (usuario.estado === estadosUsuario.BLOQUEADO) {
+      const razon = usuario.razonBloqueo?.trim() || 'Sin razón especificada';
+      throw new UnauthorizedException(`Cuenta bloqueada: ${razon}`);
     }
 
     const secret = this.config.get<string>('JWT_SECRET');

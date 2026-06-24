@@ -230,24 +230,6 @@ export default function Sidebar() {
             <option value="USADO_REGULAR">Usado (estado regular)</option>
           </select>
         </div>
-
-        <div className={styles.filaFiltro}>
-          <label htmlFor="estado" className={styles.labelFiltro}>
-            Estado:
-          </label>
-
-          <select
-            id="estado"
-            className={styles.selectFiltro}
-            value={estadoSeleccionado}
-            onChange={(e) => cambiarEstado(e.target.value)}
-          >
-            <option value="">Sólo disponibles</option>
-            <option value="RESERVADA">Reservadas</option>
-            <option value="PAUSADA">Pausadas</option>
-            <option value="ENTREGADA">Entregadas</option>
-          </select>
-        </div>
       </div>
     </nav>
   );

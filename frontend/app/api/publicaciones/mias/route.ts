@@ -6,17 +6,16 @@ const backendBase =
 
 export async function GET(request: Request) {
   try {
-    const authHeader =
-      request.headers.get("authorization");
+    const authHeader = request.headers.get("authorization");
+    const { searchParams } = new URL(request.url);
+    const estado = searchParams.get("estado");
+    const query = estado ? `?estado=${encodeURIComponent(estado)}` : "";
 
-    const res = await fetch(
-      `${backendBase}/publicaciones/mias`,
-      {
-        headers: {
-          Authorization: authHeader ?? "",
-        },
-      }
-    );
+    const res = await fetch(`${backendBase}/publicaciones/mias${query}`, {
+      headers: {
+        Authorization: authHeader ?? "",
+      },
+    });
 
     const data = await res.json();
 

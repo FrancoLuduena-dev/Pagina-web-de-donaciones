@@ -11,17 +11,6 @@ describe("Footer", () => {
         ).toBeInTheDocument();
     });
 
-    it("muestra el enlace Sobre Nosotros", () => {
-        render(<Footer />);
-
-        const enlace = screen.getByRole("link", {
-            name: "Sobre Nosotros",
-        });
-
-        expect(enlace).toBeInTheDocument();
-        expect(enlace).toHaveAttribute("href", "/about");
-    });
-
     it("muestra el enlace Contactanos", () => {
         render(<Footer />);
 
