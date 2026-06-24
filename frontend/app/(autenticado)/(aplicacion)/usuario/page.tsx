@@ -80,6 +80,24 @@ export default function UsuarioPage() {
           ).length;
         }
 
+        const solicitudesRecibidasResponse = await fetch(
+          "/api/solicitudes/recibidas",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (solicitudesRecibidasResponse.ok) {
+          const solicitudesRecibidas =
+            await solicitudesRecibidasResponse.json();
+
+          solicitudesPorRevisar = solicitudesRecibidas.filter(
+            (solicitud: { estado: string }) => solicitud.estado === "PENDIENTE",
+          ).length;
+        }
+
         setUsuario({
           nombre: usuarioData.nombreUsuario,
           correo: usuarioData.correo,

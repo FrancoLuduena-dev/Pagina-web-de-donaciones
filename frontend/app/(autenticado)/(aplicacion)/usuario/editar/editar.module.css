@@ -90,7 +90,7 @@
 
   background-color: var(--color-primario);
 
-  color: white;
+  color: var(--color-texto-blanco);
 
   font-size: 0.875rem;
   font-weight: 500;

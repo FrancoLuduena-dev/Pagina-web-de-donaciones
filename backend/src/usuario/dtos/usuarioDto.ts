@@ -1,11 +1,10 @@
-
 import {
   IsString,
   IsEmail,
   IsNotEmpty,
   MinLength,
   MaxLength,
-  Matches
+  Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -16,9 +15,11 @@ export default class CrearUsuarioDto {
   @ApiProperty({ example: 'Juan Perez', description: 'Nombre completo del usuario' })
   @IsString()
   @IsNotEmpty({ message: 'El nombre completo es obligatorio' })
-  @MaxLength(100, { message: 'El nombre completo no puede superar los 100 caracteres' })
+  @MaxLength(100, {
+    message: 'El nombre completo no puede superar los 100 caracteres',
+  })
   @Matches(/^(?!.*(;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b))/i, {
-    message: 'No se pueden enviar palabras de tipo query'
+    message: 'No se pueden enviar palabras de tipo query',
   })
   nombreCompleto!: string;
 
@@ -26,9 +27,11 @@ export default class CrearUsuarioDto {
   @ApiProperty({ example: 'juanp', description: 'Nombre de usuario único' })
   @IsString()
   @IsNotEmpty({ message: 'El nombre de usuario es obligatorio' })
-  @MaxLength(50, { message: 'El nombre de usuario no puede superar los 50 caracteres' })
+  @MaxLength(50, {
+    message: 'El nombre de usuario no puede superar los 50 caracteres',
+  })
   @Matches(/^(?!.*(;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b))/i, {
-    message: 'No se pueden enviar palabras de tipo query'
+    message: 'No se pueden enviar palabras de tipo query',
   })
   nombreUsuario!: string;
 
@@ -38,7 +41,7 @@ export default class CrearUsuarioDto {
   @IsNotEmpty({ message: 'El correo es obligatorio' })
   @MaxLength(100, { message: 'El correo no puede superar los 100 caracteres' })
   @Matches(/^(?!.*(;|--|\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b))/i, {
-    message: 'No se pueden enviar palabras de tipo query'
+    message: 'No se pueden enviar palabras de tipo query',
   })
   correo!: string;
 
@@ -47,7 +50,8 @@ export default class CrearUsuarioDto {
   @MinLength(8)
   @IsNotEmpty({ message: 'La contraseña es obligatorio' })
   @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s])(?!.*[#?]).*$/, {
-    message: 'La contraseña debe tener mayúscula, minúscula, número y símbolo (sin # ni ?)'
+    message:
+      'La contraseña debe tener mayúscula, minúscula, número y símbolo (sin # ni ?)',
   })
   contrasenia!: string;
 
@@ -57,7 +61,7 @@ export default class CrearUsuarioDto {
   @IsNotEmpty({ message: 'El telefono es obligatorio' })
   @MaxLength(20, { message: 'El teléfono no puede superar los 20 caracteres' })
   @Matches(/^\+?[0-9\s]{8,20}$/, {
-    message: 'Formato de teléfono inválido'
+    message: 'Formato de teléfono inválido',
   })
   numeroTelefono!: string;
 }

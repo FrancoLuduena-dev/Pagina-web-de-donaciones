@@ -12,7 +12,8 @@ export default class ActualizarContraseniaDTO {
   @IsString()
   @MinLength(8)
   @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s])(?!.*[#?]).*$/, {
-    message: 'La contraseña debe tener mayúscula, minúscula, número y símbolo (sin # ni ?)'
+    message:
+      'La contraseña debe tener mayúscula, minúscula, número y símbolo (sin # ni ?)',
   })
   contraseniaActual!: string;
 
@@ -25,7 +26,8 @@ export default class ActualizarContraseniaDTO {
   @IsString()
   @MinLength(8)
   @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s])(?!.*[#?]).*$/, {
-    message: 'La contraseña debe tener mayúscula, minúscula, número y símbolo (sin # ni ?)'
+    message:
+      'La contraseña debe tener mayúscula, minúscula, número y símbolo (sin # ni ?)',
   })
   contraseniaNueva!: string;
 }

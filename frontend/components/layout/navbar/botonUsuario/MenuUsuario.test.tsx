@@ -89,7 +89,7 @@ describe("MenuUsuario", () => {
 
     expect(screen.getByText("Denuncias")).toBeInTheDocument();
 
-    expect(screen.queryByText("Panel de usuario")).not.toBeInTheDocument();
+    expect(screen.queryByText("Panel de usuario")).toBeInTheDocument();
 
     expect(
       screen.queryByText("Gestión de roles de usuario"),

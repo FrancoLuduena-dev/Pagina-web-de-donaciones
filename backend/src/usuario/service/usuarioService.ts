@@ -39,7 +39,9 @@ export default class UsuarioService {
         */
 
     if (!usuario.nombreCompleto) {
-      throw new BadRequestException ('Debe completar el campo de nombre de usuario') 
+      throw new BadRequestException(
+        'Debe completar el campo de nombre de usuario',
+      );
     }
 
     const existeCorreo = await this.repo.buscarPorEmail(usuario.correo);
@@ -104,7 +106,6 @@ export default class UsuarioService {
     idUsuario: string,
     datos: actualizarUsuarioDTO,
   ): Promise<void> {
-
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
 
     if (
@@ -114,17 +115,19 @@ export default class UsuarioService {
       !datos.numeroTelefono
     ) {
       throw new BadRequestException(
-        'Debe completar al menos un campo para actualizar'
+        'Debe completar al menos un campo para actualizar',
       );
     }
 
     const datosFiltrados = {
       nombreCompleto:
-        typeof datos.nombreCompleto === 'string' && datos.nombreCompleto.trim() !== ''
+        typeof datos.nombreCompleto === 'string' &&
+        datos.nombreCompleto.trim() !== ''
           ? datos.nombreCompleto.trim()
           : usuario.nombreCompleto,
       nombreUsuario:
-        typeof datos.nombreUsuario === 'string' && datos.nombreUsuario.trim() !== ''
+        typeof datos.nombreUsuario === 'string' &&
+        datos.nombreUsuario.trim() !== ''
           ? datos.nombreUsuario.trim()
           : usuario.nombreUsuario,
       correo:
@@ -132,13 +135,16 @@ export default class UsuarioService {
           ? datos.correo.trim().toLowerCase()
           : usuario.correo,
       numeroTelefono:
-        typeof datos.numeroTelefono === 'string' && datos.numeroTelefono.trim() !== ''
+        typeof datos.numeroTelefono === 'string' &&
+        datos.numeroTelefono.trim() !== ''
           ? datos.numeroTelefono.trim()
           : usuario.numeroTelefono,
     };
 
     if (datosFiltrados.correo !== usuario.correo) {
-      const existeCorreo = await this.repo.buscarPorEmail(datosFiltrados.correo);
+      const existeCorreo = await this.repo.buscarPorEmail(
+        datosFiltrados.correo,
+      );
 
       if (existeCorreo) {
         throw new ConflictException(
@@ -148,7 +154,9 @@ export default class UsuarioService {
     }
 
     if (datosFiltrados.nombreUsuario !== usuario.nombreUsuario) {
-      const existeUser = await this.repo.buscarPorUsername(datosFiltrados.nombreUsuario);
+      const existeUser = await this.repo.buscarPorUsername(
+        datosFiltrados.nombreUsuario,
+      );
 
       if (existeUser) {
         throw new ConflictException(
@@ -217,26 +225,32 @@ export default class UsuarioService {
     await this.repo.cambiarRolUsuario(idUsuario, datos.rol);
   }
 
-  public async registrarPublicacionesEliminadasPorModeracion(
+  public async registrarPublicacionEliminadaPorModeracion(
     idUsuario: string,
+    idModerador: string,
   ): Promise<void> {
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
+    const usuarioModerador = await this.obtenerUsuarioPorId(idModerador);
 
-    if(usuario.rol !== 'usuarioModerador' && usuario.rol !== 'usuarioAdministrador'){
-      throw new ForbiddenException('Solo un moderador o administrado puede registrar publicaciones eliminadas por moderacion')
+    if (
+      usuarioModerador.rol !== rolUsuario.usuarioModerador &&
+      usuarioModerador.rol !== rolUsuario.usuarioAdministrador
+    ) {
+      throw new ForbiddenException(
+        'Solo un moderador o administrador puede registrar publicaciones eliminadas por moderación',
+      );
     }
 
     if (usuario.estado === estadosUsuario.BLOQUEADO) {
       return;
     }
 
-    const cantidadActual = usuario.cantidadPublicacionesBloqueadas || 0;
-    const nuevaCantidad = cantidadActual + 1;
+    const nuevaCantidad = (usuario.cantidadPublicacionesBloqueadas ?? 0) + 1;
 
     const datosActualizacion: actualizarPublicacionesBloqueadasDto = {
       cantidadPublicacionesBloqueadas: nuevaCantidad,
-      razonBloqueo: usuario.razonBloqueo,
-      estado: usuario.estado
+      estado: usuario.estado,
+      razonBloqueo: usuario.razonBloqueo ?? null,
     };
 
     if (nuevaCantidad >= 3) {
@@ -353,7 +367,6 @@ export default class UsuarioService {
       datos.razonBloqueo.trim(),
     );
   }
-  
 
   public async ListarUsuarios(): Promise<Usuario[]> {
     return this.repo.listarUsuarios();

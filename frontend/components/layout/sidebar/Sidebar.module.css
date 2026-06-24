@@ -82,7 +82,7 @@
 
 .active {
   background-color: var(--color-primario-highlight);
-  color: white;
+  color: var(--color-texto-blanco);
 }
 .icon {
   position: relative;
@@ -178,7 +178,7 @@
     border: none;
     border-radius: 0.75rem;
     background-color: var(--color-primario-highlight);
-    color: white;
+    color: var(--color-texto-blanco);
     font-size: 1rem;
     font-weight: 600;
   }
@@ -224,7 +224,7 @@
     border: none;
     border-radius: 0.75rem;
     background-color: var(--color-primario-highlight);
-    color: white;
+    color: var(--color-texto-blanco);
     font-size: 1rem;
     font-weight: 600;
   }

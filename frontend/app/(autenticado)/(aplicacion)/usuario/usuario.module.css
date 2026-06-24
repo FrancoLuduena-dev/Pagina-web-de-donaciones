@@ -33,7 +33,7 @@
   border-radius: 50%;
   font-size: 1.75rem;
   font-weight: 600;
-  color: white;
+  color: var(--color-texto-blanco);
   background-color: var(--color-primario);
 }
 

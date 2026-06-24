@@ -25,7 +25,7 @@
   border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
-  color: white;
+  color: var(--color-texto-blanco);
   background-color: var(--color-primario);
 }
 

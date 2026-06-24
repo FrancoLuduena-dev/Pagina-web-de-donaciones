@@ -38,7 +38,7 @@
   padding: 0.6rem 1rem;
   border-radius: 999px;
   background: var(--color-primario);
-  color: white;
+  color: var(--color-texto-blanco);
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;

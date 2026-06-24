@@ -1,7 +1,57 @@
 import { NextResponse } from "next/server";
 
 const backendBase =
-  process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
+  process.env.API_URL?.replace(/\/$/, "") ??
+  "http://localhost:3000";
+
+export async function GET(request: Request) {
+  const authToken = request.headers
+    .get("Authorization")
+    ?.replace(/^Bearer\s+/, "");
+
+  if (!authToken) {
+    return NextResponse.json(
+      {
+        message:
+          "Token de autenticación faltante.",
+      },
+      { status: 401 },
+    );
+  }
+
+  try {
+    const res = await fetch(
+      `${backendBase}/denuncias`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+        cache: "no-store",
+      },
+    );
+
+    const text = await res.text();
+
+    const contentType =
+      res.headers.get("content-type") ??
+      "application/json";
+
+    return new NextResponse(text, {
+      status: res.status,
+      headers: {
+        "Content-Type": contentType,
+      },
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        message:
+          "No se pudo conectar con el servidor. ¿Está corriendo el backend?",
+      },
+      { status: 503 },
+    );
+  }
+}
 
 export async function POST(request: Request) {
   const authToken = request.headers
@@ -10,7 +60,10 @@ export async function POST(request: Request) {
 
   if (!authToken) {
     return NextResponse.json(
-      { message: "Token de autenticación faltante." },
+      {
+        message:
+          "Token de autenticación faltante.",
+      },
       { status: 401 },
     );
   }
@@ -20,25 +73,39 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ message: "Cuerpo inválido." }, { status: 400 });
+    return NextResponse.json(
+      {
+        message: "Cuerpo inválido.",
+      },
+      { status: 400 },
+    );
   }
 
   try {
-    const res = await fetch(`${backendBase}/denuncias`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,
+    const res = await fetch(
+      `${backendBase}/denuncias`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
 
     const text = await res.text();
-    const contentType = res.headers.get("content-type") ?? "application/json";
+
+    const contentType =
+      res.headers.get("content-type") ??
+      "application/json";
 
     return new NextResponse(text, {
       status: res.status,
-      headers: { "Content-Type": contentType },
+      headers: {
+        "Content-Type": contentType,
+      },
     });
   } catch {
     return NextResponse.json(

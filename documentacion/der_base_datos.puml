@@ -1,0 +1,90 @@
+@startuml
+!define TABLE(x) class x << (T,#FFAAAA) >>
+
+TABLE(usuarios) {
+  id uuid PK
+  nombreCompleto varchar
+  nombreUsuario varchar
+  correo varchar
+  contrasenia varchar
+  numeroTelefono varchar
+  rol varchar
+  estado varchar
+  bloqueadorId uuid FK
+  razonBloqueo varchar
+  cantidadPublicacionesBloqueadas int
+  creadoEn timestamp
+  actualizadoEn timestamp
+}
+
+TABLE(publicacion) {
+  id uuid PK
+  creadorId uuid FK
+  titulo varchar
+  descripcion text
+  categoriaId uuid
+  localidadId uuid
+  condicion varchar
+  imagenUrls jsonb
+  estado varchar
+  version int
+  createdAt timestamp
+  updatedAt timestamp
+  deletedAt timestamp
+}
+
+TABLE(solicitudes) {
+  id uuid PK
+  publicacionId uuid FK
+  solicitanteId uuid FK
+  creadorPublicacionId uuid FK
+  mensaje varchar
+  estado varchar
+  motivoRechazo varchar
+  motivoCancelacion varchar
+  version int
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+TABLE(denuncias) {
+  id uuid PK
+  publicacionId uuid FK
+  denuncianteId uuid FK
+  creadorPublicacionId uuid FK
+  motivo varchar
+  comentario varchar
+  estado varchar
+  moderadorAsignadoId uuid FK
+  tipoResolucion varchar
+  detalleResolucion varchar
+  fechaResolucion timestamp
+  version int
+  fechaCreacion timestamp
+  fechaActualizacion timestamp
+}
+
+TABLE(notificaciones) {
+  id uuid PK
+  destinatarioId uuid FK
+  tipo varchar
+  titulo varchar
+  mensaje text
+  leidaEn timestamp
+  solicitudId uuid FK
+  publicacionId uuid FK
+  denunciaId uuid FK
+  creadaEn timestamp
+}
+
+usuarios "1" -- "*" publicacion : creadorId
+publicacion "1" -- "*" solicitudes : publicacionId
+publicacion "1" -- "*" denuncias : publicacionId
+usuarios "1" -- "*" solicitudes : solicitanteId
+usuarios "1" -- "*" denuncias : denuncianteId
+usuarios "1" -- "*" notificaciones : destinatarioId
+notificaciones "*" --> "0..1" solicitudes : solicitudId
+notificaciones "*" --> "0..1" publicacion : publicacionId
+notificaciones "*" --> "0..1" denuncias : denunciaId
+
+@enduml
