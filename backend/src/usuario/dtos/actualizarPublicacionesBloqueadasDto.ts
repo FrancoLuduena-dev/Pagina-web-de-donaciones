@@ -1,7 +1,7 @@
-import { estadosUsuario } from "../enums/estadosUsuario";
+import { estadosUsuario } from '../enums/estadosUsuario';
 
 export default class actualizarPublicacionesBloqueadasDto {
-    razonBloqueo!: string | null;
-    estado!: estadosUsuario;
-    cantidadPublicacionesBloqueadas!: number;
+  razonBloqueo!: string | null;
+  estado!: estadosUsuario;
+  cantidadPublicacionesBloqueadas!: number;
 }

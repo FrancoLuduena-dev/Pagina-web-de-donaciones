@@ -1,5 +1,5 @@
-import { rolUsuario } from "../enums/rolUsuario";
-import { estadosUsuario } from "../enums/estadosUsuario";
+import { rolUsuario } from '../enums/rolUsuario';
+import { estadosUsuario } from '../enums/estadosUsuario';
 
 export class MiUsuarioResponseDto {
   id!: string;

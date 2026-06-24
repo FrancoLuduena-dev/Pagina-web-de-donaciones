@@ -216,10 +216,10 @@ export class PublicacionService {
         eliminadaPorModeracion,
       ),
     );
-
     if (eliminadaPorModeracion) {
-      await this.usuarioService.registrarPublicacionesEliminadasPorModeracion(
+      await this.usuarioService.registrarPublicacionEliminadaPorModeracion(
         publicacionGuardada.creadorId,
+        usuarioId,
       );
 
       this.eventEmitter.emit(

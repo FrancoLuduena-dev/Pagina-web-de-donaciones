@@ -24,8 +24,7 @@ import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
 import registerResponseDto from '../dtos/registerResponseDto';
 import usuarioResponseDto from '../dtos/usuarioResponseDto';
 import { ParseUUIDPipe } from '@nestjs/common';
-import usuarioBloqueadoResponseDto from '../dtos/usuarioBloqueadoResponseDto'
-
+import usuarioBloqueadoResponseDto from '../dtos/usuarioBloqueadoResponseDto';
 
 import { AuthGuard } from '../auth/authGuard';
 import { Roles } from 'src/compartidos/decorators/decoratorRol';
@@ -66,23 +65,19 @@ export default class UsuarioController {
 
   @UseGuards(AuthGuard, StatusGuard, RolesGuard)
   @Get()
-  @Estados(
-    estadosUsuario.ACTIVO
-  )
-  @Roles(
-    rolUsuario.usuarioModerador,
-    rolUsuario.usuarioAdministrador,
-  )
+  @Estados(estadosUsuario.ACTIVO)
+  @Roles(rolUsuario.usuarioModerador, rolUsuario.usuarioAdministrador)
   async listarUsuarios(): Promise<usuarioResponseDto[]> {
     return this.service.ListarUsuarios();
   }
 
   @UseGuards(AuthGuard)
   @Get('mi')
-  async obtenerMiUsuario(@Req() req: RequestConUsuario): Promise<MiUsuarioResponseDto> {
+  async obtenerMiUsuario(
+    @Req() req: RequestConUsuario,
+  ): Promise<MiUsuarioResponseDto> {
     return this.service.obtenerUsuarioPorId(req.user.id);
   }
-
 
   @UseGuards(AuthGuard)
   @Get('nombre/:nombreUsuario')
@@ -93,15 +88,11 @@ export default class UsuarioController {
   }
 
   @UseGuards(AuthGuard, StatusGuard, RolesGuard)
-  @Estados (
-    estadosUsuario.ACTIVO
-  )
-  @Roles (
-    rolUsuario.usuarioAdministrador
-  )
+  @Estados(estadosUsuario.ACTIVO)
+  @Roles(rolUsuario.usuarioAdministrador)
   @Get(':id')
   async obtenerUsuarioPorId(
-    @Param('id', new ParseUUIDPipe()) id: string
+    @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<usuarioResponseDto | null> {
     return this.service.obtenerUsuarioPorId(id);
   }
@@ -120,7 +111,7 @@ export default class UsuarioController {
   @Roles(rolUsuario.usuarioAdministrador)
   @Delete('admin/:id')
   async borrarUsuarioAdmin(
-    @Param('id', new ParseUUIDPipe() ) id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Req() req: RequestConUsuario,
   ) {
     return this.service.EliminarUsuarioAdmin(id, req.user.id);
@@ -136,12 +127,8 @@ export default class UsuarioController {
   }
 
   @UseGuards(AuthGuard, StatusGuard, RolesGuard)
-  @Estados(
-    estadosUsuario.ACTIVO
-  )
-  @Roles(
-    rolUsuario.usuarioAdministrador
-  )
+  @Estados(estadosUsuario.ACTIVO)
+  @Roles(rolUsuario.usuarioAdministrador)
   @Patch(':id/rol')
   async cambiarRolUsuario(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -161,12 +148,8 @@ export default class UsuarioController {
   }
 
   @UseGuards(AuthGuard, StatusGuard, RolesGuard)
-  @Estados(
-    estadosUsuario.ACTIVO
-  )
-  @Roles(
-    rolUsuario.usuarioModerador, rolUsuario.usuarioAdministrador
-  )
+  @Estados(estadosUsuario.ACTIVO)
+  @Roles(rolUsuario.usuarioModerador, rolUsuario.usuarioAdministrador)
   @Patch(':id/bloquearUsuario')
   async bloquearUsuario(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -175,6 +158,4 @@ export default class UsuarioController {
   ) {
     return this.service.BloquearUsuario(id, req.user.id, datos);
   }
-
-  
 }

@@ -2,7 +2,9 @@ import { IsString, IsNotEmpty, IsEmail, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export default class logearUsuarioDTO {
-  @Transform(({ value }) => typeof value === 'string' ? value.trim().toLowerCase() : value)
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toLowerCase() : value,
+  )
   @IsString()
   @IsEmail()
   @IsNotEmpty()
