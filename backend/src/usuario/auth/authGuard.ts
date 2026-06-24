@@ -29,34 +29,36 @@ export class AuthGuard implements CanActivate {
 
     const token = authHeader.replace('Bearer ', '').trim();
 
+    const secret = this.config.get<string>('JWT_SECRET');
+
+    if (!secret) {
+      throw new InternalServerErrorException('JWT no configurado en el servidor');
+    }
+
+    let decoded: { id: string; correo: string; rol: string };
+
     try {
-      const secret = this.config.get<string>('JWT_SECRET');
-
-      if (!secret) {
-        throw new InternalServerErrorException('JWT no configurado en el servidor');
-      }
-
-      const decoded = jwt.verify(token, secret) as {
+      decoded = jwt.verify(token, secret) as {
         id: string;
         correo: string;
         rol: string;
       };
-
-      const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
-
-      if (!usuario) {
-        throw new UnauthorizedException('Usuario no encontrado');
-      }
-
-      const requestWithUser = request as Request & {
-        user?: unknown;
-      };
-
-      requestWithUser.user = usuario;
-
-      return true;
     } catch {
       throw new UnauthorizedException('Token inválido');
     }
+
+    const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
+
+    if (!usuario) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+
+    const requestWithUser = request as Request & {
+      user?: unknown;
+    };
+
+    requestWithUser.user = usuario;
+
+    return true;
   }
 }
