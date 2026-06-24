@@ -8,6 +8,7 @@ import estilos from "./MenuUsuario.module.css";
 import { RolUsuario } from "@/types/RolUsuario";
 import {
   clearSession,
+  getAccessToken,
   obtenerUsuarioActualRequest,
 } from "@/lib/auth";
 
@@ -51,7 +52,9 @@ export default function MenuUsuario() {
         const datos = await obtenerUsuarioActualRequest();
 
         if (!datos) {
-          router.replace("/login");
+          if (!getAccessToken()) {
+            router.replace("/login");
+          }
           return;
         }
 
@@ -135,8 +138,8 @@ export default function MenuUsuario() {
             0,
           );
         }
-      } catch (error) {
-        console.error(error);
+      } catch {
+        // Fallo transitorio al cargar datos del menú; se reintenta en el intervalo.
       }
     };
 

@@ -9,16 +9,21 @@ export async function GET(request: Request) {
     const authHeader =
       request.headers.get("authorization");
 
-    const res = await fetch(
-      `${backendBase}/usuario/mi`,
-      {
-        headers: {
-          Authorization: authHeader ?? "",
-        },
-      }
-    );
+    const res = await fetch(`${backendBase}/usuario/mi`, {
+      headers: {
+        Authorization: authHeader ?? "",
+      },
+      cache: "no-store",
+    });
 
-    const data = await res.json();
+    const text = await res.text();
+    let data: unknown = { message: "Error al obtener el usuario." };
+
+    try {
+      data = text ? JSON.parse(text) : data;
+    } catch {
+      data = { message: text || "Respuesta inválida del backend." };
+    }
 
     return NextResponse.json(data, {
       status: res.status,

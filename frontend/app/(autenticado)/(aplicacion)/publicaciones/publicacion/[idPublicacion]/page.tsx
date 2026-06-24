@@ -5,6 +5,7 @@ import CambiarEstadoPublicacionButton from "@/components/publicaciones/CambiarEs
 import EliminarPublicacionButton from "@/components/publicaciones/EliminarPublicacionButton";
 import MarcarEntregadaButton from "@/components/publicaciones/MarcarEntregadaButton";
 import EditarPublicacionLink from "@/components/publicaciones/EditarPublicacionLink";
+import DenunciarPublicacionButton from "@/components/publicaciones/DenunciarPublicacionButton";
 import SolicitarPublicacionButton from "@/components/publicaciones/SolicitarPublicacionButton";
 import {
   getImagenesPublicacion,
@@ -141,6 +142,10 @@ export default async function PublicacionDetailPage({ params }: Props) {
               idPublicacion={idPublicacion}
               creadorId={publicacionBackend.creadorId}
               estadoPublicacion={publicacionBackend.estado}
+            />
+            <DenunciarPublicacionButton
+              idPublicacion={idPublicacion}
+              creadorId={publicacionBackend.creadorId}
             />
           </div>
         </div>

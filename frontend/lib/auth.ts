@@ -225,20 +225,25 @@ export async function obtenerUsuarioActualRequest(): Promise<UsuarioActual | nul
     return null;
   }
 
-  const res = await fetch("/api/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const res = await fetch("/api/auth/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  if (res.status === 401 || res.status === 403) {
-    clearSession();
+    if (res.status === 401 || res.status === 403) {
+      clearSession();
+      return null;
+    }
+
+    // Backend caído o error temporal: no borrar la sesión ni lanzar error.
+    if (!res.ok) {
+      return null;
+    }
+
+    return (await res.json()) as UsuarioActual;
+  } catch {
     return null;
   }
-
-  if (!res.ok) {
-    throw new Error("No se pudo obtener el usuario");
-  }
-
-  return res.json() as Promise<UsuarioActual>;
 }
