@@ -457,6 +457,130 @@ describe('UsuarioService - FULL COVERAGE', () => {
     });
 
     // =========================
+    // OBTENER USUARIO POR ID
+    // =========================
+    describe('obtenerUsuarioPorId', () => {
+        it('lanza NotFound si no existe', async () => {
+            repo.buscarPorId.mockResolvedValue(null);
+
+            await expect(
+                service.obtenerUsuarioPorId('1'),
+            ).rejects.toBeInstanceOf(NotFoundException);
+        });
+
+        it('retorna usuario si existe', async () => {
+            repo.buscarPorId.mockResolvedValue(usuarioNormal);
+
+            const res = await service.obtenerUsuarioPorId('1');
+
+            expect(res).toEqual(usuarioNormal);
+        });
+    });
+
+    // =========================
+    // GETTERS SIMPLES
+    // =========================
+    describe('Getters usuario', () => {
+        it('ObtenerUsuarioPorNombreUsuario', async () => {
+            repo.buscarPorUsername.mockResolvedValue(usuarioNormal);
+
+            const res = await service.ObtenerUsuarioPorNombreUsuario('user');
+
+            expect(res).toEqual(usuarioNormal);
+        });
+
+        it('ObtenerUsuarioPorCorreo', async () => {
+            repo.buscarPorEmailConContrasenia.mockResolvedValue(usuarioNormal);
+
+            const res = await service.ObtenerUsuarioPorCorreo('user@test.com');
+
+            expect(res).toEqual(usuarioNormal);
+        });
+    });
+
+    // =========================
+    // CAMBIAR ROL - CASO FALTANTE
+    // =========================
+    describe('CambiarRolUsuario extra', () => {
+        it('no puede asignar rol admin', async () => {
+            repo.buscarPorId
+                .mockResolvedValueOnce(usuarioNormal)
+                .mockResolvedValueOnce(admin);
+
+            await expect(
+                service.CambiarRolUsuario('1', '2', {
+                    rol: rolUsuario.usuarioAdministrador,
+                } as any),
+            ).rejects.toBeInstanceOf(BadRequestException);
+        });
+    });
+
+    // =========================
+    // REGISTRAR PUBLICACIONES MODERACIÓN
+    // =========================
+    describe('registrarPublicacionEliminadaPorModeracion', () => {
+        it('rol inválido → Forbidden', async () => {
+            repo.buscarPorId
+                .mockResolvedValueOnce(usuarioNormal)
+                .mockResolvedValueOnce(usuarioNormal); // no mod/admin
+
+            await expect(
+                service.registrarPublicacionEliminadaPorModeracion('1', '2'),
+            ).rejects.toBeInstanceOf(ForbiddenException);
+        });
+
+        it('usuario ya bloqueado → no hace nada', async () => {
+            repo.buscarPorId
+                .mockResolvedValueOnce({
+                    ...usuarioNormal,
+                    estado: estadosUsuario.BLOQUEADO,
+                })
+                .mockResolvedValueOnce(admin);
+
+            await service.registrarPublicacionEliminadaPorModeracion('1', '2');
+
+            expect(repo.actualizarUsuario).not.toHaveBeenCalled();
+        });
+
+        it('incrementa publicaciones sin bloquear', async () => {
+            repo.buscarPorId
+                .mockResolvedValueOnce({
+                    ...usuarioNormal,
+                    cantidadPublicacionesBloqueadas: 1,
+                })
+                .mockResolvedValueOnce(admin);
+
+            await service.registrarPublicacionEliminadaPorModeracion('1', '2');
+
+            expect(repo.actualizarUsuario).toHaveBeenCalledWith(
+                '1',
+                expect.objectContaining({
+                    cantidadPublicacionesBloqueadas: 2,
+                }),
+            );
+        });
+
+        it('bloquea automáticamente al llegar a 3', async () => {
+            repo.buscarPorId
+                .mockResolvedValueOnce({
+                    ...usuarioNormal,
+                    cantidadPublicacionesBloqueadas: 2,
+                })
+                .mockResolvedValueOnce(admin);
+
+            await service.registrarPublicacionEliminadaPorModeracion('1', '2');
+
+            expect(repo.actualizarUsuario).toHaveBeenCalledWith(
+                '1',
+                expect.objectContaining({
+                    estado: estadosUsuario.BLOQUEADO,
+                    razonBloqueo: expect.any(String),
+                }),
+            );
+        });
+    });
+
+    // =========================
     // LISTAR
     // =========================
     it('listar usuarios', async () => {
