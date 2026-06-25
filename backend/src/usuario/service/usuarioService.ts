@@ -20,23 +20,23 @@ import bcrypt from 'bcrypt';
 import { estadosUsuario } from '../enums/estadosUsuario';
 import { rolUsuario } from '../enums/rolUsuario';
 
+/** 
+ * * Servicio encargado de la lógica de negocio relacionada con usuarios. * 
+ * * Contiene validaciones, reglas de negocio y comunicación con el repositorio. 
+ * */
+
 @Injectable()
 export default class UsuarioService {
   constructor(private readonly repo: UsuarioRepository) {}
 
-  /**
-   * Registra un nuevo usuario en el sistema.
-   *
-   * Valida que los datos obligatorios estén completos y que el correo
-   * y el nombre de usuario no estén repetidos antes de persistir el registro.
-   */
+  /** * Crea un nuevo usuario. * * Reglas: * 
+   * - El nombre completo es obligatorio. * 
+   * - El correo debe ser único. * - El nombre de usuario debe ser único. * * 
+   * @param usuario DTO con los datos del usuario a crear * 
+   * @returns Usuario creado * 
+   * @throws BadRequestException si faltan datos obligatorios * 
+   * @throws ConflictException si el correo o username ya existen */
   public async CrearUsuario(usuario: CrearUsuarioDTO): Promise<Usuario> {
-    /*
-        validar nombre usuario unico
-        validar correo unico
-        validar formato de correo
-
-        */
 
     if (!usuario.nombreCompleto) {
       throw new BadRequestException(
@@ -58,6 +58,15 @@ export default class UsuarioService {
 
     return this.repo.crearUsuario(usuario);
   }
+
+  /** * Elimina un usuario validando su contraseña. * * 
+   * Reglas: * - El usuario debe existir. * 
+   * - La contraseña ingresada debe ser correcta. * * 
+   * @param idUsuario ID del usuario * 
+   * @param contrasenia contraseña en texto plano * 
+   * @throws NotFoundException si el usuario no existe * 
+   * @throws BadRequestException si la contraseña es incorrecta */
+
   public async EliminarUsuario(
     idUsuario: string,
     contrasenia: string,
@@ -83,6 +92,11 @@ export default class UsuarioService {
     await this.repo.eliminarUsuario(idUsuario);
   }
 
+  /** * Elimina un usuario mediante un administrador. * 
+   * * Reglas: * - El usuario a eliminar debe existir. * 
+   * - El ejecutor debe ser administrador. * * 
+   * @throws ForbiddenException si el ejecutor no es admin */
+
   public async EliminarUsuarioAdmin(
     idUsuario: string,
     idAdmin: string,
@@ -101,6 +115,14 @@ export default class UsuarioService {
 
     await this.repo.eliminarUsuario(idUsuario);
   }
+
+  /** * Actualiza datos de un usuario. * 
+   * * Reglas: * 
+   * - Debe enviarse al menos un campo. * 
+   * - Si se cambia el correo o username, deben ser únicos. * 
+   * - Se limpian y normalizan los datos (trim, lowercase). * * 
+   * @throws BadRequestException si no se envían datos * 
+   * @throws ConflictException si hay duplicados */
 
   public async ActualizarUsuario(
     idUsuario: string,
@@ -170,6 +192,9 @@ export default class UsuarioService {
     await this.repo.actualizarUsuario(idUsuario, datosFiltrados);
   }
 
+  /** * Obtiene un usuario por ID. * * 
+   * @throws NotFoundException si no existe */
+
   public async obtenerUsuarioPorId(idUsuario: string): Promise<Usuario> {
     const usuario = await this.repo.buscarPorId(idUsuario);
 
@@ -180,17 +205,27 @@ export default class UsuarioService {
     return usuario;
   }
 
+  /** * Busca un usuario por nombre de usuario. */
+
   public async ObtenerUsuarioPorNombreUsuario(
     nombreUsuario: string,
   ): Promise<Usuario | null> {
     return this.repo.buscarPorUsername(nombreUsuario);
   }
 
+  /** * Busca un usuario por correo. */
+
   public async ObtenerUsuarioPorCorreo(
     correo: string,
   ): Promise<Usuario | null> {
     return this.repo.buscarPorEmailConContrasenia(correo);
   }
+
+  /** * Cambia el rol de un usuario. * 
+   * * Reglas: * 
+   * - No puede modificarse a sí mismo. * 
+   * - No se puede modificar a otro admin. * 
+   * - No se puede asignar rol admin. */
 
   public async CambiarRolUsuario(
     idUsuario: string,
@@ -224,6 +259,11 @@ export default class UsuarioService {
 
     await this.repo.cambiarRolUsuario(idUsuario, datos.rol);
   }
+
+  /** * Registra publicaciones eliminadas por moderación. * 
+   * * Reglas: * 
+   * - Solo moderadores o admins pueden hacerlo. * 
+   * - Al llegar a 3 publicaciones eliminadas → usuario bloqueado automáticamente. */
 
   public async registrarPublicacionEliminadaPorModeracion(
     idUsuario: string,
@@ -261,6 +301,12 @@ export default class UsuarioService {
 
     await this.repo.actualizarUsuario(idUsuario, datosActualizacion);
   }
+
+  /** * Permite cambiar la contraseña de un usuario. * 
+   * * Reglas: * 
+   * - Debe existir. * 
+   * - La contraseña actual debe ser válida. * 
+   * - La nueva contraseña no puede ser igual a la anterior. */
 
   public async ResetearContraseniaUsuario(
     idUsuario: string,
@@ -305,16 +351,19 @@ export default class UsuarioService {
     await this.repo.resetearContraseniaUsuario(idUsuario, hashNueva);
   }
 
+  /** * Bloquea un usuario. * 
+   * * Reglas: * 
+   * - Solo moderadores o admins pueden bloquear. * 
+   * - Moderador → solo usuarios normales. * 
+   * - Admin → no puede bloquear a otro admin. * 
+   * - No puede bloquearse a sí mismo. * 
+   * - Debe existir una razón válida. */
+
   public async BloquearUsuario(
     idUsuario: string,
     idModerador: string,
     datos: BloquearUsuarioDTO,
   ): Promise<void> {
-    /* verfifcar que el usuario tenga rol mod o admin
-    verificar que el usuario bloqueador no sea el mismo que el bloqueado
-    validar que el usuario bloqueado no este ya bloqueado
-    validar que la razon de bloqueo no este vacia
-    */
 
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
 
@@ -367,6 +416,10 @@ export default class UsuarioService {
       datos.razonBloqueo.trim(),
     );
   }
+
+  /** * Lista todos los usuarios. 
+   * - Solo un admin o moderador en estado ACTIVO pueden hacerlo
+  */
 
   public async ListarUsuarios(): Promise<Usuario[]> {
     return this.repo.listarUsuarios();
