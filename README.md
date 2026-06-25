@@ -43,11 +43,11 @@ npm install
 
 * Seed sql de la base de datos para pruebas
     * Una vez creada la base de datos, habiendo corrido aunque sea una vez el backend para que se generen las tablas y configuradas las variables de entorno de PostgreSQL (`PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD` y `PGDATABASE`), ejecutar:
-    ```bash
+    ```
     npm run db:seed
     ```
     
-    * *Usuarios de prueba
+    * Usuarios de prueba
 
 | Usuario | Correo | Rol |
 |----------|---------|-----|
@@ -56,8 +56,7 @@ npm install
 | Moderador | `moderador@mod.com` | Moderador |
 | Administrador | `admin@admin.com` | Administrador |
 
->       * **Contraseña para todos los usuarios:** `Admin123!`
-
+    **Contraseña para todos los usuarios:** `Admin123!`
 
     * El script insertará:
         * 4 usuarios

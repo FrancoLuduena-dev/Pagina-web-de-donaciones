@@ -34,7 +34,9 @@ describe('PublicacionService - eliminar', () => {
     service = new PublicacionService(
       repository as unknown as PublicacionRepository,
       eventEmitter as unknown as EventEmitter2,
-      { registrarPublicacionEliminadaPorModeracion: jest.fn() } as unknown as UsuarioService,
+      {
+        registrarPublicacionEliminadaPorModeracion: jest.fn(),
+      } as unknown as UsuarioService,
     );
   });
 
@@ -179,6 +181,191 @@ describe('PublicacionService - eliminar', () => {
 
     expect(repository.guardar).not.toHaveBeenCalled();
     expect(eventEmitter.emit).not.toHaveBeenCalled();
+  });
+
+  function crearPublicacion(): Publicacion {
+    return Object.assign(new Publicacion(), {
+      id: '11111111-1111-4111-8111-111111111111',
+      creadorId: '33333333-3333-4333-8333-333333333333',
+      titulo: 'Publicación de prueba',
+      descripcion: 'Descripción suficientemente extensa para la publicación.',
+      categoriaId: '44444444-4444-4444-8444-444444444444',
+      localidadId: '55555555-5555-4555-8555-555555555555',
+      condicion: CondicionObjeto.USADO_BUENO,
+      imagenUrls: ['http://localhost:3000/uploads/publicaciones/imagen.jpg'],
+      estado: EstadoPublicacion.DISPONIBLE,
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+      solicitudes: [],
+    });
+  }
+});
+
+describe('PublicacionService - operaciones generales', () => {
+  let service: PublicacionService;
+  let repository: {
+    crear: jest.Mock;
+    guardar: jest.Mock;
+    buscarPorId: jest.Mock;
+    listarPorCreador: jest.Mock;
+  };
+  let eventEmitter: { emit: jest.Mock };
+  let usuarioService: { obtenerUsuarioPorId: jest.Mock };
+
+  beforeEach(() => {
+    repository = {
+      crear: jest.fn((datos: Partial<Publicacion>) =>
+        Object.assign(new Publicacion(), datos),
+      ),
+      guardar: jest.fn((publicacion: Publicacion) =>
+        Promise.resolve(publicacion),
+      ),
+      buscarPorId: jest.fn(),
+      listarPorCreador: jest.fn(),
+    };
+
+    eventEmitter = { emit: jest.fn() };
+    usuarioService = {
+      obtenerUsuarioPorId: jest.fn(),
+    };
+
+    service = new PublicacionService(
+      repository as unknown as PublicacionRepository,
+      eventEmitter as unknown as EventEmitter2,
+      usuarioService as unknown as UsuarioService,
+    );
+  });
+
+  it('crea y guarda una publicación con los datos del dto', async () => {
+    const dto = {
+      titulo: 'Mesa',
+      descripcion: 'Mesa en buen estado para donar a una familia.',
+      categoriaId: '44444444-4444-4444-8444-444444444444',
+      localidadId: '55555555-5555-4555-8555-555555555555',
+      condicion: CondicionObjeto.USADO_BUENO,
+      imagenUrls: ['http://localhost:3000/uploads/publicaciones/imagen.jpg'],
+    };
+
+    const resultado = await service.crearPublicacion(
+      dto,
+      '33333333-3333-4333-8333-333333333333',
+    );
+
+    expect(repository.crear).toHaveBeenCalledWith({
+      ...dto,
+      creadorId: '33333333-3333-4333-8333-333333333333',
+    });
+    expect(repository.guardar).toHaveBeenCalledWith(resultado);
+    expect(resultado.titulo).toBe('Mesa');
+  });
+
+  it('lista mis publicaciones delegando al repositorio', async () => {
+    const publicaciones = [crearPublicacion()];
+    repository.listarPorCreador.mockResolvedValue(publicaciones);
+
+    await expect(
+      service.listarMisPublicaciones(
+        '33333333-3333-4333-8333-333333333333',
+        EstadoPublicacion.ELIMINADA,
+      ),
+    ).resolves.toBe(publicaciones);
+
+    expect(repository.listarPorCreador).toHaveBeenCalledWith(
+      '33333333-3333-4333-8333-333333333333',
+      EstadoPublicacion.ELIMINADA,
+    );
+  });
+
+  it('busca una publicación por id y lanza NotFoundException si no existe', async () => {
+    repository.buscarPorId.mockResolvedValue(null);
+
+    await expect(
+      service.buscarPublicacionPorId('11111111-1111-4111-8111-111111111111'),
+    ).rejects.toThrow('Publicación no encontrada');
+  });
+
+  it('enriquece la publicación con datos del creador', async () => {
+    const publicacion = crearPublicacion();
+    repository.buscarPorId.mockResolvedValue(publicacion);
+    usuarioService.obtenerUsuarioPorId.mockResolvedValue({
+      nombreUsuario: 'juan',
+      nombreCompleto: 'Juan Pérez',
+    });
+
+    const resultado = await service.buscarPublicacionPorIdConCreador(
+      publicacion.id,
+    );
+
+    expect(usuarioService.obtenerUsuarioPorId).toHaveBeenCalledWith(
+      publicacion.creadorId,
+    );
+    expect(resultado.creadorNombreUsuario).toBe('juan');
+    expect(resultado.creadorNombreCompleto).toBe('Juan Pérez');
+  });
+
+  it('edita una publicación cuando el usuario es el creador', async () => {
+    const publicacion = crearPublicacion();
+    repository.buscarPorId.mockResolvedValue(publicacion);
+
+    const resultado = await service.editar(
+      publicacion.id,
+      { titulo: 'Título actualizado' },
+      publicacion.creadorId,
+    );
+
+    expect(resultado.titulo).toBe('Título actualizado');
+    expect(repository.guardar).toHaveBeenCalledWith(publicacion);
+  });
+
+  it('rechaza editar una publicación si no es el creador', async () => {
+    const publicacion = crearPublicacion();
+    repository.buscarPorId.mockResolvedValue(publicacion);
+
+    await expect(
+      service.editar(
+        publicacion.id,
+        { titulo: 'Intento inválido' },
+        '22222222-2222-4222-8222-222222222222',
+      ),
+    ).rejects.toThrow('Solo el creador puede editar la publicación');
+
+    expect(repository.guardar).not.toHaveBeenCalled();
+  });
+
+  it('notifica moderación al pausar una publicación ajena', async () => {
+    const publicacion = crearPublicacion();
+    repository.buscarPorId.mockResolvedValue(publicacion);
+
+    await service.pausar(
+      publicacion.id,
+      '22222222-2222-4222-8222-222222222222',
+      rolUsuario.usuarioModerador,
+    );
+
+    expect(publicacion.estado).toBe(EstadoPublicacion.PAUSADA);
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
+      EventoDominio.PUBLICACION_PAUSADA_MODERACION,
+      expect.objectContaining({
+        publicacionId: publicacion.id,
+        destinatarioId: publicacion.creadorId,
+      }),
+    );
+  });
+
+  it('cancela la reserva cuando el creador lo solicita', async () => {
+    const publicacion = crearPublicacion();
+    publicacion.estado = EstadoPublicacion.RESERVADA;
+    repository.buscarPorId.mockResolvedValue(publicacion);
+
+    const resultado = await service.cancelarReserva(
+      publicacion.id,
+      publicacion.creadorId,
+    );
+
+    expect(resultado.estado).toBe(EstadoPublicacion.DISPONIBLE);
+    expect(repository.guardar).toHaveBeenCalledWith(publicacion);
   });
 
   function crearPublicacion(): Publicacion {

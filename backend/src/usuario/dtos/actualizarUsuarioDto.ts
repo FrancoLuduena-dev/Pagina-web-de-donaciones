@@ -47,7 +47,7 @@ export default class actualizarUsuarioDTO {
     typeof value === 'string' ? value.trim() : value === '' ? undefined : value,
   )
   @MaxLength(20, { message: 'El teléfono no puede superar los 20 caracteres' })
-  @Matches(/^\+?[0-9\s]{8,20}$/, {
+  @Matches(/^(?:\+?[0-9\s]{8,20})?$/, {
     message: 'Formato de teléfono inválido',
   })
   @ApiProperty({ example: '+5491123456789', required: false })
