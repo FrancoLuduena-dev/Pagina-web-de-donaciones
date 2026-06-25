@@ -10,9 +10,6 @@ type BuscadorUsuarioProps = {
 
 /**
  * Formulario de búsqueda de usuario para moderadores.
- * @param nombreUsuario Nombre del usuario actual en el campo de búsqueda.
- * @param setNombreUsuario Actualiza el valor del campo de búsqueda.
- * @param onBuscar Ejecuta la acción de búsqueda.
  * @returns Formulario para filtrar usuarios por nombre.
  */
 export default function BuscadorUsuario({ nombreUsuario, setNombreUsuario, onBuscar }: BuscadorUsuarioProps) {
