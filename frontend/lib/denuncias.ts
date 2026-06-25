@@ -5,15 +5,23 @@ import { Denuncia } from "@/types/Denuncia";
  * Payload para crear una denuncia.
  */
 export type CrearDenunciaPayload = {
+  /** Identificador de la publicación a denunciar. */
   publicacionId: string;
+  /** Motivo de la denuncia. */
   motivo: MotivoDenuncia;
+  /** Comentario opcional (obligatorio cuando el motivo es `OTRO`). */
   comentario?: string;
 };
 
+/** Denuncia tal como la devuelve el backend al crearla. */
 export type DenunciaBackend = {
+  /** Identificador de la denuncia. */
   id: string;
+  /** Identificador de la publicación denunciada. */
   publicacionId: string;
+  /** Código del motivo de la denuncia. */
   motivo: string;
+  /** Estado de la denuncia. */
   estado: string;
 };
 
