@@ -159,6 +159,12 @@ export class Publicacion {
   }
 
   reactivar(): void {
+    if (this.estado !== EstadoPublicacion.PAUSADA) {
+      throw new BadRequestException(
+        'Solo se puede reactivar una publicación pausada',
+      );
+    }
+
     this.transicionarA(EstadoPublicacion.DISPONIBLE);
   }
 
@@ -180,8 +186,13 @@ export class Publicacion {
 
     this.eliminar();
   }
-
   cancelarReserva(): void {
+    if (this.estado !== EstadoPublicacion.RESERVADA) {
+      throw new BadRequestException(
+        'Solo se puede cancelar la reserva de una publicación reservada',
+      );
+    }
+
     this.transicionarA(EstadoPublicacion.DISPONIBLE);
   }
 

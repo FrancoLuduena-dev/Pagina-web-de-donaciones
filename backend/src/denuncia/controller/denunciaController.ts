@@ -10,20 +10,19 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { Request } from 'express';
-import { AuthGuard } from '../../usuario/auth/authGuard';
-import { rolUsuario } from '../../usuario/enums/rolUsuario';
 import { Roles } from '../../compartidos/decorators/decoratorRol';
 import { RolesGuard } from '../../compartidos/guards/rolesGuard';
 import { StatusGuard } from '../../compartidos/guards/statusGuard';
+import type { RequestConUsuario } from '../../compartidos/tipo/requestConUsuario';
+import { AuthGuard } from '../../usuario/auth/authGuard';
+import { rolUsuario } from '../../usuario/enums/rolUsuario';
 import { CrearDenunciaDto } from '../dtos/crearDenunciaDto';
 import { DenunciaDetalleResponseDto } from '../dtos/denunciaDetalleResponseDto';
 import { DenunciaResponseDto } from '../dtos/denunciaResponseDto';
 import { FiltroDenunciaDto } from '../dtos/filtroDenunciaDto';
+import { ResolverDenunciaDto } from '../dtos/resolverDenunciaDto';
 import { TomarDenunciaDto } from '../dtos/tomarDenunciaDto';
 import { DenunciaService } from '../service/denunciaService';
-import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
-import { ResolverDenunciaDto } from '../dtos/resolverDenunciaDto';
 
 @Controller('denuncias')
 @UseGuards(AuthGuard, StatusGuard, RolesGuard)

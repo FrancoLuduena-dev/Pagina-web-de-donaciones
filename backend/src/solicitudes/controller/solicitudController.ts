@@ -9,8 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
 import { StatusGuard } from 'src/compartidos/guards/statusGuard';
+import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
 import { AuthGuard } from 'src/usuario/auth/authGuard';
 
 import { CancelarSolicitudDto } from '../dtos/cancelarSolicitudDto';
@@ -19,12 +19,11 @@ import { RechazarSolicitudDto } from '../dtos/rechazarSolicitudDto';
 import { SolicitudResponseDto } from '../dtos/solicitudResponse';
 import { SolicitudService } from '../service/solicitudService';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, StatusGuard)
 @Controller('solicitudes')
 export class SolicitudController {
   constructor(private readonly solicitudService: SolicitudService) {}
 
-  @UseGuards(StatusGuard)
   @Post()
   crearSolicitud(
     @Body() dto: CrearSolicitudDto,
@@ -45,7 +44,6 @@ export class SolicitudController {
     return this.solicitudService.listarSolicitudesRecibidas(req.user.id);
   }
 
-  @UseGuards(StatusGuard)
   @Patch('publicacion/:publicacionId/entregar')
   finalizarEntregaPublicacion(
     @Param('publicacionId') publicacionId: string,
@@ -57,7 +55,6 @@ export class SolicitudController {
     );
   }
 
-  @UseGuards(StatusGuard)
   @Patch('publicacion/:publicacionId/cancelar-reserva')
   cancelarReservaPublicacion(
     @Param('publicacionId') publicacionId: string,
@@ -71,7 +68,6 @@ export class SolicitudController {
     );
   }
 
-  @UseGuards(StatusGuard)
   @Patch(':id/aceptar')
   aceptarSolicitud(
     @Param('id') id: string,
@@ -80,7 +76,6 @@ export class SolicitudController {
     return this.solicitudService.aceptarSolicitud(id, req.user.id);
   }
 
-  @UseGuards(StatusGuard)
   @Patch(':id/rechazar')
   rechazarSolicitud(
     @Param('id') id: string,
@@ -90,7 +85,6 @@ export class SolicitudController {
     return this.solicitudService.rechazarSolicitud(id, req.user.id, dto);
   }
 
-  @UseGuards(StatusGuard)
   @Patch(':id/finalizar')
   finalizarSolicitud(
     @Param('id') id: string,
@@ -99,7 +93,6 @@ export class SolicitudController {
     return this.solicitudService.finalizarSolicitud(id, req.user.id);
   }
 
-  @UseGuards(StatusGuard)
   @Patch(':id/cancelar')
   cancelarSolicitud(
     @Param('id') id: string,
