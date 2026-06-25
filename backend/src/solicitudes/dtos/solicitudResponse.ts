@@ -5,7 +5,7 @@ import Usuario from '../../usuario/entity/usuarioEntity';
 import { Solicitud } from '../entity/solicitudEntity';
 import { EstadoSolicitud } from '../enums/estadoSolicitud';
 
-class PublicacionSolicitudDto {
+export class PublicacionSolicitudDto {
   @ApiProperty({
     example: 'b3b8d1c2-4a5f-4f3a-9d7e-123456789abc',
     description: 'ID de la publicación',
@@ -19,7 +19,7 @@ class PublicacionSolicitudDto {
   titulo!: string;
 }
 
-class UsuarioSolicitudDto {
+export class UsuarioSolicitudDto {
   @ApiProperty({
     example: 'c1c2c3c4-1111-2222-3333-444455556666',
     description: 'ID del usuario',
