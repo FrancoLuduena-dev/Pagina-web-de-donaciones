@@ -19,11 +19,23 @@ export default function EditarUsuarioPage() {
   const [loading, setLoading] = useState(false);
 
   /**
-   * Maneja el envío del formulario.
-   *
-   * @param e Evento de envío del formulario.
-   */
+ * Página para editar la información del usuario.
+ *
+ * Permite modificar datos del perfil como correo, nombre,
+ * usuario y teléfono. Los campos vacíos no se actualizan.
+ *
+ * @returns Formulario de edición de perfil.
+ */
   async function handleSubmit(e: FormEvent) {
+    /**
+ * Maneja el envío del formulario de edición de perfil.
+ *
+ * Valida que los correos coincidan (si se ingresan),
+ * envía los datos al backend y actualiza la información del usuario.
+ * Luego redirige a la página de perfil.
+ *
+ * @param e Evento de envío del formulario.
+ */
     e.preventDefault();
 
     setError(null);
