@@ -1,3 +1,4 @@
+SET client_encoding = 'UTF8';
 \i backend/scripts/01_usuarios.sql
 \i backend/scripts/02_publicaciones.sql
 \i backend/scripts/03_solicitudes.sql
