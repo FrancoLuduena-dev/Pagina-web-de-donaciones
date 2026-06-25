@@ -13,6 +13,19 @@ type CancelarReservaButtonProps = {
   estadoPublicacion: string;
 };
 
+/**
+ * Botón para cancelar la reserva de una publicación.
+ *
+ * Solo se muestra al creador y únicamente cuando la publicación está reservada.
+ * Pide confirmación y, al confirmar, cancela la reserva (la publicación vuelve a
+ * estar disponible) y refresca la vista.
+ *
+ * @param props Propiedades del componente.
+ * @param props.idPublicacion Identificador de la publicación.
+ * @param props.creadorId Identificador del creador de la publicación.
+ * @param props.estadoPublicacion Estado actual de la publicación.
+ * @returns Botón de cancelación de reserva o `null` si no corresponde mostrarlo.
+ */
 export default function CancelarReservaButton({
   idPublicacion,
   creadorId,

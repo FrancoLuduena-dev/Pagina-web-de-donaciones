@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 const backendBase =
   process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
+/**
+ * Proxy del listado público de publicaciones hacia el backend.
+ *
+ * @returns Respuesta del backend con el feed, o 503 si no está disponible.
+ */
 export async function GET() {
   try {
     const res = await fetch(`${backendBase}/publicaciones`, {
@@ -27,6 +32,14 @@ export async function GET() {
   }
 }
 
+/**
+ * Proxy de creación de publicación hacia el backend.
+ *
+ * Valida el cuerpo y el token de autenticación antes de reenviar la petición.
+ *
+ * @param request Petición entrante con el cuerpo y la cabecera de autorización.
+ * @returns Respuesta del backend, o 400/401/503 según el caso.
+ */
 export async function POST(request: Request) {
   let body: unknown;
 

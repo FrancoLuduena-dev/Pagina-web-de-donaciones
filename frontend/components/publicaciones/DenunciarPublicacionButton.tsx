@@ -17,6 +17,19 @@ type DenunciarPublicacionButtonProps = {
   creadorId: string;
 };
 
+/**
+ * Botón y formulario para denunciar una publicación.
+ *
+ * Comprueba la sesión del usuario: si no hay sesión muestra un enlace a login,
+ * y si el usuario es el creador no se renderiza. Permite elegir un motivo y un
+ * comentario opcional (obligatorio para el motivo "OTRO"), envía la denuncia y
+ * refleja los estados de éxito o de denuncia ya existente.
+ *
+ * @param props Propiedades del componente.
+ * @param props.idPublicacion Identificador de la publicación a denunciar.
+ * @param props.creadorId Identificador del creador de la publicación.
+ * @returns Botón/formulario de denuncia, enlace a login o `null` según el caso.
+ */
 export default function DenunciarPublicacionButton({
   idPublicacion,
   creadorId,

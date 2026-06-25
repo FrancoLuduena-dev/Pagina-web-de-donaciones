@@ -13,6 +13,18 @@ type MarcarEntregadaButtonProps = {
   estadoPublicacion: string;
 };
 
+/**
+ * Botón para marcar una publicación reservada como entregada.
+ *
+ * Solo se muestra al creador y únicamente cuando la publicación está reservada.
+ * Pide confirmación y, al confirmar, marca la entrega y refresca la vista.
+ *
+ * @param props Propiedades del componente.
+ * @param props.idPublicacion Identificador de la publicación.
+ * @param props.creadorId Identificador del creador de la publicación.
+ * @param props.estadoPublicacion Estado actual de la publicación.
+ * @returns Botón de entrega o `null` si no corresponde mostrarlo.
+ */
 export default function MarcarEntregadaButton({
   idPublicacion,
   creadorId,

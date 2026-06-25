@@ -30,6 +30,17 @@ function parseUrlsTexto(texto: string): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Página para editar una publicación existente.
+ *
+ * Carga la publicación y verifica que el usuario autenticado sea el creador
+ * (de lo contrario muestra "sin permiso"); maneja también los casos de
+ * publicación no encontrada y sin sesión. Permite actualizar los datos y las
+ * imágenes (actuales, nuevas por archivo o por URL) y, al guardar, redirige al
+ * detalle.
+ *
+ * @returns Formulario de edición de publicación o estado correspondiente.
+ */
 export default function EditarPublicacionPage() {
   const params = useParams<{ idPublicacion: string }>();
   const router = useRouter();

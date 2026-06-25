@@ -18,6 +18,20 @@ type SolicitarPublicacionButtonProps = {
   estadoPublicacion: string;
 };
 
+/**
+ * Botón y formulario para solicitar una publicación disponible.
+ *
+ * Comprueba la sesión y el estado: si no hay sesión muestra un enlace a login,
+ * no se renderiza para el creador ni si la publicación no está disponible, y
+ * avisa cuando el usuario ya tiene una solicitud activa. Permite enviar un
+ * mensaje opcional al donante y, al confirmar, registra la solicitud.
+ *
+ * @param props Propiedades del componente.
+ * @param props.idPublicacion Identificador de la publicación a solicitar.
+ * @param props.creadorId Identificador del creador de la publicación.
+ * @param props.estadoPublicacion Estado actual de la publicación.
+ * @returns Botón/formulario de solicitud, enlace a login o `null` según el caso.
+ */
 export default function SolicitarPublicacionButton({
   idPublicacion,
   creadorId,

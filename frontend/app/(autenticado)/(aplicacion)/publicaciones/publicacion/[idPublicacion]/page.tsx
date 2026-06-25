@@ -31,6 +31,13 @@ type Props = {
   }>;
 };
 
+/**
+ * Genera la metadata de la página de detalle (título de la pestaña).
+ *
+ * @param props Props de la página con los parámetros de ruta.
+ * @param props.params Promesa con el `idPublicacion` de la ruta.
+ * @returns Metadata con el título de la publicación o un valor por defecto.
+ */
 export async function generateMetadata({ params }: Props) {
   const { idPublicacion } = await params;
   const publicacion = await obtenerPublicacionPorId(idPublicacion);
@@ -40,6 +47,18 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
+/**
+ * Página de detalle de una publicación.
+ *
+ * Obtiene la publicación del backend y muestra su galería, datos y acciones
+ * disponibles (solicitar, editar, cambiar estado, cancelar reserva, marcar
+ * entregada, eliminar y denunciar). Si no existe en el backend intenta usar
+ * datos de ejemplo y, si tampoco está, dispara `notFound()`.
+ *
+ * @param props Props de la página con los parámetros de ruta.
+ * @param props.params Promesa con el `idPublicacion` de la ruta.
+ * @returns Vista de detalle de la publicación.
+ */
 export default async function PublicacionDetailPage({ params }: Props) {
   const { idPublicacion } = await params;
   const publicacionBackend = await obtenerPublicacionPorId(idPublicacion);

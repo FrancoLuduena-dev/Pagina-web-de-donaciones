@@ -22,6 +22,12 @@ type UsuarioSesion = {
   rol: RolUsuario;
 };
 
+/**
+ * Indica si un rol corresponde a un moderador o administrador.
+ *
+ * @param rol Rol del usuario a evaluar.
+ * @returns `true` si el rol puede moderar publicaciones.
+ */
 function esModerador(rol: string): boolean {
   return (
     rol === RolUsuario.usuarioModerador ||
@@ -29,6 +35,20 @@ function esModerador(rol: string): boolean {
   );
 }
 
+/**
+ * Botón para pausar o reactivar una publicación.
+ *
+ * Verifica la sesión del usuario y muestra la acción adecuada según el estado
+ * de la publicación y los permisos: el creador puede pausar/reactivar la suya y
+ * un moderador puede bloquear/reactivar publicaciones ajenas. No se renderiza
+ * si el usuario no tiene permisos o si el estado no admite la acción.
+ *
+ * @param props Propiedades del componente.
+ * @param props.idPublicacion Identificador de la publicación.
+ * @param props.creadorId Identificador del creador de la publicación.
+ * @param props.estadoPublicacion Estado actual de la publicación.
+ * @returns Botón de cambio de estado o `null` si no corresponde mostrarlo.
+ */
 export default function CambiarEstadoPublicacionButton({
   idPublicacion,
   creadorId,

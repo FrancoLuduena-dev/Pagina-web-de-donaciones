@@ -28,6 +28,16 @@ function parseUrlsTexto(texto: string): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Página para crear una nueva publicación.
+ *
+ * Gestiona el formulario de alta: datos básicos, categoría, localidad,
+ * condición y hasta `MAX_IMAGENES_PUBLICACION` imágenes (subidas como archivo o
+ * por URL). Al guardar, sube las imágenes, crea la publicación y redirige a su
+ * detalle.
+ *
+ * @returns Formulario de creación de publicación.
+ */
 export default function CrearPublicacionPage() {
   const router = useRouter();
   const [form, setForm] = useState({

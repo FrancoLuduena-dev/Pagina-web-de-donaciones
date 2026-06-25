@@ -5,6 +5,15 @@ import { MAX_IMAGENES_PUBLICACION } from "@/constants/publicacionesBackend";
 const backendBase =
   process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
+/**
+ * Proxy de subida de imágenes de publicación hacia el backend.
+ *
+ * Valida el token, el formulario y la cantidad de imágenes (hasta
+ * `MAX_IMAGENES_PUBLICACION`) antes de reenviar el lote al backend.
+ *
+ * @param request Petición entrante con `FormData` y la cabecera de autorización.
+ * @returns Respuesta del backend con las URLs, o 400/401/503 según el caso.
+ */
 export async function POST(request: Request) {
   const authToken = request.headers
     .get("Authorization")

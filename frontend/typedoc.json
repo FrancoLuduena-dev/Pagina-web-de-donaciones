@@ -2,8 +2,22 @@
   "entryPoints": [
     "./app",
     "./components",
-    "./constants"
+    "./constants",
+    "./lib",
+    "./types"
   ],
   "entryPointStrategy": "expand",
-  "out": "./docs"
+  "out": "./docs",
+  "validation": {
+    "notExported": false
+  },
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/node_modules/**",
+    "**/.next/**"
+  ],
+  "skipErrorChecking": true
 }
