@@ -90,21 +90,7 @@ describe("PublicacionDetailPage", () => {
     ).toHaveAttribute("href", "/publicaciones");
   });
 
-  it("usa datos mock cuando el backend no devuelve la publicación", async () => {
-    (obtenerPublicacionPorId as jest.Mock).mockResolvedValue(null);
-
-    const ui = await PublicacionDetailPage({
-      params: Promise.resolve({ idPublicacion: "1" }),
-    });
-    render(ui);
-
-    expect(
-      screen.getByRole("heading", { name: "Ropa de invierno para familia" }),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId("gallery")).toBeInTheDocument();
-  });
-
-  it("dispara notFound si no existe en backend ni en mock", async () => {
+  it("dispara notFound cuando el backend no devuelve la publicación", async () => {
     (obtenerPublicacionPorId as jest.Mock).mockResolvedValue(null);
 
     await expect(

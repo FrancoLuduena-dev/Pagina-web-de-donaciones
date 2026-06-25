@@ -14,6 +14,7 @@ jest.mock("next/image", () => ({
 jest.mock("@/lib/publicaciones", () => ({
   crearPublicacionRequest: jest.fn(),
   subirImagenesPublicacionRequest: jest.fn(),
+  obtenerUrlsImagenInvalidas: jest.fn().mockResolvedValue([]),
 }));
 
 import {

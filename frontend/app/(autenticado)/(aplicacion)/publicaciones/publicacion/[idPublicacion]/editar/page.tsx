@@ -19,6 +19,7 @@ import {
 import {
   editarPublicacionRequest,
   obtenerPublicacionRequest,
+  obtenerUrlsImagenInvalidas,
   subirImagenesPublicacionRequest,
 } from "@/lib/publicaciones";
 import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
@@ -177,6 +178,16 @@ export default function EditarPublicacionPage() {
 
     try {
       const urlsManuales = parseUrlsTexto(urlsImagen);
+
+      if (urlsManuales.length > 0) {
+        const urlsInvalidas = await obtenerUrlsImagenInvalidas(urlsManuales);
+        if (urlsInvalidas.length > 0) {
+          throw new Error(
+            `Estas URLs no son imágenes válidas: ${urlsInvalidas.join(", ")}`,
+          );
+        }
+      }
+
       const urlsSubidas =
         archivosNuevos.length > 0
           ? await subirImagenesPublicacionRequest(archivosNuevos)

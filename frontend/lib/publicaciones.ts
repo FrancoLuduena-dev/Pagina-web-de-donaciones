@@ -78,6 +78,60 @@ export async function subirImagenPublicacionRequest(file: File): Promise<string>
 }
 
 /**
+ * Verifica que una URL apunte a una imagen que pueda cargarse.
+ *
+ * Intenta cargar la URL como imagen en el navegador: resuelve `true` solo si la
+ * imagen carga correctamente. Rechaza URLs con formato inválido, recursos que
+ * no son imágenes o enlaces rotos, y aplica un timeout para no quedar colgado.
+ *
+ * @param url URL a validar.
+ * @param timeoutMs Tiempo máximo de espera en milisegundos (por defecto 10000).
+ * @returns Promesa que resuelve `true` si la URL es una imagen válida.
+ */
+export function validarUrlEsImagen(url: string, timeoutMs = 10000): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!/^https?:\/\/\S+$/i.test(url.trim())) {
+      resolve(false);
+      return;
+    }
+
+    const img = new Image();
+    const timer = setTimeout(() => {
+      img.onload = null;
+      img.onerror = null;
+      img.src = "";
+      resolve(false);
+    }, timeoutMs);
+
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(img.naturalWidth > 0);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      resolve(false);
+    };
+    img.src = url;
+  });
+}
+
+/**
+ * Devuelve las URLs que no son imágenes válidas dentro de una lista.
+ *
+ * Valida todas las URLs en paralelo con {@link validarUrlEsImagen}.
+ *
+ * @param urls Lista de URLs a validar.
+ * @returns URLs que no pudieron cargarse como imagen.
+ */
+export async function obtenerUrlsImagenInvalidas(urls: string[]): Promise<string[]> {
+  const resultados = await Promise.all(
+    urls.map(async (url) => ({ url, esValida: await validarUrlEsImagen(url) })),
+  );
+
+  return resultados.filter(({ esValida }) => !esValida).map(({ url }) => url);
+}
+
+/**
  * Crea una publicación en el backend.
  *
  * @param payload Datos de la publicación, incluida la condición del objeto.

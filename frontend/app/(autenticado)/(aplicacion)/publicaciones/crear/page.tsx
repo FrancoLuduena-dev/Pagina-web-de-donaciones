@@ -17,6 +17,7 @@ import {
 } from "@/constants/localidadesVicenteLopez";
 import {
   crearPublicacionRequest,
+  obtenerUrlsImagenInvalidas,
   subirImagenesPublicacionRequest,
 } from "@/lib/publicaciones";
 import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
@@ -87,6 +88,16 @@ export default function CrearPublicacionPage() {
 
     try {
       const urlsManuales = parseUrlsTexto(form.urlsImagen);
+
+      if (urlsManuales.length > 0) {
+        const urlsInvalidas = await obtenerUrlsImagenInvalidas(urlsManuales);
+        if (urlsInvalidas.length > 0) {
+          throw new Error(
+            `Estas URLs no son imágenes válidas: ${urlsInvalidas.join(", ")}`,
+          );
+        }
+      }
+
       const urlsSubidas =
         archivosImagen.length > 0
           ? await subirImagenesPublicacionRequest(archivosImagen)

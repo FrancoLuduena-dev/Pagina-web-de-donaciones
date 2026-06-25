@@ -18,6 +18,7 @@ jest.mock("@/lib/publicaciones", () => ({
   obtenerPublicacionRequest: jest.fn(),
   editarPublicacionRequest: jest.fn(),
   subirImagenesPublicacionRequest: jest.fn(),
+  obtenerUrlsImagenInvalidas: jest.fn().mockResolvedValue([]),
 }));
 
 import {

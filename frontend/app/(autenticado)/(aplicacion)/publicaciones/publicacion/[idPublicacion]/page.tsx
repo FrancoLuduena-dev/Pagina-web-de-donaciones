@@ -15,13 +15,6 @@ import {
   zonaRetiroDesdeLocalidadId,
 } from "@/constants/publicacionesBackend";
 import { obtenerPublicacionPorId } from "@/lib/publicaciones";
-import { publicacionesDestacadas } from "@/lib/mockPublicaciones";
-import {
-  labelCategoria,
-  labelEstadoDonacion,
-  labelEstadoPublicacion,
-} from "@/lib/publicacionLabels";
-import type { PublicacionResumen } from "@/types/PublicacionResumen";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 
@@ -52,8 +45,8 @@ export async function generateMetadata({ params }: Props) {
  *
  * Obtiene la publicación del backend y muestra su galería, datos y acciones
  * disponibles (solicitar, editar, cambiar estado, cancelar reserva, marcar
- * entregada, eliminar y denunciar). Si no existe en el backend intenta usar
- * datos de ejemplo y, si tampoco está, dispara `notFound()`.
+ * entregada, eliminar y denunciar). Si no existe en el backend, dispara
+ * `notFound()`.
  *
  * @param props Props de la página con los parámetros de ruta.
  * @param props.params Promesa con el `idPublicacion` de la ruta.
@@ -172,82 +165,5 @@ export default async function PublicacionDetailPage({ params }: Props) {
     );
   }
 
-  const publicacionMock = publicacionesDestacadas.find(
-    (item) => item.idPublicacion === idPublicacion,
-  );
-
-  if (!publicacionMock) {
-    notFound();
-  }
-
-  const {
-    tituloPublicacion,
-    descripcionPublicacion,
-    categoria,
-    zonaRetiro,
-    estadoPublicacion,
-    estadoDonacion,
-  } = publicacionMock as PublicacionResumen;
-
-  const foto = (publicacionMock as PublicacionResumen & { urlFoto?: string }).urlFoto;
-  const fotos =
-    (publicacionMock as PublicacionResumen & { urlFotos?: string[] }).urlFotos ??
-    (foto ? [foto] : []);
-
-  return (
-    <main className={styles.main}>
-      <div className={styles.container}>
-        <section className={styles.header}>
-          <div className={styles.imageWrapper}>
-            {fotos.length ? (
-              <Gallery images={fotos} />
-            ) : (
-              <div className={styles.imagePlaceholder} aria-hidden>
-                <span>{labelCategoria(categoria).charAt(0)}</span>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <p className={styles.detailLabel}>Detalle de publicación</p>
-            <h1 className={styles.title}>{tituloPublicacion}</h1>
-            <p className={styles.description}>{descripcionPublicacion}</p>
-          </div>
-
-          <span className={styles.statusBadge}>
-            {labelEstadoPublicacion(estadoPublicacion)}
-          </span>
-        </section>
-
-        <section className={styles.details}>
-          <div className={styles.detailRow}>
-            <article className={styles.detailBlock}>
-              <p className={styles.detailLabel}>Categoría</p>
-              <p className={styles.detailValue}>{labelCategoria(categoria)}</p>
-            </article>
-
-            <article className={styles.detailBlock}>
-              <p className={styles.detailLabel}>Zona de retiro</p>
-              <p className={styles.detailValue}>{zonaRetiro}</p>
-            </article>
-          </div>
-
-          <div className={styles.detailRow}>
-            <article className={styles.detailBlock}>
-              <p className={styles.detailLabel}>Estado de donación</p>
-              <p className={styles.detailValue}>
-                {labelEstadoDonacion(estadoDonacion)}
-              </p>
-            </article>
-          </div>
-        </section>
-
-        <div className={styles.actions}>
-          <Link href="/publicaciones" className={styles.backLink}>
-            ← Volver a publicaciones
-          </Link>
-        </div>
-      </div>
-    </main>
-  );
+  notFound();
 }
