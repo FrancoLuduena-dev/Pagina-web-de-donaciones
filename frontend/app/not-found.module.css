@@ -1,0 +1,77 @@
+.main {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.code {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  color: #2563eb;
+}
+
+.titulo {
+  margin: 0.75rem 0 0.5rem;
+  font-size: 1.5rem;
+  color: #111827;
+}
+
+.descripcion {
+  margin: 0 0 1.75rem;
+  color: #4b5563;
+}
+
+.acciones {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.botonVolver {
+  border: none;
+  cursor: pointer;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+.botonVolver:hover {
+  background: #1d4ed8;
+}
+
+.linkInicio {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 1.2rem;
+  border-radius: 9999px;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+.linkInicio:hover {
+  background: #f3f4f6;
+}
