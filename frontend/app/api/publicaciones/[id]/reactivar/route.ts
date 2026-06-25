@@ -7,6 +7,15 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+/**
+ * Proxy para reactivar una publicación hacia el backend.
+ *
+ * Valida el token antes de reenviar la petición.
+ *
+ * @param request Petición entrante con la cabecera de autorización.
+ * @param context Contexto de ruta con el `id` de la publicación.
+ * @returns Respuesta del backend, o 401/503 según el caso.
+ */
 export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
 

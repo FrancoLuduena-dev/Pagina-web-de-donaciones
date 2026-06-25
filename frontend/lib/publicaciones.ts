@@ -8,6 +8,12 @@ import { MAX_IMAGENES_PUBLICACION } from "@/constants/publicacionesBackend";
 
 export type { CrearPublicacionPayload, EditarPublicacionPayload, PublicacionBackend };
 
+/**
+ * Obtiene el token de acceso desde `localStorage`.
+ *
+ * @returns Token de acceso del usuario autenticado.
+ * @throws Error si no hay un token almacenado.
+ */
 function getToken(): string {
   const token = localStorage.getItem("access_token");
   if (!token) {
@@ -16,6 +22,13 @@ function getToken(): string {
   return token;
 }
 
+/**
+ * Sube un lote de imágenes de publicación al backend.
+ *
+ * @param files Archivos de imagen a subir (hasta `MAX_IMAGENES_PUBLICACION`).
+ * @returns URLs públicas de las imágenes subidas.
+ * @throws Error si se supera el máximo de imágenes o si falla la subida.
+ */
 export async function subirImagenesPublicacionRequest(
   files: File[],
 ): Promise<string[]> {
@@ -53,11 +66,24 @@ export async function subirImagenesPublicacionRequest(
   return data.imagenUrls;
 }
 
+/**
+ * Sube una única imagen de publicación.
+ *
+ * @param file Archivo de imagen a subir.
+ * @returns URL pública de la imagen subida.
+ */
 export async function subirImagenPublicacionRequest(file: File): Promise<string> {
   const urls = await subirImagenesPublicacionRequest([file]);
   return urls[0];
 }
 
+/**
+ * Crea una publicación en el backend.
+ *
+ * @param payload Datos de la publicación, incluida la condición del objeto.
+ * @returns Publicación creada tal como la devuelve el backend.
+ * @throws Error si la respuesta es inválida o la creación falla.
+ */
 export async function crearPublicacionRequest(
   payload: CrearPublicacionPayload & { condicion: CondicionObjeto },
 ): Promise<PublicacionBackend> {
@@ -87,6 +113,13 @@ export async function crearPublicacionRequest(
   return data;
 }
 
+/**
+ * Obtiene una publicación por su ID a través de la API interna.
+ *
+ * @param id Identificador de la publicación.
+ * @returns Publicación encontrada.
+ * @throws Error con prefijo `404:` si no existe, u otro error si falla.
+ */
 export async function obtenerPublicacionRequest(
   id: string,
 ): Promise<PublicacionBackend> {
@@ -113,6 +146,14 @@ export async function obtenerPublicacionRequest(
   return data;
 }
 
+/**
+ * Edita una publicación existente.
+ *
+ * @param id Identificador de la publicación a editar.
+ * @param payload Datos a actualizar de la publicación.
+ * @returns Publicación actualizada.
+ * @throws Error si la respuesta es inválida o la edición falla.
+ */
 export async function editarPublicacionRequest(
   id: string,
   payload: EditarPublicacionPayload,
@@ -143,6 +184,13 @@ export async function editarPublicacionRequest(
   return data;
 }
 
+/**
+ * Pausa una publicación.
+ *
+ * @param id Identificador de la publicación a pausar.
+ * @returns Publicación con su estado actualizado.
+ * @throws Error si la respuesta es inválida o la operación falla.
+ */
 export async function pausarPublicacionRequest(id: string): Promise<PublicacionBackend> {
   const res = await fetch(`/api/publicaciones/${id}/pausar`, {
     method: "PATCH",
@@ -166,6 +214,13 @@ export async function pausarPublicacionRequest(id: string): Promise<PublicacionB
   return data;
 }
 
+/**
+ * Reactiva una publicación previamente pausada.
+ *
+ * @param id Identificador de la publicación a reactivar.
+ * @returns Publicación con su estado actualizado.
+ * @throws Error si la respuesta es inválida o la operación falla.
+ */
 export async function reactivarPublicacionRequest(
   id: string,
 ): Promise<PublicacionBackend> {
@@ -191,6 +246,12 @@ export async function reactivarPublicacionRequest(
   return data;
 }
 
+/**
+ * Elimina una publicación.
+ *
+ * @param id Identificador de la publicación a eliminar.
+ * @throws Error si la operación falla.
+ */
 export async function eliminarPublicacionRequest(id: string): Promise<void> {
   const res = await fetch(`/api/publicaciones/${id}`, {
     method: "DELETE",
@@ -218,6 +279,13 @@ export async function eliminarPublicacionRequest(id: string): Promise<void> {
 const backendBase =
   process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
+/**
+ * Obtiene una publicación directamente del backend (uso en Server Components).
+ *
+ * @param id Identificador de la publicación.
+ * @returns Publicación encontrada, o `null` si no existe (404).
+ * @throws Error si la respuesta no es exitosa por otro motivo.
+ */
 export async function obtenerPublicacionPorId(
   id: string,
 ): Promise<PublicacionBackend | null> {
@@ -236,6 +304,19 @@ export async function obtenerPublicacionPorId(
   return res.json();
 }
 
+/**
+ * Lista publicaciones del backend aplicando filtros opcionales.
+ *
+ * Pensada para Server Components; construye la query string con los filtros
+ * provistos y consulta el feed público.
+ *
+ * @param categoriaId Filtro opcional por UUID de categoría.
+ * @param condicion Filtro opcional por condición del objeto.
+ * @param estado Filtro opcional por estado de la publicación.
+ * @param q Texto de búsqueda opcional sobre título y descripción.
+ * @returns Publicaciones que cumplen con los filtros.
+ * @throws Error si la respuesta no es exitosa.
+ */
 export async function listarPublicacionesDesdeBackend(
   categoriaId?: string,
   condicion?: string,
@@ -275,6 +356,13 @@ export async function listarPublicacionesDesdeBackend(
   return res.json();
 }
 
+/**
+ * Lista las publicaciones del usuario autenticado.
+ *
+ * @param estado Filtro opcional por estado de la publicación.
+ * @returns Publicaciones del usuario que coinciden con el filtro.
+ * @throws Error si la respuesta es inválida o la consulta falla.
+ */
 export async function listarMisPublicacionesRequest(
   estado?: string,
 ): Promise<PublicacionBackend[]> {
@@ -301,6 +389,12 @@ export async function listarMisPublicacionesRequest(
   return data as PublicacionBackend[];
 }
 
+/**
+ * Lista todas las publicaciones a través de la API interna.
+ *
+ * @returns Listado de publicaciones.
+ * @throws Error si la respuesta es inválida o la consulta falla.
+ */
 export async function listarPublicacionesRequest(): Promise<PublicacionBackend[]> {
   const res = await fetch("/api/publicaciones");
 

@@ -10,6 +10,20 @@ type EditarPublicacionLinkProps = {
   className?: string;
 };
 
+/**
+ * Enlace para editar una publicación, visible solo para su creador.
+ *
+ * Verifica contra `/api/auth/me` que el usuario autenticado sea el creador y
+ * que el estado de la publicación permita editarla (disponible o pausada). Si
+ * no se cumplen ambas condiciones no se renderiza nada.
+ *
+ * @param props Propiedades del componente.
+ * @param props.idPublicacion Identificador de la publicación.
+ * @param props.creadorId Identificador del creador de la publicación.
+ * @param props.estadoPublicacion Estado actual de la publicación.
+ * @param props.className Clase CSS opcional para el enlace.
+ * @returns Enlace de edición o `null` si el usuario no puede editar.
+ */
 export default function EditarPublicacionLink({
   idPublicacion,
   creadorId,

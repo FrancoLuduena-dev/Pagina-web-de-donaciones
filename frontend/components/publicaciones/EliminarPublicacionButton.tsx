@@ -14,6 +14,20 @@ type EliminarPublicacionButtonProps = {
   estadoPublicacion: string;
 };
 
+/**
+ * Botón para eliminar una publicación (por su creador o por moderación).
+ *
+ * Verifica la sesión para determinar si el usuario es el creador o un
+ * moderador. El creador puede eliminar si el estado lo permite; el moderador
+ * puede eliminar por moderación. Pide confirmación y, al eliminar, redirige al
+ * listado de publicaciones.
+ *
+ * @param props Propiedades del componente.
+ * @param props.idPublicacion Identificador de la publicación.
+ * @param props.creadorId Identificador del creador de la publicación.
+ * @param props.estadoPublicacion Estado actual de la publicación.
+ * @returns Botón de eliminación o `null` si el usuario no puede eliminar.
+ */
 export default function EliminarPublicacionButton({
   idPublicacion,
   creadorId,

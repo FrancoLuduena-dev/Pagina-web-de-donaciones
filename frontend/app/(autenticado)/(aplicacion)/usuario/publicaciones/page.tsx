@@ -21,6 +21,16 @@ const FILTROS = [
   { label: "Eliminadas", value: "ELIMINADA" },
 ] as const;
 
+/**
+ * Página de historial de publicaciones del usuario.
+ *
+ * Carga las publicaciones propias del usuario autenticado y permite filtrarlas
+ * por estado (todas, disponibles, pausadas, reservadas, entregadas y
+ * eliminadas). Si no hay token redirige a login, y muestra estados de carga,
+ * error y vacío según corresponda.
+ *
+ * @returns Vista del historial de publicaciones del usuario.
+ */
 export default function MisPublicacionesPage() {
   const router = useRouter();
   const [publicaciones, setPublicaciones] = useState<PublicacionResumen[]>([]);

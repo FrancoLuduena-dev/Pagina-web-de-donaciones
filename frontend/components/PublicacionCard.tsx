@@ -17,6 +17,18 @@ type PublicacionCardProps = {
   href?: string | null;
 };
 
+/**
+ * Tarjeta resumen de una publicación para los listados.
+ *
+ * Muestra imagen (o un placeholder con la inicial de la categoría), título,
+ * descripción, categoría, zona de retiro y estado. Por defecto enlaza al
+ * detalle de la publicación; si `href` es `null` se oculta el enlace.
+ *
+ * @param props Propiedades del componente.
+ * @param props.publicacion Datos resumidos de la publicación a mostrar.
+ * @param props.href Enlace personalizado, o `null` para ocultarlo.
+ * @returns Tarjeta de publicación lista para renderizar en un listado.
+ */
 export default function PublicacionCard({
   publicacion,
   href,
