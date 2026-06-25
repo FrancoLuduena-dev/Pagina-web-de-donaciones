@@ -1,24 +1,26 @@
 import { BadRequestException } from '@nestjs/common';
-import { FindManyOptions, FindOneOptions, IsNull, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  FindOneOptions,
+  ILike,
+  IsNull,
+  Repository,
+} from 'typeorm';
 
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
+import { Publicacion } from '../entity/publicacionEntity';
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { Publicacion } from '../entity/publicacionEntity';
 import { PublicacionRepository } from './publicacionRepository';
 
 type RepositoryMock = {
-  create: jest.MockedFunction<
-    (publicacion: Partial<Publicacion>) => Publicacion
+  create: jest.Mock<Publicacion, [Partial<Publicacion>]>;
+  save: jest.Mock<Promise<Publicacion>, [Publicacion]>;
+  findOne: jest.Mock<
+    Promise<Publicacion | null>,
+    [FindOneOptions<Publicacion>]
   >;
-  save: jest.MockedFunction<
-    (publicacion: Publicacion) => Promise<Publicacion>
-  >;
-  findOne: jest.MockedFunction<
-    (options: FindOneOptions<Publicacion>) => Promise<Publicacion | null>
-  >;
-  find: jest.MockedFunction<
-    (options: FindManyOptions<Publicacion>) => Promise<Publicacion[]>
-  >;
+  find: jest.Mock<Promise<Publicacion[]>, [FindManyOptions<Publicacion>]>;
 };
 
 describe('PublicacionRepository', () => {
@@ -26,136 +28,378 @@ describe('PublicacionRepository', () => {
   let repository: RepositoryMock;
 
   beforeEach(() => {
-    repository = {
-      create: jest.fn(
-        (publicacion: Partial<Publicacion>): Publicacion =>
-          Object.assign(new Publicacion(), publicacion),
-      ),
-      save: jest.fn(
-        (publicacion: Publicacion): Promise<Publicacion> =>
-          Promise.resolve(publicacion),
-      ),
-      findOne: jest.fn(),
-      find: jest.fn(),
-    };
+    repository = crearRepositoryMock();
 
     publicacionRepository = new PublicacionRepository(
       repository as unknown as Repository<Publicacion>,
     );
   });
 
-  it('crea una instancia de Publicacion sin guardarla en base', () => {
-    const datos: Partial<Publicacion> = {
-      titulo: 'Silla',
-      creadorId: '11111111-1111-4111-8111-111111111111',
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe('crear', () => {
+    it('crea una instancia de Publicacion usando los datos recibidos sin guardarla', () => {
+      const datos: Partial<Publicacion> = {
+        creadorId: 'usuario-1',
+        titulo: 'Mesa de madera',
+        descripcion: 'Mesa en buen estado',
+        categoriaId: 'categoria-1',
+        localidadId: 'localidad-1',
+        condicion: CondicionObjeto.USADO_BUENO,
+        imagenUrls: ['http://localhost:3000/uploads/publicaciones/mesa.png'],
+      };
+
+      const resultado = publicacionRepository.crear(datos);
+
+      expect(repository.create).toHaveBeenCalledTimes(1);
+      expect(repository.create).toHaveBeenCalledWith(datos);
+      expect(repository.save).not.toHaveBeenCalled();
+      expect(resultado).toBeInstanceOf(Publicacion);
+      expect(resultado).toMatchObject(datos);
+    });
+  });
+
+  describe('guardar', () => {
+    it('guarda y devuelve la publicación persistida', async () => {
+      const publicacion = crearPublicacion({ id: 'publicacion-1' });
+
+      repository.save.mockResolvedValue(publicacion);
+
+      await expect(publicacionRepository.guardar(publicacion)).resolves.toBe(
+        publicacion,
+      );
+
+      expect(repository.save).toHaveBeenCalledTimes(1);
+      expect(repository.save).toHaveBeenCalledWith(publicacion);
+    });
+
+    it('propaga el error si TypeORM falla al guardar', async () => {
+      const publicacion = crearPublicacion();
+
+      repository.save.mockRejectedValue(new Error('Error al guardar'));
+
+      await expect(publicacionRepository.guardar(publicacion)).rejects.toThrow(
+        'Error al guardar',
+      );
+
+      expect(repository.save).toHaveBeenCalledWith(publicacion);
+    });
+  });
+
+  describe('buscarPorId', () => {
+    it('busca por id excluyendo publicaciones eliminadas lógicamente', async () => {
+      const publicacion = crearPublicacion({
+        id: 'publicacion-1',
+        deletedAt: undefined,
+      });
+
+      repository.findOne.mockResolvedValue(publicacion);
+
+      await expect(
+        publicacionRepository.buscarPorId('publicacion-1'),
+      ).resolves.toBe(publicacion);
+
+      expect(repository.findOne).toHaveBeenCalledTimes(1);
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: 'publicacion-1',
+          deletedAt: IsNull(),
+        },
+      });
+    });
+
+    it('devuelve null cuando no existe una publicación no eliminada con ese id', async () => {
+      repository.findOne.mockResolvedValue(null);
+
+      await expect(
+        publicacionRepository.buscarPorId('publicacion-inexistente'),
+      ).resolves.toBeNull();
+
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: {
+          id: 'publicacion-inexistente',
+          deletedAt: IsNull(),
+        },
+      });
+    });
+
+    it('propaga el error si TypeORM falla al buscar por id', async () => {
+      repository.findOne.mockRejectedValue(new Error('Error al buscar'));
+
+      await expect(
+        publicacionRepository.buscarPorId('publicacion-1'),
+      ).rejects.toThrow('Error al buscar');
+
+      expect(repository.findOne).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('listarPublico', () => {
+    it('lista publicaciones disponibles por defecto, excluyendo eliminadas y ordenando por fecha descendente', async () => {
+      const publicaciones = [crearPublicacion()];
+
+      repository.find.mockResolvedValue(publicaciones);
+
+      await expect(publicacionRepository.listarPublico({})).resolves.toBe(
+        publicaciones,
+      );
+
+      expect(repository.find).toHaveBeenCalledTimes(1);
+      expect(repository.find).toHaveBeenCalledWith({
+        where: {
+          estado: EstadoPublicacion.DISPONIBLE,
+          deletedAt: IsNull(),
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
+
+    it('permite filtrar por estado no eliminado', async () => {
+      repository.find.mockResolvedValue([]);
+
+      await publicacionRepository.listarPublico({
+        estado: EstadoPublicacion.PAUSADA,
+      });
+
+      expect(repository.find).toHaveBeenCalledWith({
+        where: {
+          estado: EstadoPublicacion.PAUSADA,
+          deletedAt: IsNull(),
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
+
+    it('rechaza listar publicaciones eliminadas en el listado público', () => {
+      expect(() =>
+        publicacionRepository.listarPublico({
+          estado: EstadoPublicacion.ELIMINADA,
+        }),
+      ).toThrow(BadRequestException);
+
+      expect(() =>
+        publicacionRepository.listarPublico({
+          estado: EstadoPublicacion.ELIMINADA,
+        }),
+      ).toThrow(
+        'Las publicaciones eliminadas no se muestran en el listado público',
+      );
+
+      expect(repository.find).not.toHaveBeenCalled();
+    });
+
+    it('aplica filtros de categoría, localidad y condición', async () => {
+      repository.find.mockResolvedValue([]);
+
+      const filtros: FiltrosPublicacionDto = {
+        categoriaId: 'categoria-1',
+        localidadId: 'localidad-1',
+        condicion: CondicionObjeto.USADO_REGULAR,
+      };
+
+      await publicacionRepository.listarPublico(filtros);
+
+      expect(repository.find).toHaveBeenCalledWith({
+        where: {
+          estado: EstadoPublicacion.DISPONIBLE,
+          deletedAt: IsNull(),
+          categoriaId: 'categoria-1',
+          localidadId: 'localidad-1',
+          condicion: CondicionObjeto.USADO_REGULAR,
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
+
+    it('ignora q cuando solo contiene espacios', async () => {
+      repository.find.mockResolvedValue([]);
+
+      await publicacionRepository.listarPublico({
+        q: '     ',
+        categoriaId: 'categoria-1',
+      });
+
+      expect(repository.find).toHaveBeenCalledTimes(1);
+      expect(repository.find).toHaveBeenCalledWith({
+        where: {
+          estado: EstadoPublicacion.DISPONIBLE,
+          deletedAt: IsNull(),
+          categoriaId: 'categoria-1',
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
+
+    it('busca texto por título y descripción manteniendo filtros base', async () => {
+      repository.find.mockResolvedValue([]);
+
+      await publicacionRepository.listarPublico({
+        q: '  mesa  ',
+        categoriaId: 'categoria-1',
+        localidadId: 'localidad-1',
+        condicion: CondicionObjeto.USADO_BUENO,
+        estado: EstadoPublicacion.PAUSADA,
+      });
+
+      expect(repository.find).toHaveBeenCalledTimes(1);
+      expect(repository.find).toHaveBeenCalledWith({
+        where: [
+          {
+            estado: EstadoPublicacion.PAUSADA,
+            deletedAt: IsNull(),
+            categoriaId: 'categoria-1',
+            localidadId: 'localidad-1',
+            condicion: CondicionObjeto.USADO_BUENO,
+            titulo: ILike('%mesa%'),
+          },
+          {
+            estado: EstadoPublicacion.PAUSADA,
+            deletedAt: IsNull(),
+            categoriaId: 'categoria-1',
+            localidadId: 'localidad-1',
+            condicion: CondicionObjeto.USADO_BUENO,
+            descripcion: ILike('%mesa%'),
+          },
+        ],
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
+
+    it('propaga errores de TypeORM al listar público', async () => {
+      repository.find.mockRejectedValue(new Error('Error al listar'));
+
+      await expect(publicacionRepository.listarPublico({})).rejects.toThrow(
+        'Error al listar',
+      );
+
+      expect(repository.find).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('listarPorCreador', () => {
+    it('lista publicaciones de un creador sin filtrar por estado cuando no se recibe estado', async () => {
+      const publicaciones = [
+        crearPublicacion({
+          creadorId: 'usuario-1',
+        }),
+      ];
+
+      repository.find.mockResolvedValue(publicaciones);
+
+      await expect(
+        publicacionRepository.listarPorCreador('usuario-1'),
+      ).resolves.toBe(publicaciones);
+
+      expect(repository.find).toHaveBeenCalledTimes(1);
+      expect(repository.find).toHaveBeenCalledWith({
+        where: {
+          creadorId: 'usuario-1',
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
+
+    it('lista publicaciones de un creador filtrando por estado', async () => {
+      repository.find.mockResolvedValue([]);
+
+      await publicacionRepository.listarPorCreador(
+        'usuario-1',
+        EstadoPublicacion.PAUSADA,
+      );
+
+      expect(repository.find).toHaveBeenCalledWith({
+        where: {
+          creadorId: 'usuario-1',
+          estado: EstadoPublicacion.PAUSADA,
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
+
+    it('permite listar publicaciones eliminadas del propio creador si se pide ese estado explícitamente', async () => {
+      repository.find.mockResolvedValue([]);
+
+      await publicacionRepository.listarPorCreador(
+        'usuario-1',
+        EstadoPublicacion.ELIMINADA,
+      );
+
+      expect(repository.find).toHaveBeenCalledWith({
+        where: {
+          creadorId: 'usuario-1',
+          estado: EstadoPublicacion.ELIMINADA,
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
+
+    it('propaga errores de TypeORM al listar por creador', async () => {
+      repository.find.mockRejectedValue(new Error('Error al listar creador'));
+
+      await expect(
+        publicacionRepository.listarPorCreador('usuario-1'),
+      ).rejects.toThrow('Error al listar creador');
+
+      expect(repository.find).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  function crearRepositoryMock(): RepositoryMock {
+    return {
+      create: jest.fn<Publicacion, [Partial<Publicacion>]>(
+        (datos: Partial<Publicacion>): Publicacion =>
+          Object.assign(new Publicacion(), datos),
+      ),
+
+      save: jest.fn<Promise<Publicacion>, [Publicacion]>(
+        (publicacion: Publicacion): Promise<Publicacion> =>
+          Promise.resolve(publicacion),
+      ),
+
+      findOne: jest.fn<
+        Promise<Publicacion | null>,
+        [FindOneOptions<Publicacion>]
+      >(),
+
+      find: jest.fn<Promise<Publicacion[]>, [FindManyOptions<Publicacion>]>(),
     };
+  }
 
-    const resultado = publicacionRepository.crear(datos);
-
-    expect(repository.create).toHaveBeenCalledWith(datos);
-    expect(repository.save).not.toHaveBeenCalled();
-    expect(resultado).toBeInstanceOf(Publicacion);
-  });
-
-  it('busca por id excluyendo publicaciones con deletedAt', async () => {
-    repository.findOne.mockResolvedValue(null);
-
-    await publicacionRepository.buscarPorId(
-      '11111111-1111-4111-8111-111111111111',
-    );
-
-    expect(repository.findOne).toHaveBeenCalledWith({
-      where: {
-        id: '11111111-1111-4111-8111-111111111111',
-        deletedAt: IsNull(),
-      },
+  function crearPublicacion(datos?: Partial<Publicacion>): Publicacion {
+    return Object.assign(new Publicacion(), {
+      id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      creadorId: 'usuario-1',
+      titulo: 'Mesa de madera',
+      descripcion: 'Mesa de madera en buen estado para donar.',
+      categoriaId: 'categoria-1',
+      localidadId: 'localidad-1',
+      condicion: CondicionObjeto.USADO_BUENO,
+      imagenUrls: ['http://localhost:3000/uploads/publicaciones/mesa.webp'],
+      estado: EstadoPublicacion.DISPONIBLE,
+      version: 1,
+      createdAt: new Date('2026-06-24T09:00:00.000Z'),
+      updatedAt: new Date('2026-06-24T09:00:00.000Z'),
+      deletedAt: undefined,
+      solicitudes: [],
+      ...datos,
     });
-  });
-
-  it('rechaza listar publicaciones eliminadas en el feed público', () => {
-    expect(() =>
-      publicacionRepository.listarPublico({
-        estado: EstadoPublicacion.ELIMINADA,
-      }),
-    ).toThrow(BadRequestException);
-
-    expect(repository.find).not.toHaveBeenCalled();
-  });
-
-  it('lista publicaciones disponibles por defecto en el feed público', async () => {
-    repository.find.mockResolvedValue([]);
-
-    await publicacionRepository.listarPublico({});
-
-    expect(repository.find).toHaveBeenCalledWith({
-      where: {
-        estado: EstadoPublicacion.DISPONIBLE,
-        deletedAt: IsNull(),
-      },
-      order: { createdAt: 'DESC' },
-    });
-  });
-
-  it('aplica filtros y búsqueda por texto en el feed público', async () => {
-    repository.find.mockResolvedValue([]);
-
-    await publicacionRepository.listarPublico({
-      q: '  mesa  ',
-      categoriaId: '22222222-2222-4222-8222-222222222222',
-      condicion: CondicionObjeto.NUEVO,
-      estado: EstadoPublicacion.PAUSADA,
-    });
-
-    expect(repository.find).toHaveBeenCalledWith({
-      where: expect.arrayContaining([
-        expect.objectContaining({
-          estado: EstadoPublicacion.PAUSADA,
-          deletedAt: IsNull(),
-          categoriaId: '22222222-2222-4222-8222-222222222222',
-          condicion: CondicionObjeto.NUEVO,
-          titulo: expect.anything(),
-        }),
-        expect.objectContaining({
-          estado: EstadoPublicacion.PAUSADA,
-          deletedAt: IsNull(),
-          categoriaId: '22222222-2222-4222-8222-222222222222',
-          condicion: CondicionObjeto.NUEVO,
-          descripcion: expect.anything(),
-        }),
-      ]),
-      order: { createdAt: 'DESC' },
-    });
-  });
-
-  it('lista publicaciones del creador incluyendo eliminadas para el historial', async () => {
-    repository.find.mockResolvedValue([]);
-
-    await publicacionRepository.listarPorCreador(
-      '33333333-3333-4333-8333-333333333333',
-    );
-
-    expect(repository.find).toHaveBeenCalledWith({
-      where: {
-        creadorId: '33333333-3333-4333-8333-333333333333',
-      },
-      order: { createdAt: 'DESC' },
-    });
-  });
-
-  it('filtra mis publicaciones por estado cuando se indica', async () => {
-    repository.find.mockResolvedValue([]);
-
-    await publicacionRepository.listarPorCreador(
-      '33333333-3333-4333-8333-333333333333',
-      EstadoPublicacion.ENTREGADA,
-    );
-
-    expect(repository.find).toHaveBeenCalledWith({
-      where: {
-        creadorId: '33333333-3333-4333-8333-333333333333',
-        estado: EstadoPublicacion.ENTREGADA,
-      },
-      order: { createdAt: 'DESC' },
-    });
-  });
+  }
 });
