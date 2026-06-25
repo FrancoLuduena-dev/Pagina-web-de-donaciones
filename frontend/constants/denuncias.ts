@@ -1,3 +1,10 @@
+/**
+ * Motivos de denuncia disponibles para el usuario.
+ *
+ * Cada opción tiene un `value` (código que se envía al backend) y un `label`
+ * legible para mostrar en la interfaz. El motivo `OTRO` requiere un comentario
+ * obligatorio al denunciar.
+ */
 export const MOTIVOS_DENUNCIA = [
   { value: "CONTENIDO_INAPROPIADO", label: "Contenido inapropiado" },
   { value: "PUBLICACION_FALSA", label: "Publicación falsa o engañosa" },
@@ -5,6 +12,7 @@ export const MOTIVOS_DENUNCIA = [
   { value: "OTRO", label: "Otro motivo" },
 ] as const;
 
+/** Código de motivo de denuncia válido (los `value` de {@link MOTIVOS_DENUNCIA}). */
 export type MotivoDenuncia = (typeof MOTIVOS_DENUNCIA)[number]["value"];
 
 /**
