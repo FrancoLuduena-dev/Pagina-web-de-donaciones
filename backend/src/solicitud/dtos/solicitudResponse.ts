@@ -5,7 +5,13 @@ import Usuario from '../../usuario/entity/usuarioEntity';
 import { Solicitud } from '../entity/solicitudEntity';
 import { EstadoSolicitud } from '../enums/estadoSolicitud';
 
+/**
+ * DTO resumido con los datos básicos de una publicación incluida en una respuesta de solicitud.
+ */
 export class PublicacionSolicitudDto {
+  /**
+   * Identificador de la publicación.
+   */
   @ApiProperty({
     example: 'b3b8d1c2-4a5f-4f3a-9d7e-123456789abc',
     description: 'ID de la publicación',
@@ -19,7 +25,13 @@ export class PublicacionSolicitudDto {
   titulo!: string;
 }
 
+/**
+ * DTO resumido con los datos de usuario incluidos en una respuesta de solicitud.
+ */
 export class UsuarioSolicitudDto {
+  /**
+   * Identificador del usuario.
+   */
   @ApiProperty({
     example: 'c1c2c3c4-1111-2222-3333-444455556666',
     description: 'ID del usuario',
@@ -47,7 +59,16 @@ export class UsuarioSolicitudDto {
   telefono?: string;
 }
 
+/**
+ * DTO de respuesta que representa una solicitud en el contexto del flujo de negocio.
+ *
+ * Incluye el estado actual de la solicitud y, cuando corresponde, los datos
+ * resumidos de la publicación y de los usuarios involucrados.
+ */
 export class SolicitudResponseDto {
+  /**
+   * Identificador de la solicitud.
+   */
   @ApiProperty({
     example: 'd1d2d3d4-1111-2222-3333-444455556666',
     description: 'ID de la solicitud',
@@ -130,6 +151,16 @@ export class SolicitudResponseDto {
   })
   creadorPublicacion?: UsuarioSolicitudDto;
 
+  /**
+   * Construye el DTO de respuesta a partir de una entidad Solicitud.
+   *
+   * Solo expone datos de contacto cuando la solicitud está aceptada y el usuario
+   * actual participa en el vínculo, ya sea como solicitante o como creador de la publicación.
+   *
+   * @param solicitud Entidad de solicitud a transformar.
+   * @param usuarioActualId Identificador del usuario que consulta la información.
+   * @returns DTO de respuesta con los datos visibles para el usuario actual.
+   */
   static desdeEntidad(
     solicitud: Solicitud,
     usuarioActualId: string,

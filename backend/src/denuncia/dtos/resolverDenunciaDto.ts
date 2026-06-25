@@ -12,7 +12,13 @@ import {
 
 import { TipoResolucion } from '../enums/tipoResolucion';
 
+/**
+ * Datos necesarios para resolver una denuncia ya revisada.
+ */
 export class ResolverDenunciaDto {
+  /**
+   * Versión actual de la denuncia para validar concurrencia.
+   */
   @ApiProperty({
     example: 1,
     description:
@@ -23,6 +29,9 @@ export class ResolverDenunciaDto {
   @Min(1)
   version!: number;
 
+  /**
+   * Tipo de resolución que aplicará el moderador.
+   */
   @ApiProperty({
     enum: TipoResolucion,
     example: TipoResolucion.PUBLICACION_PAUSADA,
@@ -31,6 +40,9 @@ export class ResolverDenunciaDto {
   @IsEnum(TipoResolucion)
   tipoResolucion!: TipoResolucion;
 
+  /**
+   * Detalle explicativo de la resolución adoptada.
+   */
   @ApiProperty({
     example:
       'Se pausó la publicación porque incumple las reglas de la plataforma.',

@@ -9,7 +9,7 @@ import {
 } from '@nestjs/config';
 
 import { PublicacionModule } from './publicacion/module/publicacionModule';
-import { SolicitudesModule } from './solicitudes/module/solicitudModule';
+import { SolicitudesModule } from './solicitud/module/solicitudModule';
 import { UsuarioModule } from './usuario/module/usuarioModule';
 import { DenunciaModeracionModule } from './denuncia/module/denunciaModeracionModule';
 import { NotificacionModule } from './notificacion/module/notificacionModule';

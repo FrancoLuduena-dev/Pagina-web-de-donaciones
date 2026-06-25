@@ -24,12 +24,12 @@ import { rolUsuario } from '../enums/rolUsuario';
 export default class UsuarioService {
   constructor(private readonly repo: UsuarioRepository) {}
 
-  /*
-
- to do: ver especificamente las excepciones en base a que error salio en la ejecucion de cada metodo.
-        tal vez crear excepciones personalizadas para cada caso.
-     */
-
+  /**
+   * Registra un nuevo usuario en el sistema.
+   *
+   * Valida que los datos obligatorios estén completos y que el correo
+   * y el nombre de usuario no estén repetidos antes de persistir el registro.
+   */
   public async CrearUsuario(usuario: CrearUsuarioDTO): Promise<Usuario> {
     /*
         validar nombre usuario unico

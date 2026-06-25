@@ -1,7 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
+/**
+ * DTO utilizado para cancelar una solicitud o una reserva ya creada.
+ *
+ * Permite incorporar un motivo de cancelación sin alterar el flujo de negocio.
+ */
 export class CancelarSolicitudDto {
+  /**
+   * Motivo opcional por el cual se cancela la solicitud o la reserva.
+   */
   @ApiPropertyOptional({
     example: 'La persona solicitante no podrá retirar la donación.',
     description:

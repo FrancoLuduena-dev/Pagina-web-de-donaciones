@@ -6,12 +6,21 @@ import { PublicacionModeradaEvento } from '../../publicacion/evento/publicacionM
 import { TipoNotificacion } from '../enum/tipoNotificacion';
 import { NotificacionService } from '../service/notificacionService';
 
+/**
+ * Listener que reacciona a eventos de publicaciones para generar notificaciones.
+ *
+ * Procesa los eventos de forma asincrónica y delega la creación de avisos al
+ * servicio de notificaciones.
+ */
 @Injectable()
 export class NotificacionPublicacionListener {
   private readonly logger = new Logger(NotificacionPublicacionListener.name);
 
   constructor(private readonly notificacionService: NotificacionService) {}
 
+  /**
+   * Genera una notificación cuando una publicación es pausada por moderación.
+   */
   @OnEvent(EventoDominio.PUBLICACION_PAUSADA_MODERACION, { async: true })
   async alPausarPublicacion(evento: PublicacionModeradaEvento): Promise<void> {
     await this.crearNotificacion(
@@ -22,6 +31,9 @@ export class NotificacionPublicacionListener {
     );
   }
 
+  /**
+   * Genera una notificación cuando una publicación es reactivada por moderación.
+   */
   @OnEvent(EventoDominio.PUBLICACION_REACTIVADA_MODERACION, { async: true })
   async alReactivarPublicacion(
     evento: PublicacionModeradaEvento,
@@ -34,6 +46,9 @@ export class NotificacionPublicacionListener {
     );
   }
 
+  /**
+   * Genera una notificación cuando una publicación es eliminada por moderación.
+   */
   @OnEvent(EventoDominio.PUBLICACION_ELIMINADA_MODERACION, { async: true })
   async alEliminarPublicacion(
     evento: PublicacionModeradaEvento,
@@ -46,6 +61,17 @@ export class NotificacionPublicacionListener {
     );
   }
 
+  /**
+   * Crea una notificación asociada a una publicación moderada.
+   *
+   * Si ocurre un error durante la creación, se registra en logs y no se propaga
+   * para evitar interrumpir el procesamiento asincrónico del evento.
+   *
+   * @param evento Datos del evento de moderación de publicación.
+   * @param tipo Tipo de notificación a generar.
+   * @param titulo Título visible de la notificación.
+   * @param mensaje Mensaje informado al destinatario.
+   */
   private async crearNotificacion(
     evento: PublicacionModeradaEvento,
     tipo: TipoNotificacion,

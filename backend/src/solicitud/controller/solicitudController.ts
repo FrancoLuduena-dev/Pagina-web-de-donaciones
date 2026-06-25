@@ -32,15 +32,32 @@ import { RechazarSolicitudDto } from '../dtos/rechazarSolicitudDto';
 import { SolicitudResponseDto } from '../dtos/solicitudResponse';
 import { SolicitudService } from '../service/solicitudService';
 
+/**
+ * Controlador que expone los endpoints para gestionar solicitudes sobre publicaciones.
+ *
+ * Recibe las peticiones HTTP, delega la lógica de negocio al servicio y deja
+ * en Swagger la semántica de cada operación para el frontend y la documentación académica.
+ */
 @ApiTags('Solicitudes')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @UseGuards(AuthGuard, StatusGuard)
 @Controller('solicitudes')
 export class SolicitudController {
   constructor(private readonly solicitudService: SolicitudService) {}
 
+  /**
+   * Crea una solicitud sobre una publicación.
+   *
+   * Requiere autenticación y delega la validación de negocio al servicio,
+   * incluyendo la comprobación de que la publicación acepte solicitudes y que
+   * el usuario no sea el creador de la misma.
+   */
   @Post()
-  @ApiOperation({ summary: 'Crear una solicitud sobre una publicación' })
+  @ApiOperation({
+    summary: 'Crear una solicitud sobre una publicación',
+    description:
+      'Permite a un usuario autenticado enviar una solicitud sobre una publicación, siempre que el flujo de negocio lo permita.',
+  })
   @ApiCreatedResponse({
     description: 'Solicitud creada correctamente',
     type: SolicitudResponseDto,
@@ -61,8 +78,17 @@ export class SolicitudController {
     return this.solicitudService.crearSolicitud(dto, req.user.id);
   }
 
+  /**
+   * Lista las solicitudes realizadas por el usuario autenticado.
+   *
+   * Útil para consultar el estado de las solicitudes propias y su evolución.
+   */
   @Get('mias')
-  @ApiOperation({ summary: 'Listar mis solicitudes realizadas' })
+  @ApiOperation({
+    summary: 'Listar mis solicitudes realizadas',
+    description:
+      'Devuelve las solicitudes enviadas por el usuario autenticado, incluyendo su estado actual.',
+  })
   @ApiOkResponse({
     description: 'Listado de solicitudes realizadas por el usuario autenticado',
     type: SolicitudResponseDto,
@@ -73,8 +99,18 @@ export class SolicitudController {
     return this.solicitudService.listarMisSolicitudes(req.user.id);
   }
 
+  /**
+   * Lista las solicitudes recibidas por el usuario autenticado sobre sus publicaciones.
+   *
+   * Permite al creador revisar y gestionar las solicitudes que otros usuarios
+   * le han enviado sobre sus publicaciones.
+   */
   @Get('recibidas')
-  @ApiOperation({ summary: 'Listar solicitudes recibidas' })
+  @ApiOperation({
+    summary: 'Listar solicitudes recibidas',
+    description:
+      'Devuelve las solicitudes recibidas por el usuario autenticado sobre sus publicaciones.',
+  })
   @ApiOkResponse({
     description:
       'Listado de solicitudes recibidas sobre publicaciones del usuario autenticado',
@@ -88,9 +124,17 @@ export class SolicitudController {
     return this.solicitudService.listarSolicitudesRecibidas(req.user.id);
   }
 
+  /**
+   * Finaliza la entrega de una publicación cuyo proceso ya fue aceptado.
+   *
+   * El endpoint delega en el servicio la finalización del flujo y la resolución
+   * de solicitudes pendientes asociadas a la misma publicación.
+   */
   @Patch('publicacion/:publicacionId/entregar')
   @ApiOperation({
     summary: 'Finalizar la entrega de una publicación aceptada',
+    description:
+      'Finaliza el proceso de entrega asociado a una solicitud aceptada sobre una publicación.',
   })
   @ApiParam({
     name: 'publicacionId',
@@ -118,9 +162,16 @@ export class SolicitudController {
     );
   }
 
+  /**
+   * Cancela la reserva de una publicación vinculada a una solicitud aceptada.
+   *
+   * Esta operación permite liberar la publicación cuando la reserva deja de ser válida.
+   */
   @Patch('publicacion/:publicacionId/cancelar-reserva')
   @ApiOperation({
     summary: 'Cancelar la reserva aceptada de una publicación',
+    description:
+      'Libera la reserva de una publicación cuando se cancela una solicitud aceptada.',
   })
   @ApiParam({
     name: 'publicacionId',
@@ -151,8 +202,18 @@ export class SolicitudController {
     );
   }
 
+  /**
+   * Acepta una solicitud recibida por el creador de la publicación.
+   *
+   * La operación representa comprometer la publicación con el solicitante y
+   * delega la actualización de estados y publicación al servicio.
+   */
   @Patch(':id/aceptar')
-  @ApiOperation({ summary: 'Aceptar una solicitud recibida' })
+  @ApiOperation({
+    summary: 'Aceptar una solicitud recibida',
+    description:
+      'Acepta una solicitud pendiente del flujo de negocio y actualiza el estado correspondiente.',
+  })
   @ApiParam({
     name: 'id',
     description: 'ID de la solicitud a aceptar',
@@ -177,8 +238,17 @@ export class SolicitudController {
     return this.solicitudService.aceptarSolicitud(id, req.user.id);
   }
 
+  /**
+   * Rechaza una solicitud pendiente.
+   *
+   * El creador de la publicación puede rechazar la solicitud y aportar un motivo.
+   */
   @Patch(':id/rechazar')
-  @ApiOperation({ summary: 'Rechazar una solicitud recibida' })
+  @ApiOperation({
+    summary: 'Rechazar una solicitud recibida',
+    description:
+      'Rechaza una solicitud pendiente y permite incluir un motivo opcional para el rechazo.',
+  })
   @ApiParam({
     name: 'id',
     description: 'ID de la solicitud a rechazar',
@@ -205,8 +275,17 @@ export class SolicitudController {
     return this.solicitudService.rechazarSolicitud(id, req.user.id, dto);
   }
 
+  /**
+   * Finaliza una solicitud aceptada que ya pasó por el proceso de entrega.
+   *
+   * El servicio resuelve el cierre del flujo y deja la solicitud en un estado terminal.
+   */
   @Patch(':id/finalizar')
-  @ApiOperation({ summary: 'Finalizar una solicitud aceptada' })
+  @ApiOperation({
+    summary: 'Finalizar una solicitud aceptada',
+    description:
+      'Finaliza una solicitud aceptada cuando el proceso de entrega o intercambio concluyó.',
+  })
   @ApiParam({
     name: 'id',
     description: 'ID de la solicitud a finalizar',
@@ -231,8 +310,17 @@ export class SolicitudController {
     return this.solicitudService.finalizarSolicitud(id, req.user.id);
   }
 
+  /**
+   * Cancela una solicitud realizada por el usuario autenticado.
+   *
+   * El comportamiento depende del estado actual de la solicitud: pendiente o aceptada.
+   */
   @Patch(':id/cancelar')
-  @ApiOperation({ summary: 'Cancelar una solicitud realizada' })
+  @ApiOperation({
+    summary: 'Cancelar una solicitud realizada',
+    description:
+      'Cancela una solicitud pendiente o aceptada, según el estado vigente y las reglas del negocio.',
+  })
   @ApiParam({
     name: 'id',
     description: 'ID de la solicitud a cancelar',

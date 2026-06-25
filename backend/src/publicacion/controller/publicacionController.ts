@@ -46,14 +46,26 @@ import {
   validarImagenesSubidas,
 } from '../service/publicacionUploadService';
 
+/**
+ * Controlador responsable de exponer las operaciones de publicaciones.
+ *
+ * Recibe las peticiones HTTP del frontend y delega en el servicio las reglas
+ * de negocio del ciclo de vida de una publicación.
+ */
 @ApiTags('Publicaciones')
 @Controller('publicaciones')
 export class PublicacionController {
   constructor(private readonly publicacionService: PublicacionService) {}
 
+  /**
+   * Sube imágenes para una publicación antes de crearla.
+   *
+   * Este endpoint valida el lote de archivos y devuelve las URLs públicas que
+   * luego se asignan a la publicación durante su creación.
+   */
   @UseGuards(AuthGuard, StatusGuard)
   @Post('upload')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Subir imágenes para una publicación' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -106,9 +118,15 @@ export class PublicacionController {
     };
   }
 
+  /**
+   * Crea una nueva publicación a partir de los datos enviados por el usuario.
+   *
+   * El usuario autenticado queda asociado como creador de la publicación y el
+   * servicio se encarga de aplicar las reglas del dominio.
+   */
   @UseGuards(AuthGuard, StatusGuard)
   @Post()
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Crear una publicación' })
   @ApiCreatedResponse({
     description: 'Publicación creada correctamente',
@@ -124,6 +142,12 @@ export class PublicacionController {
     return this.publicacionService.crearPublicacion(dto, req.user.id);
   }
 
+  /**
+   * Devuelve el feed público de publicaciones filtradas.
+   *
+   * Este endpoint expone las publicaciones que pueden ser visualizadas por el
+   * público general, respetando los filtros recibidos desde el cliente.
+   */
   @Get()
   @ApiOperation({ summary: 'Listar publicaciones públicas disponibles' })
   @ApiOkResponse({
@@ -137,9 +161,15 @@ export class PublicacionController {
     return this.publicacionService.listarPublico(filtros);
   }
 
+  /**
+   * Lista las publicaciones propias del usuario autenticado.
+   *
+   * Permite consultar el estado de las publicaciones del creador para
+   * supervisar su ciclo de vida desde su cuenta.
+   */
   @UseGuards(AuthGuard)
   @Get('mias')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Listar mis publicaciones' })
   @ApiQuery({
     name: 'estado',
@@ -160,6 +190,12 @@ export class PublicacionController {
     return this.publicacionService.listarMisPublicaciones(req.user.id, estado);
   }
 
+  /**
+   * Busca una publicación por su identificador.
+   *
+   * El detalle incluye información del creador para que la vista pueda
+   * contextualizar correctamente la publicación.
+   */
   @Get(':id')
   @ApiOperation({ summary: 'Buscar publicación por ID' })
   @ApiParam({
@@ -175,9 +211,15 @@ export class PublicacionController {
     return this.publicacionService.buscarPublicacionPorIdConCreador(id);
   }
 
+  /**
+   * Pausa una publicación para desactivarla temporalmente.
+   *
+   * Esta acción se usa cuando la publicación debe dejar de estar operativa
+   * sin eliminarla definitivamente.
+   */
   @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id/pausar')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Pausar una publicación' })
   @ApiParam({
     name: 'id',
@@ -197,9 +239,15 @@ export class PublicacionController {
     return this.publicacionService.pausar(id, req.user.id, req.user.rol);
   }
 
+  /**
+   * Reactiva una publicación previamente pausada.
+   *
+   * Permite devolver la publicación a un estado activo cuando la situación
+   * que motivó la pausa ya fue resuelta.
+   */
   @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id/reactivar')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Reactivar una publicación' })
   @ApiParam({
     name: 'id',
@@ -219,9 +267,15 @@ export class PublicacionController {
     return this.publicacionService.reactivar(id, req.user.id, req.user.rol);
   }
 
+  /**
+   * Elimina una publicación de forma lógica o por moderación.
+   *
+   * La acción deja a la publicación fuera del flujo operativo del sistema y,
+   * en caso de moderación, marca la decisión como externa al creador.
+   */
   @UseGuards(AuthGuard, StatusGuard)
   @Delete(':id/eliminar')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Eliminar una publicación' })
   @ApiParam({
     name: 'id',
@@ -241,9 +295,15 @@ export class PublicacionController {
     return this.publicacionService.eliminar(id, req.user.id, req.user.rol);
   }
 
+  /**
+   * Edita una publicación cuando el usuario tiene permiso para hacerlo.
+   *
+   * La edición está restringida al creador y solo es válida si la publicación
+   * se encuentra en un estado que lo permita.
+   */
   @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Editar una publicación' })
   @ApiParam({
     name: 'id',

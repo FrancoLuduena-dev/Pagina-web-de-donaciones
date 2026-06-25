@@ -7,6 +7,9 @@ import { DenunciaRepository } from '../repository/denunciaRepository';
 import { DenunciaService } from '../service/denunciaService';
 import { UsuarioModule } from 'src/usuario/module/usuarioModule';
 
+/**
+ * Módulo que agrupa el controlador, servicio y repositorio para la moderación de denuncias.
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Denuncia]),

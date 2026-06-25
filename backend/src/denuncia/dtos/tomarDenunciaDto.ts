@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, Min } from 'class-validator';
 
+/**
+ * Datos necesarios para tomar una denuncia para su revisión.
+ */
 export class TomarDenunciaDto {
+  /**
+   * Versión actual de la denuncia para validar concurrencia.
+   */
   @ApiProperty({
     example: 1,
     description:

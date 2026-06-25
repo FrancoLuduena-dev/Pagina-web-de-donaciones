@@ -1,3 +1,9 @@
+/**
+ * Enumeración central de los eventos de dominio compartidos entre módulos.
+ *
+ * Permite identificar de forma consistente hechos del sistema que pueden ser
+ * publicados y escuchados por distintos componentes del backend.
+ */
 export enum EventoDominio {
   SOLICITUD_CREADA = 'solicitud.creada',
   SOLICITUD_ACEPTADA = 'solicitud.aceptada',

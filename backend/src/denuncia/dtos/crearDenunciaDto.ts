@@ -11,7 +11,13 @@ import {
 
 import { MotivoDenuncia } from '../enums/motivoDenuncia';
 
+/**
+ * Datos requeridos para registrar una denuncia sobre una publicación.
+ */
 export class CrearDenunciaDto {
+  /**
+   * Identificador de la publicación que será denunciada.
+   */
   @ApiProperty({
     example: 'b3b8d1c2-4a5f-4f3a-9d7e-123456789abc',
     description: 'ID de la publicación denunciada',
@@ -19,6 +25,9 @@ export class CrearDenunciaDto {
   @IsUUID()
   publicacionId!: string;
 
+  /**
+   * Motivo de la denuncia seleccionada por el usuario.
+   */
   @ApiProperty({
     enum: MotivoDenuncia,
     example: MotivoDenuncia.PUBLICACION_FALSA,
@@ -27,6 +36,9 @@ export class CrearDenunciaDto {
   @IsEnum(MotivoDenuncia)
   motivo!: MotivoDenuncia;
 
+  /**
+   * Comentario opcional con más contexto sobre la denuncia.
+   */
   @ApiPropertyOptional({
     example: 'La publicación contiene información falsa o engañosa.',
     description: 'Comentario adicional sobre la denuncia',

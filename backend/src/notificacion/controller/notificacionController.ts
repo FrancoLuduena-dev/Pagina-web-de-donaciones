@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -28,15 +27,31 @@ import { NotificacionResponseDto } from '../dtos/notificacionResponseDto';
 import { PaginacionNotificacionDto } from '../dtos/paginacionNotificacionDto';
 import { NotificacionService } from '../service/notificacionService';
 
+/**
+ * Controlador responsable de exponer los endpoints de notificaciones del usuario autenticado.
+ *
+ * Recibe las peticiones HTTP relacionadas con la consulta y actualización del
+ * estado de lectura de las notificaciones y delega la lógica de negocio al servicio.
+ */
 @ApiTags('Notificaciones')
-@ApiBearerAuth()
+@ApiBearerAuth('access-token')
 @Controller('notificaciones')
 @UseGuards(AuthGuard, StatusGuard)
 export class NotificacionController {
   constructor(private readonly notificacionService: NotificacionService) {}
 
+  /**
+   * Lista las notificaciones propias del usuario autenticado.
+   *
+   * El endpoint devuelve las notificaciones del usuario en orden descendente
+   * de creación y permite paginar el resultado.
+   */
   @Get()
-  @ApiOperation({ summary: 'Listar mis notificaciones' })
+  @ApiOperation({
+    summary: 'Listar mis notificaciones',
+    description:
+      'Devuelve el listado paginado de notificaciones del usuario autenticado.',
+  })
   @ApiOkResponse({
     description: 'Listado paginado de notificaciones del usuario autenticado',
     type: ListadoNotificacionesResponseDto,
@@ -50,8 +65,17 @@ export class NotificacionController {
     return this.notificacionService.listarPropias(req.user.id, paginacion);
   }
 
+  /**
+   * Cuenta la cantidad de notificaciones aún no leídas por el usuario.
+   *
+   * Esta operación sirve para presentar indicadores de mensajes pendientes.
+   */
   @Get('no-leidas/cantidad')
-  @ApiOperation({ summary: 'Contar mis notificaciones no leídas' })
+  @ApiOperation({
+    summary: 'Contar mis notificaciones no leídas',
+    description:
+      'Devuelve la cantidad de notificaciones pendientes de lectura para el usuario autenticado.',
+  })
   @ApiOkResponse({
     description: 'Cantidad de notificaciones no leídas',
     type: CantidadNoLeidasResponseDto,
@@ -66,9 +90,19 @@ export class NotificacionController {
     return { cantidad };
   }
 
+  /**
+   * Marca todas las notificaciones del usuario como leídas.
+   *
+   * La operación deja sin pendiente de lectura todo el conjunto de avisos del
+   * usuario autenticado.
+   */
   @Patch('marcar-todas-leidas')
-  @ApiOperation({ summary: 'Marcar todas mis notificaciones como leídas' })
-  @ApiNoContentResponse({
+  @ApiOperation({
+    summary: 'Marcar todas mis notificaciones como leídas',
+    description:
+      'Actualiza el estado de lectura de todas las notificaciones propias del usuario autenticado.',
+  })
+  @ApiOkResponse({
     description: 'Todas las notificaciones fueron marcadas como leídas',
   })
   @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })
@@ -77,8 +111,18 @@ export class NotificacionController {
     await this.notificacionService.marcarTodasComoLeidas(req.user.id);
   }
 
+  /**
+   * Marca una notificación concreta como leída.
+   *
+   * La operación valida que la notificación pertenezca al usuario autenticado
+   * antes de actualizar su estado de lectura.
+   */
   @Patch(':id/marcar-leida')
-  @ApiOperation({ summary: 'Marcar una notificación como leída' })
+  @ApiOperation({
+    summary: 'Marcar una notificación como leída',
+    description:
+      'Marca como leída una notificación propia del usuario autenticado.',
+  })
   @ApiParam({
     name: 'id',
     description: 'ID de la notificación',

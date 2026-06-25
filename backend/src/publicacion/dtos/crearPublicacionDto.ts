@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   ArrayMaxSize,
   ArrayMinSize,
@@ -17,6 +16,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { MAX_IMAGENES_PUBLICACION } from '../service/publicacionUploadService';
 
+/**
+ * DTO utilizado para crear una publicación desde la API.
+ *
+ * Contiene los datos mínimos necesarios para registrar una publicación y
+ * asociarla al usuario creador.
+ */
 export class CrearPublicacionDto {
   @ApiProperty({
     example: 'Campera de abrigo para niño',

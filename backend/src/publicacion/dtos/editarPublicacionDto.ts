@@ -16,6 +16,11 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { MAX_IMAGENES_PUBLICACION } from '../service/publicacionUploadService';
 
+/**
+ * DTO utilizado para editar una publicación existente.
+ *
+ * Todos sus campos son opcionales para permitir actualizaciones parciales.
+ */
 export class EditarPublicacionDto {
   @ApiPropertyOptional({
     example: 'Campera de abrigo para niño',

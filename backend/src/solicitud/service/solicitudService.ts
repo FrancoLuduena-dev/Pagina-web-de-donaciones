@@ -23,6 +23,13 @@ import { SolicitudAceptadaCanceladaEvento } from '../evento/solicitudAceptadaCan
 import { SolicitudFinalizadaEvento } from '../evento/solicitudFinalizadaEvento';
 import { Publicacion } from 'src/publicacion/entity/publicacionEntity';
 
+/**
+ * Servicio encargado de aplicar las reglas de negocio del ciclo de vida de las solicitudes.
+ *
+ * Coordina validaciones sobre la publicación relacionada, las decisiones del
+ * creador, los cambios de estado de la solicitud y los eventos de dominio que
+ * se disparan cuando el proceso avanza.
+ */
 @Injectable()
 export class SolicitudService {
   constructor(
@@ -32,6 +39,19 @@ export class SolicitudService {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * Crea una nueva solicitud sobre una publicación.
+   *
+   * Antes de persistirla, el servicio valida que la publicación pueda recibir
+   * solicitudes, que el usuario no sea el creador y que no exista ya una
+   * solicitud activa para esa publicación.
+   *
+   * @param dto Datos de la solicitud enviada por el usuario.
+   * @param solicitanteId Identificador del usuario que realiza la solicitud.
+   * @returns Solicitud creada serializada para la respuesta.
+   * @throws ForbiddenException Si el usuario intenta solicitar su propia publicación.
+   * @throws ConflictException Si ya existe una solicitud activa para la publicación.
+   */
   async crearSolicitud(
     dto: CrearSolicitudDto,
     solicitanteId: string,
@@ -106,6 +126,17 @@ export class SolicitudService {
     );
   }
 
+  /**
+   * Rechaza una solicitud pendiente.
+   *
+   * El rechazo representa la decisión del creador de no avanzar con esa
+   * solicitud y deja el proceso cerrado para ese intento.
+   *
+   * @param solicitudId Identificador de la solicitud a rechazar.
+   * @param usuarioId Identificador del usuario que intenta rechazarla.
+   * @param dto Datos del rechazo, incluyendo el motivo opcional.
+   * @returns Solicitud actualizada serializada para la respuesta.
+   */
   async rechazarSolicitud(
     solicitudId: string,
     usuarioId: string,
@@ -135,6 +166,18 @@ export class SolicitudService {
     return this.mapearRespuesta(solicitudGuardada, usuarioId);
   }
 
+  /**
+   * Acepta una solicitud pendiente.
+   *
+   * Esta operación compromete la publicación con un usuario y, por eso,
+   * el servicio también reserva la publicación para evitar que siga estando
+   * disponible para otros interesados. La ejecución se realiza dentro de una
+   * transacción con bloqueo para evitar inconsistencias.
+   *
+   * @param solicitudId Identificador de la solicitud a aceptar.
+   * @param usuarioId Identificador del usuario que intenta aceptar la solicitud.
+   * @returns Solicitud aceptada serializada para la respuesta.
+   */
   async aceptarSolicitud(
     solicitudId: string,
     usuarioId: string,
@@ -190,6 +233,17 @@ export class SolicitudService {
 
     return this.mapearRespuesta(solicitudCompleta, usuarioId);
   }
+  /**
+   * Finaliza una solicitud aceptada y concluye el proceso de entrega.
+   *
+   * Al completarse la entrega, la publicación pasa a un estado de finalización
+   * y las solicitudes pendientes restantes sobre esa publicación se rechazan
+   * para evitar nuevos compromisos sobre un recurso ya entregado.
+   *
+   * @param solicitudId Identificador de la solicitud a finalizar.
+   * @param usuarioId Identificador del usuario que realiza la finalización.
+   * @returns Solicitud finalizada serializada para la respuesta.
+   */
   async finalizarSolicitud(
     solicitudId: string,
     usuarioId: string,
@@ -295,6 +349,18 @@ export class SolicitudService {
     return this.cancelarSolicitud(solicitud.id, usuarioId, dto);
   }
 
+  /**
+   * Cancela una solicitud según el estado actual de la misma.
+   *
+   * Si la solicitud estaba pendiente, se cancela de forma simple. Si ya había
+   * sido aceptada, se libera la reserva de la publicación para que vuelva a
+   * estar disponible para otros usuarios.
+   *
+   * @param solicitudId Identificador de la solicitud a cancelar.
+   * @param usuarioId Identificador del usuario que intenta cancelarla.
+   * @param dto Datos de cancelación, incluyendo el motivo opcional.
+   * @returns Solicitud cancelada serializada para la respuesta.
+   */
   async cancelarSolicitud(
     solicitudId: string,
     usuarioId: string,

@@ -1,11 +1,11 @@
 import { Logger } from '@nestjs/common';
 
 import { EventoDominio } from 'src/compartidos/evento/eventoDominio';
-import { SolicitudAceptadaCanceladaEvento } from 'src/solicitudes/evento/solicitudAceptadaCanceladaEvento';
-import { SolicitudAceptadaEvent } from 'src/solicitudes/evento/solicitudAceptadaEvento';
-import { SolicitudCreadaEvent } from 'src/solicitudes/evento/solicitudCreadaEvento';
-import { SolicitudFinalizadaEvento } from 'src/solicitudes/evento/solicitudFinalizadaEvento';
-import { SolicitudRechazadaEvent } from 'src/solicitudes/evento/solicitudRechazadaEvento';
+import { SolicitudAceptadaCanceladaEvento } from 'src/solicitud/evento/solicitudAceptadaCanceladaEvento';
+import { SolicitudAceptadaEvent } from 'src/solicitud/evento/solicitudAceptadaEvento';
+import { SolicitudCreadaEvent } from 'src/solicitud/evento/solicitudCreadaEvento';
+import { SolicitudFinalizadaEvento } from 'src/solicitud/evento/solicitudFinalizadaEvento';
+import { SolicitudRechazadaEvent } from 'src/solicitud/evento/solicitudRechazadaEvento';
 
 import { NotificacionResponseDto } from '../dtos/notificacionResponseDto';
 import { TipoNotificacion } from '../enum/tipoNotificacion';

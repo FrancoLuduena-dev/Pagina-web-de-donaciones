@@ -36,7 +36,6 @@ import { StatusGuard } from '../../compartidos/guards/statusGuard';
 import { Estados } from 'src/compartidos/decorators/decoratorEstados';
 import { estadosUsuario } from '../enums/estadosUsuario';
 
-
 import {
   ApiTags,
   ApiBearerAuth,
@@ -54,7 +53,6 @@ import {
 interface RequestConUsuario extends Request {
   user: Usuario;
 }
-
 
 @ApiTags('Usuario')
 @Controller('usuario')
@@ -88,7 +86,7 @@ export default class UsuarioController {
 
   @UseGuards(AuthGuard, StatusGuard, RolesGuard)
   @Get()
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Listar usuarios (moderador/admin)' })
   @ApiOkResponse({ type: [usuarioResponseDto] })
   @ApiUnauthorizedResponse({ description: 'No autenticado' })
@@ -101,7 +99,7 @@ export default class UsuarioController {
 
   @UseGuards(AuthGuard)
   @Get('mi')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Obtener mi usuario' })
   @ApiOkResponse({ type: MiUsuarioResponseDto })
   @ApiUnauthorizedResponse()
@@ -113,7 +111,7 @@ export default class UsuarioController {
 
   @UseGuards(AuthGuard)
   @Get('nombre/:nombreUsuario')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Buscar usuario por nombre de usuario' })
   @ApiParam({ name: 'nombreUsuario', type: String })
   @ApiOkResponse({ type: usuarioResponseDto })
@@ -128,7 +126,7 @@ export default class UsuarioController {
   @Get(':id')
   @Estados(estadosUsuario.ACTIVO)
   @Roles(rolUsuario.usuarioAdministrador)
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Obtener usuario por ID (admin)' })
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ type: usuarioResponseDto })
@@ -142,7 +140,7 @@ export default class UsuarioController {
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Eliminar mi usuario' })
   @ApiBody({ schema: { example: { contrasenia: '123456' } } })
   @ApiOkResponse({ description: 'Usuario eliminado' })
@@ -159,7 +157,7 @@ export default class UsuarioController {
   @Estados(estadosUsuario.ACTIVO)
   @Roles(rolUsuario.usuarioAdministrador)
   @Delete('admin/:id')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Eliminar usuario (admin)' })
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ description: 'Usuario eliminado por admin' })
@@ -174,7 +172,7 @@ export default class UsuarioController {
   @UseGuards(AuthGuard, StatusGuard)
   @Estados(estadosUsuario.ACTIVO)
   @Patch('actualizarUsuario')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Actualizar usuario logueado' })
   @ApiOkResponse({ type: usuarioResponseDto })
   @ApiBadRequestResponse()
@@ -189,7 +187,7 @@ export default class UsuarioController {
   @Estados(estadosUsuario.ACTIVO)
   @Roles(rolUsuario.usuarioAdministrador)
   @Patch(':id/rol')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Cambiar rol de usuario (admin)' })
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ description: 'Rol actualizado' })
@@ -204,7 +202,7 @@ export default class UsuarioController {
 
   @UseGuards(AuthGuard)
   @Patch('resetearContrasenia')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Resetear contraseña' })
   @ApiOkResponse({ description: 'Contraseña actualizada' })
   async resetearContrasenia(
@@ -218,7 +216,7 @@ export default class UsuarioController {
   @Estados(estadosUsuario.ACTIVO)
   @Roles(rolUsuario.usuarioModerador, rolUsuario.usuarioAdministrador)
   @Patch(':id/bloquearUsuario')
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Bloquear usuario (mod/admin)' })
   @ApiParam({ name: 'id', type: String })
   @ApiOkResponse({ type: usuarioBloqueadoResponseDto })
@@ -232,5 +230,3 @@ export default class UsuarioController {
     return this.service.BloquearUsuario(id, req.user.id, datos);
   }
 }
-
-

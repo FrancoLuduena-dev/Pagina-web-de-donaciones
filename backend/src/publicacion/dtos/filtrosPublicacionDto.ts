@@ -4,6 +4,11 @@ import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { CondicionObjeto } from '../enums/condicionObjeto';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
 
+/**
+ * DTO con los filtros utilizados para consultar publicaciones.
+ *
+ * Permite buscar publicaciones por texto, estado, condición, categoría o localidad.
+ */
 export class FiltrosPublicacionDto {
   @ApiPropertyOptional({
     example: 'campera',

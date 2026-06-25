@@ -1,7 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, Matches } from 'class-validator';
 
+/**
+ * DTO para parametrizar la paginación del listado de notificaciones.
+ */
 export class PaginacionNotificacionDto {
+  /**
+   * Número de página a consultar.
+   */
   @ApiPropertyOptional({
     example: '1',
     description: 'Número de página a consultar. Debe ser un entero mayor a 0.',
@@ -12,6 +18,9 @@ export class PaginacionNotificacionDto {
   })
   pagina?: string;
 
+  /**
+   * Cantidad máxima de notificaciones por página.
+   */
   @ApiPropertyOptional({
     example: '10',
     description:
