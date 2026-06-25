@@ -41,6 +41,32 @@ npm install
     * correr en root el script "npm run setup-db" o manualmente crear la base de datos en postgres con el nombre puesto en DB_NAME
     * Las tablas se crearán automáticamente al iniciar el backend por primera vez.
 
+* Seed sql de la base de datos para pruebas
+    * Una vez creada la base de datos, habiendo corrido aunque sea una vez el backend para que se generen las tablas y configuradas las variables de entorno de PostgreSQL (`PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD` y `PGDATABASE`), ejecutar:
+    ```bash
+    npm run db:seed
+    ```
+    
+    * *Usuarios de prueba
+
+| Usuario | Correo | Rol |
+|----------|---------|-----|
+| Usuario 1 | `usuario1@usuario.com` | Usuario |
+| Usuario 2 | `usuario2@usuario.com` | Usuario |
+| Moderador | `moderador@mod.com` | Moderador |
+| Administrador | `admin@admin.com` | Administrador |
+
+>       * **Contraseña para todos los usuarios:** `Admin123!`
+
+
+    * El script insertará:
+        * 4 usuarios
+        * 6 publicaciones
+        * 4 solicitudes pendientes
+        * 3 denuncias pendientes
+        * 4 notificaciones
+    * Todos los registros utilizan UUIDs fijos para facilitar el desarrollo y las pruebas.
+
 * Configuración del Frontend
     * crear el archivo .env.local
     * agregarle NEXT_PUBLIC_API_URL=http://localhost:3000
