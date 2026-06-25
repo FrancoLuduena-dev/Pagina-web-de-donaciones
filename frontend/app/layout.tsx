@@ -33,13 +33,7 @@ const geistMono = Geist_Mono({
 });
 
 
-/**
- * Layout root de la aplicación.
-  * Aplica el idioma español ("es"), variables CSS globales de fuente y clases utilitarias
- * @param props - Propiedades del componente.
- * @param props.children - Contenido renderizado dentro del layout.
- what does * @returns Estructura HTML base de la aplicación.
- */
+/** Layout principal que define la estructura base de la aplicación. */
 export default function RootLayout({
   children,
 }: Readonly<{

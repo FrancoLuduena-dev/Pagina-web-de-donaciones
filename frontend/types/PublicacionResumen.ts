@@ -2,6 +2,9 @@ import { CategoriaPublicacion } from "./CategoriaPublicacion";
 import { EstadoDonacion } from "./EstadoDonacion";
 import { EstadoPublicacion } from "./EstadoPublicacion";
 
+/**
+ * Resumen de datos de una publicación para listados.
+ */
 export type PublicacionResumen = {
   idPublicacion: string;
   tituloPublicacion: string;

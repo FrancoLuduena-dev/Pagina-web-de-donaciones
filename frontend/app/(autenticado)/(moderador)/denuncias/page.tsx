@@ -3,11 +3,7 @@
 import { useEffect, useState } from "react";
 
 import DenunciaCard from "@/components/denuncias/DenunciaCard";
-import {
-  obtenerDenuncias,
-  tomarDenuncia,
-  resolverDenuncia,
-} from "@/lib/denuncias";
+import { obtenerDenuncias, tomarDenuncia, resolverDenuncia } from "@/lib/denuncias";
 import { Denuncia } from "@/types/Denuncia";
 import { RolUsuario } from "@/types/RolUsuario";
 import styles from "./denuncias.module.css";
@@ -17,13 +13,15 @@ interface UsuarioActual {
   rol: RolUsuario;
 }
 
+/**
+ * Página para ver y resolver denuncias.
+ * @returns Interfaz de moderación de denuncias.
+ */
 export default function PaginaDenuncias() {
   const [usuario, setUsuario] = useState<UsuarioActual | null>(null);
   const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [idDenunciaSeleccionada, setIdDenunciaSeleccionada] = useState<
-    string | null
-  >(null);
+  const [idDenunciaSeleccionada, setIdDenunciaSeleccionada] = useState<string | null>(null);
 
   const [tipoResolucion, setTipoResolucion] = useState("");
 
@@ -71,15 +69,9 @@ export default function PaginaDenuncias() {
 
   const esAdministrador = usuario.rol === RolUsuario.usuarioAdministrador;
 
-  const denunciasDisponibles = denuncias.filter(
-    (denuncia) => denuncia.estado === "PENDIENTE",
-  );
+  const denunciasDisponibles = denuncias.filter((denuncia) => denuncia.estado === "PENDIENTE");
 
-  const misDenuncias = denuncias.filter(
-    (denuncia) =>
-      denuncia.estado === "EN_REVISION" &&
-      denuncia.moderadorAsignadoId === usuario.id,
-  );
+  const misDenuncias = denuncias.filter((denuncia) => denuncia.estado === "EN_REVISION" && denuncia.moderadorAsignadoId === usuario.id);
 
   const manejarTomarDenuncia = async (denuncia: Denuncia) => {
     try {
@@ -119,13 +111,7 @@ export default function PaginaDenuncias() {
         return;
       }
 
-      await resolverDenuncia(
-        denuncia.id,
-        denuncia.version,
-        tipoResolucion,
-        detalle,
-        token,
-      );
+      await resolverDenuncia(denuncia.id, denuncia.version, tipoResolucion, detalle, token);
 
       const denunciasActualizadas = await obtenerDenuncias(token);
 
@@ -153,14 +139,7 @@ export default function PaginaDenuncias() {
 
           <div className={styles.grid}>
             {denuncias.length > 0 ? (
-              denuncias.map((denuncia) => (
-                <DenunciaCard
-                  key={denuncia.id}
-                  denuncia={denuncia}
-                  mostrarBotonTomar={denuncia.estado === "PENDIENTE"}
-                  onTomar={() => manejarTomarDenuncia(denuncia)}
-                />
-              ))
+              denuncias.map((denuncia) => <DenunciaCard key={denuncia.id} denuncia={denuncia} mostrarBotonTomar={denuncia.estado === "PENDIENTE"} onTomar={() => manejarTomarDenuncia(denuncia)} />)
             ) : (
               <p className={styles.vacio}>No hay denuncias registradas.</p>
             )}
@@ -173,14 +152,7 @@ export default function PaginaDenuncias() {
 
             <div className={styles.grid}>
               {denunciasDisponibles.length > 0 ? (
-                denunciasDisponibles.map((denuncia) => (
-                  <DenunciaCard
-                    key={denuncia.id}
-                    denuncia={denuncia}
-                    mostrarBotonTomar
-                    onTomar={() => manejarTomarDenuncia(denuncia)}
-                  />
-                ))
+                denunciasDisponibles.map((denuncia) => <DenunciaCard key={denuncia.id} denuncia={denuncia} mostrarBotonTomar onTomar={() => manejarTomarDenuncia(denuncia)} />)
               ) : (
                 <p className={styles.vacio}>No hay denuncias disponibles.</p>
               )}
@@ -194,55 +166,29 @@ export default function PaginaDenuncias() {
               {misDenuncias.length > 0 ? (
                 misDenuncias.map((denuncia) => (
                   <div key={denuncia.id}>
-                    <DenunciaCard
-                      denuncia={denuncia}
-                      mostrarBotonResolver
-                      onResolver={() => setIdDenunciaSeleccionada(denuncia.id)}
-                    />
+                    <DenunciaCard denuncia={denuncia} mostrarBotonResolver onResolver={() => setIdDenunciaSeleccionada(denuncia.id)} />
 
                     {idDenunciaSeleccionada === denuncia.id && (
                       <section className={styles.panelResolucion}>
                         <h3>Resolver denuncia</h3>
 
-                        <label className={styles.label}>
-                          Tipo de resolución
-                        </label>
+                        <label className={styles.label}>Tipo de resolución</label>
 
-                        <select
-                          className={styles.select}
-                          value={tipoResolucion}
-                          onChange={(event) =>
-                            setTipoResolucion(event.target.value)
-                          }
-                        >
+                        <select className={styles.select} value={tipoResolucion} onChange={(event) => setTipoResolucion(event.target.value)}>
                           <option value="">Seleccionar</option>
 
                           <option value="DESCARTADA">Descartada</option>
 
-                          <option value="PUBLICACION_PAUSADA">
-                            Publicación pausada
-                          </option>
+                          <option value="PUBLICACION_PAUSADA">Publicación pausada</option>
 
-                          <option value="PUBLICACION_ELIMINADA">
-                            Publicación eliminada
-                          </option>
+                          <option value="PUBLICACION_ELIMINADA">Publicación eliminada</option>
 
-                          <option value="USUARIO_BLOQUEADO">
-                            Usuario bloqueado
-                          </option>
+                          <option value="USUARIO_BLOQUEADO">Usuario bloqueado</option>
                         </select>
 
                         <label className={styles.label}>Detalle</label>
 
-                        <textarea
-                          className={styles.textarea}
-                          value={detalleResolucion}
-                          onChange={(event) =>
-                            setDetalleResolucion(event.target.value)
-                          }
-                          rows={4}
-                          maxLength={500}
-                        />
+                        <textarea className={styles.textarea} value={detalleResolucion} onChange={(event) => setDetalleResolucion(event.target.value)} rows={4} maxLength={500} />
 
                         <div className={styles.acciones}>
                           <button
@@ -259,11 +205,7 @@ export default function PaginaDenuncias() {
                             Cancelar
                           </button>
 
-                          <button
-                            type="button"
-                            className={styles.botonResolver}
-                            onClick={() => manejarResolverDenuncia(denuncia)}
-                          >
+                          <button type="button" className={styles.botonResolver} onClick={() => manejarResolverDenuncia(denuncia)}>
                             Confirmar resolución
                           </button>
                         </div>

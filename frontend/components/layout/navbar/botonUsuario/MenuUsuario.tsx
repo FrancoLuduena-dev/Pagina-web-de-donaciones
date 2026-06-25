@@ -6,20 +6,25 @@ import { useRouter } from "next/navigation";
 
 import estilos from "./MenuUsuario.module.css";
 import { RolUsuario } from "@/types/RolUsuario";
-import {
-  clearSession,
-  getAccessToken,
-  obtenerUsuarioActualRequest,
-} from "@/lib/auth";
+import { clearSession, getAccessToken, obtenerUsuarioActualRequest } from "@/lib/auth";
 
 interface UsuarioNavbar {
+  /** Identificador del usuario. */
   id: string;
+  /** Nombre de usuario para mostrar en el menú. */
   nombreUsuario: string;
+  /** Correo electrónico del usuario. */
   correo: string;
+  /** Rol del usuario en el sistema. */
   rol: RolUsuario;
+  /** URL de la foto de perfil si está disponible. */
   fotoPerfil?: string;
 }
 
+/**
+ * Menú de usuario en la barra de navegación.
+ * @returns Componente con acciones de usuario y notificaciones.
+ */
 export default function MenuUsuario() {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
@@ -27,8 +32,7 @@ export default function MenuUsuario() {
   const menuRef = useRef<HTMLDivElement>(null);
   const [cantidadPendientes, setCantidadPendientes] = useState(0);
   const [cantidadNoLeidas, setCantidadNoLeidas] = useState(0);
-  const [cantidadDenunciasPendientes, setCantidadDenunciasPendientes] =
-    useState(0);
+  const [cantidadDenunciasPendientes, setCantidadDenunciasPendientes] = useState(0);
 
   useEffect(() => {
     const cerrarMenu = (event: MouseEvent) => {
@@ -79,43 +83,30 @@ export default function MenuUsuario() {
 
           const publicacionesConAceptada = new Set(
             solicitudes
-              .filter(
-                (solicitud: { estado: string }) =>
-                  solicitud.estado === "ACEPTADA",
-              )
-              .map(
-                (solicitud: { publicacionId: string }) =>
-                  solicitud.publicacionId,
-              ),
+              .filter((solicitud: { estado: string }) => solicitud.estado === "ACEPTADA")
+              .map((solicitud: { publicacionId: string }) => solicitud.publicacionId),
           );
 
           const pendientes = solicitudes.filter(
             (solicitud: { estado: string; publicacionId: string }) =>
-              solicitud.estado === "PENDIENTE" &&
-              !publicacionesConAceptada.has(solicitud.publicacionId),
+              solicitud.estado === "PENDIENTE" && !publicacionesConAceptada.has(solicitud.publicacionId),
           ).length;
 
           setCantidadPendientes(pendientes);
         }
 
-        const notificacionesResponse = await fetch(
-          "/api/notificaciones/no-leidas/cantidad",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const notificacionesResponse = await fetch("/api/notificaciones/no-leidas/cantidad", {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         if (notificacionesResponse.ok) {
           const datosNotificaciones = await notificacionesResponse.json();
 
           setCantidadNoLeidas(datosNotificaciones.cantidad ?? 0);
         }
-        if (
-          datos.rol === RolUsuario.usuarioModerador ||
-          datos.rol === RolUsuario.usuarioAdministrador
-        ) {
+        if (datos.rol === RolUsuario.usuarioModerador || datos.rol === RolUsuario.usuarioAdministrador) {
           const denunciasResponse = await fetch("/api/denuncias", {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -125,9 +116,7 @@ export default function MenuUsuario() {
           if (denunciasResponse.ok) {
             const denuncias = await denunciasResponse.json();
 
-            const pendientes = denuncias.filter(
-              (denuncia: { estado: string }) => denuncia.estado === "PENDIENTE",
-            ).length;
+            const pendientes = denuncias.filter((denuncia: { estado: string }) => denuncia.estado === "PENDIENTE").length;
 
             setCantidadDenunciasPendientes(pendientes);
           }
@@ -154,27 +143,16 @@ export default function MenuUsuario() {
     return null;
   }
 
-  const cantidadTotal =
-    cantidadPendientes + cantidadNoLeidas + cantidadDenunciasPendientes;
+  const cantidadTotal = cantidadPendientes + cantidadNoLeidas + cantidadDenunciasPendientes;
 
   return (
     <div className={estilos.menuUsuario} ref={menuRef}>
-      <button
-        type="button"
-        className={estilos.menuUsuarioBoton}
-        onClick={() => setAbierto(!abierto)}
-      >
-        <div className={estilos.menuUsuarioAvatar}>
-          {usuario.nombreUsuario.charAt(0).toUpperCase()}
-        </div>
+      <button type="button" className={estilos.menuUsuarioBoton} onClick={() => setAbierto(!abierto)}>
+        <div className={estilos.menuUsuarioAvatar}>{usuario.nombreUsuario.charAt(0).toUpperCase()}</div>
 
-        <span className={estilos.menuUsuarioNombre}>
-          {usuario.nombreUsuario}
-        </span>
+        <span className={estilos.menuUsuarioNombre}>{usuario.nombreUsuario}</span>
 
-        {cantidadTotal > 0 && (
-          <span className={estilos.menuUsuarioBadge}>{cantidadTotal}</span>
-        )}
+        {cantidadTotal > 0 && <span className={estilos.menuUsuarioBadge}>{cantidadTotal}</span>}
 
         <span className={estilos.menuUsuarioFlecha}>▼</span>
       </button>
@@ -187,28 +165,19 @@ export default function MenuUsuario() {
             <span>{usuario.correo}</span>
           </div>
 
-         {usuario.rol === RolUsuario.usuarioAdministrador && (
+          {usuario.rol === RolUsuario.usuarioAdministrador && (
             <Link href="/gestionRoles" className={estilos.menuUsuarioItem}>
               Gestión de roles de usuario
             </Link>
           )}
 
-
-         {(usuario.rol === RolUsuario.usuarioModerador ||
-            usuario.rol === RolUsuario.usuarioAdministrador) && (
+          {(usuario.rol === RolUsuario.usuarioModerador || usuario.rol === RolUsuario.usuarioAdministrador) && (
             <Link href="/denuncias" className={estilos.menuModItem}>
               <span>Denuncias</span>
 
-              {cantidadDenunciasPendientes > 0 && (
-                <span className={estilos.menuUsuarioItemBadge}>
-                  {cantidadDenunciasPendientes}
-                </span>
-              )}
+              {cantidadDenunciasPendientes > 0 && <span className={estilos.menuUsuarioItemBadge}>{cantidadDenunciasPendientes}</span>}
             </Link>
           )}
-
-
-
 
           {usuario && (
             <>
@@ -216,37 +185,20 @@ export default function MenuUsuario() {
                 Panel de usuario
               </Link>
 
-              <Link
-                href="/usuario/publicaciones"
-                className={estilos.menuUsuarioItem}
-              >
+              <Link href="/usuario/publicaciones" className={estilos.menuUsuarioItem}>
                 Mis publicaciones
               </Link>
 
-              <Link
-                href="/usuario/solicitudes"
-                className={estilos.menuUsuarioItem}
-              >
+              <Link href="/usuario/solicitudes" className={estilos.menuUsuarioItem}>
                 <span>Mis Solicitudes</span>
 
-                {cantidadPendientes > 0 && (
-                  <span className={estilos.menuUsuarioItemBadge}>
-                    {cantidadPendientes}
-                  </span>
-                )}
+                {cantidadPendientes > 0 && <span className={estilos.menuUsuarioItemBadge}>{cantidadPendientes}</span>}
               </Link>
 
-              <Link
-                href="/usuario/notificaciones"
-                className={estilos.menuUsuarioItem}
-              >
+              <Link href="/usuario/notificaciones" className={estilos.menuUsuarioItem}>
                 <span>Notificaciones</span>
 
-                {cantidadNoLeidas > 0 && (
-                  <span className={estilos.menuUsuarioItemBadge}>
-                    {cantidadNoLeidas}
-                  </span>
-                )}
+                {cantidadNoLeidas > 0 && <span className={estilos.menuUsuarioItemBadge}>{cantidadNoLeidas}</span>}
               </Link>
             </>
           )}
@@ -255,11 +207,7 @@ export default function MenuUsuario() {
             Editar Perfil
           </Link>
 
-          <button
-            type="button"
-            className={estilos.menuUsuarioLogout}
-            onClick={cerrarSesion}
-          >
+          <button type="button" className={estilos.menuUsuarioLogout} onClick={cerrarSesion}>
             Cerrar sesión
           </button>
         </div>

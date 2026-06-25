@@ -15,16 +15,16 @@ type Usuario = {
   notificaciones: number;
 };
 
-// Pagina principal del usuario autenticado.
+/**
+ * Página principal del usuario autenticado.
+ * @returns Perfil y accesos rápidos del usuario.
+ */
 export default function UsuarioPage() {
   const router = useRouter();
-
   // Estado del usuario
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-
   // Estado de carga
   const [loading, setLoading] = useState(true);
-
   // Estado de error
   const [error, setError] = useState("");
 
@@ -75,27 +75,19 @@ export default function UsuarioPage() {
 
         if (solicitudesResponse.ok) {
           const solicitudes = await solicitudesResponse.json();
-          solicitudesPendientes = solicitudes.filter(
-            (solicitud: { estado: string }) => solicitud.estado === "PENDIENTE",
-          ).length;
+          solicitudesPendientes = solicitudes.filter((solicitud: { estado: string }) => solicitud.estado === "PENDIENTE").length;
         }
 
-        const solicitudesRecibidasResponse = await fetch(
-          "/api/solicitudes/recibidas",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const solicitudesRecibidasResponse = await fetch("/api/solicitudes/recibidas", {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         if (solicitudesRecibidasResponse.ok) {
-          const solicitudesRecibidas =
-            await solicitudesRecibidasResponse.json();
+          const solicitudesRecibidas = await solicitudesRecibidasResponse.json();
 
-          solicitudesPorRevisar = solicitudesRecibidas.filter(
-            (solicitud: { estado: string }) => solicitud.estado === "PENDIENTE",
-          ).length;
+          solicitudesPorRevisar = solicitudesRecibidas.filter((solicitud: { estado: string }) => solicitud.estado === "PENDIENTE").length;
         }
 
         setUsuario({
@@ -144,9 +136,7 @@ export default function UsuarioPage() {
     <main className={styles.main}>
       <div className={styles.container}>
         <section className={styles.header}>
-          <div className={styles.avatar}>
-            {usuario.nombre.charAt(0).toUpperCase()}
-          </div>
+          <div className={styles.avatar}>{usuario.nombre.charAt(0).toUpperCase()}</div>
 
           <div>
             <h1 className={styles.title}>Hola, {usuario.nombre}</h1>
@@ -156,20 +146,11 @@ export default function UsuarioPage() {
         </section>
 
         <section className={styles.summaryGrid}>
-          <TarjetaResumen
-            titulo="Publicaciones activas"
-            valor={usuario.publicacionesActivas}
-          />
+          <TarjetaResumen titulo="Publicaciones activas" valor={usuario.publicacionesActivas} />
 
-          <TarjetaResumen
-            titulo="Mis Solicitudes pendientes"
-            valor={usuario.solicitudesPendientes}
-          />
+          <TarjetaResumen titulo="Mis Solicitudes pendientes" valor={usuario.solicitudesPendientes} />
 
-          <TarjetaResumen
-            titulo="Solicitudes recibidas pendientes"
-            valor={usuario.solicitudesPorRevisar}
-          />
+          <TarjetaResumen titulo="Solicitudes recibidas pendientes" valor={usuario.solicitudesPorRevisar} />
         </section>
 
         <section className={styles.actions}>
@@ -178,10 +159,7 @@ export default function UsuarioPage() {
           <div className={styles.buttonGrid}>
             <BotonLink href="/usuario/editar" texto="Editar perfil" />
 
-            <BotonLink
-              href="/usuario/publicaciones"
-              texto="Mis publicaciones"
-            />
+            <BotonLink href="/usuario/publicaciones" texto="Mis publicaciones" />
 
             <BotonLink href="/usuario/notificaciones" texto="Notificaciones" />
 

@@ -2,37 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
 import styles from "./moderacion.module.css";
-
 import Footer from "@/components/layout/footer/Footer";
 import Navbar from "@/components/layout/navbar/Navbar";
-
-import {
-  getAccessToken,
-  obtenerUsuarioActualRequest,
-} from "@/lib/auth";
+import { getAccessToken, obtenerUsuarioActualRequest } from "@/lib/auth";
 
 import { RolUsuario } from "@/types/RolUsuario";
 
-export default function LayoutModerador({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/**
+ * Layout para rutas de moderador.
+ * @param children Contenido mostrado cuando el moderador está autorizado.
+ * @returns Layout de moderación con navbar y footer.
+ */
+export default function LayoutModerador({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-
-  const [autorizado, setAutorizado] =
-    useState(false);
-
-  const [cargando, setCargando] =
-    useState(true);
+  const [autorizado, setAutorizado] = useState(false);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     async function verificarAcceso() {
       try {
-        const usuario =
-          await obtenerUsuarioActualRequest();
+        const usuario = await obtenerUsuarioActualRequest();
 
         if (!usuario) {
           if (!getAccessToken()) {
@@ -44,11 +34,7 @@ export default function LayoutModerador({
           return;
         }
 
-        const tienePermisos =
-          usuario.rol ===
-            RolUsuario.usuarioModerador ||
-          usuario.rol ===
-            RolUsuario.usuarioAdministrador;
+        const tienePermisos = usuario.rol === RolUsuario.usuarioModerador || usuario.rol === RolUsuario.usuarioAdministrador;
 
         if (!tienePermisos) {
           router.replace("/publicaciones");
@@ -80,9 +66,7 @@ export default function LayoutModerador({
         <Navbar />
       </div>
 
-      <main className={styles.body}>
-        {children}
-      </main>
+      <main className={styles.body}>{children}</main>
 
       <div className={styles.footer}>
         <Footer />

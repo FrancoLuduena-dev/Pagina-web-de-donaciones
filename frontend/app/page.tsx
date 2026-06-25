@@ -3,8 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-// Pagina raiz.
-// Decide si enviar al usuario a la landing publica o a la aplicacion cuando exista autenticacion.
+/** Página inicial que redirige al usuario según su estado de autenticación. */
 export default async function HomePage() {
   const cookieStore = await cookies();
 

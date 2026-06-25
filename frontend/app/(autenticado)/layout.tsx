@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAccessToken, obtenerUsuarioActualRequest } from "@/lib/auth";
 
-export default function LayoutAutenticado({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/**
+ * Layout para rutas autenticadas.
+ * @param children Contenido protegido que se muestra cuando el usuario está autenticado.
+ * @returns Layout autenticado que envuelve el contenido protegido.
+ */
+export default function LayoutAutenticado({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   // null = verificando | true = autenticado
   const [estaAutenticado, setEstaAutenticado] = useState<boolean | null>(null);

@@ -8,11 +8,11 @@ type BuscadorUsuarioProps = {
   onBuscar: () => void;
 };
 
-export default function BuscadorUsuario({
-  nombreUsuario,
-  setNombreUsuario,
-  onBuscar,
-}: BuscadorUsuarioProps) {
+/**
+ * Formulario de búsqueda de usuario para moderadores.
+ * @returns Formulario para filtrar usuarios por nombre.
+ */
+export default function BuscadorUsuario({ nombreUsuario, setNombreUsuario, onBuscar }: BuscadorUsuarioProps) {
   return (
     <form
       className={styles.formulario}
@@ -21,25 +21,18 @@ export default function BuscadorUsuario({
         onBuscar();
       }}
     >
-      <label htmlFor="usuario">
-        Nombre de usuario
-      </label>
+      <label htmlFor="usuario">Nombre de usuario</label>
 
       <input
         id="usuario"
         type="text"
         value={nombreUsuario}
-        onChange={(e) =>
-          setNombreUsuario(e.target.value)
-        }
+        onChange={(e) => setNombreUsuario(e.target.value)}
         placeholder="Buscar usuario..."
         className={styles.input}
       />
 
-      <button
-        type="submit"
-        className={styles.botonPrimario}
-      >
+      <button type="submit" className={styles.botonPrimario}>
         Buscar usuario
       </button>
     </form>

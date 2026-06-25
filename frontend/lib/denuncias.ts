@@ -1,6 +1,9 @@
 import type { MotivoDenuncia } from "@/constants/denuncias";
 import { Denuncia } from "@/types/Denuncia";
 
+/**
+ * Payload para crear una denuncia.
+ */
 export type CrearDenunciaPayload = {
   publicacionId: string;
   motivo: MotivoDenuncia;
@@ -14,6 +17,11 @@ export type DenunciaBackend = {
   estado: string;
 };
 
+/**
+ * Obtiene el token de acceso guardado en localStorage.
+ * @returns Token de autorización.
+ * @throws Error si no hay sesión iniciada.
+ */
 function getToken(): string {
   const token = localStorage.getItem("access_token");
 
@@ -24,6 +32,12 @@ function getToken(): string {
   return token;
 }
 
+/**
+ * Convierte errores de la API de denuncias en mensajes legibles.
+ * @param message Mensaje crudo devuelto por el servidor.
+ * @param status Código de estado HTTP.
+ * @returns Mensaje de error legible para el usuario.
+ */
 function mapDenunciaError(message: string, status: number): string {
   if (message.includes("DENUNCIA_DUPLICADA")) {
     return "Ya denunciaste esta publicación.";
@@ -52,9 +66,12 @@ function mapDenunciaError(message: string, status: number): string {
   return message || `Error al enviar la denuncia (${status}).`;
 }
 
-export async function crearDenunciaRequest(
-  payload: CrearDenunciaPayload,
-): Promise<DenunciaBackend> {
+/**
+ * Envía una solicitud para crear una nueva denuncia.
+ * @param payload Datos de la denuncia.
+ * @returns Respuesta normalizada de la denuncia creada.
+ */
+export async function crearDenunciaRequest(payload: CrearDenunciaPayload): Promise<DenunciaBackend> {
   const res = await fetch("/api/denuncias", {
     method: "POST",
     headers: {
@@ -75,9 +92,7 @@ export async function crearDenunciaRequest(
   }
 
   if (!res.ok) {
-    const raw = Array.isArray(data.message)
-      ? data.message.join(", ")
-      : data.message || "";
+    const raw = Array.isArray(data.message) ? data.message.join(", ") : data.message || "";
 
     throw new Error(mapDenunciaError(raw, res.status));
   }
@@ -85,6 +100,11 @@ export async function crearDenunciaRequest(
   return data;
 }
 
+/**
+ * Obtiene la lista de denuncias pendientes.
+ * @param token Token de autorización del moderador.
+ * @returns Arreglo de denuncias.
+ */
 export async function obtenerDenuncias(token: string): Promise<Denuncia[]> {
   const response = await fetch("/api/denuncias", {
     headers: {
@@ -99,11 +119,14 @@ export async function obtenerDenuncias(token: string): Promise<Denuncia[]> {
   return response.json();
 }
 
-export async function tomarDenuncia(
-  id: string,
-  version: number,
-  token: string,
-): Promise<void> {
+/**
+ * Marca una denuncia como tomada por el moderador.
+ * @param id Identificador de la denuncia.
+ * @param version Versión de la denuncia para control de concurrencia.
+ * @param token Token de autorización.
+ * @returns Void si la acción se completa correctamente.
+ */
+export async function tomarDenuncia(id: string, version: number, token: string): Promise<void> {
   const response = await fetch(`/api/denuncias/${id}/tomar`, {
     method: "PATCH",
     headers: {
@@ -119,13 +142,16 @@ export async function tomarDenuncia(
     throw new Error("No se pudo tomar la denuncia");
   }
 }
-export async function resolverDenuncia(
-  id: string,
-  version: number,
-  tipoResolucion: string,
-  detalleResolucion: string,
-  token: string,
-): Promise<void> {
+/**
+ * Resuelve una denuncia con la decisión del moderador.
+ * @param id Identificador de la denuncia.
+ * @param version Versión actual de la denuncia.
+ * @param tipoResolucion Tipo de resolución elegido.
+ * @param detalleResolucion Detalle adicional de la resolución.
+ * @param token Token de autorización.
+ * @returns Void si la resolución se procesa correctamente.
+ */
+export async function resolverDenuncia(id: string, version: number, tipoResolucion: string, detalleResolucion: string, token: string): Promise<void> {
   const response = await fetch(`/api/denuncias/${id}/resolver`, {
     method: "PATCH",
     headers: {

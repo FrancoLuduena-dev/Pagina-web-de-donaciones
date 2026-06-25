@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-
 import styles from "./Sidebar.module.css";
 
 /**
@@ -13,15 +12,11 @@ import styles from "./Sidebar.module.css";
  */
 export default function Sidebar() {
   const pathname = usePathname();
-
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const condicionSeleccionada = searchParams.get("condicion") ?? "";
-
   const estadoSeleccionado = searchParams.get("estado") ?? "";
   const categoriaActual = pathname.split("/")[2];
-
   const [menuOpen, setMenuOpen] = useState(false);
 
   function cambiarCondicion(condicion: string) {
@@ -50,10 +45,7 @@ export default function Sidebar() {
 
   return (
     <nav className={styles.sidebar}>
-      <button
-        className={styles.toggleButton}
-        onClick={() => setMenuOpen(!menuOpen)}
-      >
+      <button className={styles.toggleButton} onClick={() => setMenuOpen(!menuOpen)}>
         ☰ Categorías
       </button>
 
@@ -61,27 +53,11 @@ export default function Sidebar() {
 
       <ul className={menuOpen ? `${styles.nav} ${styles.navOpen}` : styles.nav}>
         <li className={styles.linkTodas}>
-          <Link
-            href="/publicaciones"
-            className={styles.link}
-            onClick={() => setMenuOpen(false)}
-          >
+          <Link href="/publicaciones" className={styles.link} onClick={() => setMenuOpen(false)}>
             <span className={styles.icon}>
               {" "}
-              <img
-                src="/icons/packing-list.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoNormal}
-              />
-              <img
-                src="/icons/packing-list_hover.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoHover}
-              />
+              <img src="/icons/packing-list.png" alt="" width={20} height={20} className={styles.iconoNormal} />
+              <img src="/icons/packing-list_hover.png" alt="" width={20} height={20} className={styles.iconoHover} />
             </span>
             Todo
           </Link>
@@ -91,28 +67,12 @@ export default function Sidebar() {
           <Link
             href="/publicaciones/indumentaria"
             onClick={() => setMenuOpen(false)}
-            className={
-              categoriaActual === "indumentaria"
-                ? `${styles.link} ${styles.active}`
-                : styles.link
-            }
+            className={categoriaActual === "indumentaria" ? `${styles.link} ${styles.active}` : styles.link}
           >
             <span className={styles.icon}>
               {" "}
-              <img
-                src="/icons/t-shirt.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoNormal}
-              />
-              <img
-                src="/icons/t-shirt_hover.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoHover}
-              />
+              <img src="/icons/t-shirt.png" alt="" width={20} height={20} className={styles.iconoNormal} />
+              <img src="/icons/t-shirt_hover.png" alt="" width={20} height={20} className={styles.iconoHover} />
             </span>
             Indumentaria
           </Link>
@@ -122,28 +82,12 @@ export default function Sidebar() {
           <Link
             href="/publicaciones/muebles"
             onClick={() => setMenuOpen(false)}
-            className={
-              categoriaActual === "muebles"
-                ? `${styles.link} ${styles.active}`
-                : styles.link
-            }
+            className={categoriaActual === "muebles" ? `${styles.link} ${styles.active}` : styles.link}
           >
             <span className={styles.icon}>
-              <img
-                src="/icons/furniture.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoNormal}
-              />
+              <img src="/icons/furniture.png" alt="" width={20} height={20} className={styles.iconoNormal} />
 
-              <img
-                src="/icons/furniture_hover.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoHover}
-              />
+              <img src="/icons/furniture_hover.png" alt="" width={20} height={20} className={styles.iconoHover} />
             </span>
             Muebles
           </Link>
@@ -153,28 +97,12 @@ export default function Sidebar() {
           <Link
             href="/publicaciones/alimentos"
             onClick={() => setMenuOpen(false)}
-            className={
-              categoriaActual === "alimentos"
-                ? `${styles.link} ${styles.active}`
-                : styles.link
-            }
+            className={categoriaActual === "alimentos" ? `${styles.link} ${styles.active}` : styles.link}
           >
             <span className={styles.icon}>
-              <img
-                src="/icons/food.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoNormal}
-              />
+              <img src="/icons/food.png" alt="" width={20} height={20} className={styles.iconoNormal} />
 
-              <img
-                src="/icons/food_hover.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoHover}
-              />
+              <img src="/icons/food_hover.png" alt="" width={20} height={20} className={styles.iconoHover} />
             </span>
             Alimentos
           </Link>
@@ -184,28 +112,12 @@ export default function Sidebar() {
           <Link
             href="/publicaciones/otros"
             onClick={() => setMenuOpen(false)}
-            className={
-              categoriaActual === "otros"
-                ? `${styles.link} ${styles.active}`
-                : styles.link
-            }
+            className={categoriaActual === "otros" ? `${styles.link} ${styles.active}` : styles.link}
           >
             <span className={styles.icon}>
-              <img
-                src="/icons/box.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoNormal}
-              />
+              <img src="/icons/box.png" alt="" width={20} height={20} className={styles.iconoNormal} />
 
-              <img
-                src="/icons/box_hover.png"
-                alt=""
-                width={20}
-                height={20}
-                className={styles.iconoHover}
-              />
+              <img src="/icons/box_hover.png" alt="" width={20} height={20} className={styles.iconoHover} />
             </span>
             Otros
           </Link>
@@ -218,12 +130,7 @@ export default function Sidebar() {
             Condición:
           </label>
 
-          <select
-            id="condicion"
-            className={styles.selectFiltro}
-            value={condicionSeleccionada}
-            onChange={(e) => cambiarCondicion(e.target.value)}
-          >
+          <select id="condicion" className={styles.selectFiltro} value={condicionSeleccionada} onChange={(e) => cambiarCondicion(e.target.value)}>
             <option value="">Todas</option>
             <option value="NUEVO">Nuevo</option>
             <option value="USADO_BUENO">Usado (buen estado)</option>
