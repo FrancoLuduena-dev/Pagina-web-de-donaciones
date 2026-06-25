@@ -310,6 +310,7 @@ describe('PublicacionRepository', () => {
         order: {
           createdAt: 'DESC',
         },
+        withDeleted: true,
       });
     });
 
@@ -329,6 +330,7 @@ describe('PublicacionRepository', () => {
         order: {
           createdAt: 'DESC',
         },
+        withDeleted: true,
       });
     });
 
@@ -348,6 +350,7 @@ describe('PublicacionRepository', () => {
         order: {
           createdAt: 'DESC',
         },
+        withDeleted: true,
       });
     });
 

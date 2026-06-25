@@ -115,7 +115,8 @@ export class PublicacionRepository {
    * Lista las publicaciones asociadas a un creador.
    *
    * Permite filtrar por estado para consultar el historial o el estado actual
-   * de las publicaciones del usuario.
+   * de las publicaciones del usuario. Incluye las publicaciones eliminadas
+   * (soft delete) para que el creador pueda ver su historial completo.
    *
    * @param creadorId Identificador del creador.
    * @param estado Estado opcional para filtrar las publicaciones.
@@ -133,6 +134,7 @@ export class PublicacionRepository {
       order: {
         createdAt: 'DESC',
       },
+      withDeleted: true,
     });
   }
 }
