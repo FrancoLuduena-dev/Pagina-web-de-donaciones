@@ -4,6 +4,12 @@ const backendBase =
   process.env.API_URL?.replace(/\/$/, "") ??
   "http://localhost:3000";
 
+/**
+ * Resuelve una denuncia existente.
+ * @param request Solicitud entrante con token y cuerpo JSON.
+ * @param context Parámetros de ruta que incluyen el id de la denuncia.
+ * @returns Respuesta del backend con el resultado de la resolución.
+ */
 export async function PATCH(
   request: Request,
   context: {

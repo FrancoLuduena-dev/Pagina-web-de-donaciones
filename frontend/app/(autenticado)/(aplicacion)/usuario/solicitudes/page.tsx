@@ -38,16 +38,16 @@ type Solicitud = {
   };
 };
 
+/**
+ * Página de solicitudes del usuario.
+ * @returns Lista de solicitudes realizadas y recibidas.
+ */
 export default function SolicitudesPage() {
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
-  const [solicitudesRecibidas, setSolicitudesRecibidas] = useState<Solicitud[]>(
-    [],
-  );
+  const [solicitudesRecibidas, setSolicitudesRecibidas] = useState<Solicitud[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
-  const [motivosRechazo, setMotivosRechazo] = useState<Record<string, string>>(
-    {},
-  );
+  const [motivosRechazo, setMotivosRechazo] = useState<Record<string, string>>({});
 
   const titulo = "Mis solicitudes";
 
@@ -122,81 +122,71 @@ export default function SolicitudesPage() {
     }
   }
 
- async function rechazarSolicitud(solicitudId: string) {
-  try {
-    const token = localStorage.getItem("access_token");
+  async function rechazarSolicitud(solicitudId: string) {
+    try {
+      const token = localStorage.getItem("access_token");
 
-    const motivo = motivosRechazo[solicitudId]?.trim();
+      const motivo = motivosRechazo[solicitudId]?.trim();
 
-    const respuesta = await fetch(
-      `/api/solicitudes/${solicitudId}/rechazar`,
-      {
+      const respuesta = await fetch(`/api/solicitudes/${solicitudId}/rechazar`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(
-          motivo
-            ? { motivo }
-            : {},
+        body: JSON.stringify(motivo ? { motivo } : {}),
+      });
+
+      if (!respuesta.ok) {
+        throw new Error();
+      }
+
+      setSolicitudesRecibidas(
+        solicitudesRecibidas.map((solicitud) =>
+          solicitud.id === solicitudId
+            ? {
+                ...solicitud,
+                estado: "RECHAZADA",
+              }
+            : solicitud,
         ),
-      },
-    );
-
-    if (!respuesta.ok) {
-      throw new Error();
+      );
+    } catch {
+      alert("No se pudo rechazar la solicitud.");
     }
-
-    setSolicitudesRecibidas(
-      solicitudesRecibidas.map((solicitud) =>
-        solicitud.id === solicitudId
-          ? {
-              ...solicitud,
-              estado: "RECHAZADA",
-            }
-          : solicitud,
-      ),
-    );
-  } catch {
-    alert("No se pudo rechazar la solicitud.");
   }
-}
 
- async function cancelarSolicitud(solicitudId: string) {
-  try {
-    const token = localStorage.getItem("access_token");
+  async function cancelarSolicitud(solicitudId: string) {
+    try {
+      const token = localStorage.getItem("access_token");
 
-    const respuesta = await fetch(
-      `/api/solicitudes/${solicitudId}/cancelar`,
-      {
+      const respuesta = await fetch(`/api/solicitudes/${solicitudId}/cancelar`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
-      },
-    );
+      });
 
-    if (!respuesta.ok) {
-      throw new Error();
+      if (!respuesta.ok) {
+        throw new Error();
+      }
+
+      setSolicitudes(
+        solicitudes.map((solicitud) =>
+          solicitud.id === solicitudId
+            ? {
+                ...solicitud,
+                estado: "CANCELADA",
+              }
+            : solicitud,
+        ),
+      );
+    } catch {
+      alert("No se pudo cancelar la solicitud.");
     }
-
-    setSolicitudes(
-      solicitudes.map((solicitud) =>
-        solicitud.id === solicitudId
-          ? {
-              ...solicitud,
-              estado: "CANCELADA",
-            }
-          : solicitud,
-      ),
-    );
-  } catch {
-    alert("No se pudo cancelar la solicitud.");
   }
-}
 
   if (cargando) {
     return (
@@ -248,10 +238,7 @@ export default function SolicitudesPage() {
                   <div className={styles.contenido}>
                     <p>
                       <strong>Publicación:</strong>{" "}
-                      <Link
-                        className={styles.linkPublicacion}
-                        href={`/publicaciones/publicacion/${solicitud.publicacionId}`}
-                      >
+                      <Link className={styles.linkPublicacion} href={`/publicaciones/publicacion/${solicitud.publicacionId}`}>
                         {solicitud.publicacion?.titulo ?? "Ver publicación"}
                       </Link>
                     </p>
@@ -263,47 +250,34 @@ export default function SolicitudesPage() {
                     )}
 
                     <p>
-                      <strong>Fecha:</strong>{" "}
-                      {new Date(solicitud.createdAt).toLocaleDateString()}
+                      <strong>Fecha:</strong> {new Date(solicitud.createdAt).toLocaleDateString()}
                     </p>
                     {solicitud.estado === "RECHAZADA" && (
                       <p>
-                        <strong>Motivo de rechazo:</strong>{" "}
-                        {solicitud.motivoRechazo?.trim() ||
-                          "No se dio motivo de rechazo."}
+                        <strong>Motivo de rechazo:</strong> {solicitud.motivoRechazo?.trim() || "No se dio motivo de rechazo."}
                       </p>
                     )}
                     {solicitud.estado === "ACEPTADA" && (
                       <>
                         <div className={styles.separador}>
-                          <p className={styles.datos}>
-                            {" "}
-                            Datos de Contacto del Solicitante:{" "}
-                          </p>
+                          <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
                           <p>
-                            <strong>Nombre:</strong>{" "}
-                            {solicitud.creadorPublicacion?.nombre}
+                            <strong>Nombre:</strong> {solicitud.creadorPublicacion?.nombre}
                           </p>
 
                           <p>
-                            <strong>Correo:</strong>{" "}
-                            {solicitud.creadorPublicacion?.email}
+                            <strong>Correo:</strong> {solicitud.creadorPublicacion?.email}
                           </p>
 
                           <p>
-                            <strong>Teléfono:</strong>{" "}
-                            {solicitud.creadorPublicacion?.telefono}
+                            <strong>Teléfono:</strong> {solicitud.creadorPublicacion?.telefono}
                           </p>
                         </div>
                       </>
                     )}
                     {solicitud.estado === "PENDIENTE" && (
                       <div className={styles.acciones}>
-                        <button
-                          type="button"
-                          className={styles.botonCancelar}
-                          onClick={() => cancelarSolicitud(solicitud.id)}
-                        >
+                        <button type="button" className={styles.botonCancelar} onClick={() => cancelarSolicitud(solicitud.id)}>
                           Cancelar solicitud
                         </button>
                       </div>
@@ -320,9 +294,7 @@ export default function SolicitudesPage() {
           <h2 className={styles.subtitulo}>Solicitudes de mis publicaciones</h2>
 
           {solicitudesRecibidas.length === 0 ? (
-            <div className={styles.vacio}>
-              Ninguna de tus publicaciones tiene solicitudes.
-            </div>
+            <div className={styles.vacio}>Ninguna de tus publicaciones tiene solicitudes.</div>
           ) : (
             <div className={styles.lista}>
               {solicitudesRecibidas.map((solicitud) => (
@@ -346,10 +318,7 @@ export default function SolicitudesPage() {
                   <div className={styles.contenido}>
                     <p>
                       <strong>Publicación:</strong>{" "}
-                      <Link
-                        className={styles.linkPublicacion}
-                        href={`/publicaciones/publicacion/${solicitud.publicacionId}`}
-                      >
+                      <Link className={styles.linkPublicacion} href={`/publicaciones/publicacion/${solicitud.publicacionId}`}>
                         {solicitud.publicacion?.titulo ?? "Ver publicación"}
                       </Link>
                     </p>
@@ -361,63 +330,42 @@ export default function SolicitudesPage() {
                     )}
 
                     <p>
-                      <strong>Fecha:</strong>{" "}
-                      {new Date(solicitud.createdAt).toLocaleDateString()}
+                      <strong>Fecha:</strong> {new Date(solicitud.createdAt).toLocaleDateString()}
                     </p>
                     {solicitud.estado === "RECHAZADA" && (
                       <p>
-                        <strong>Motivo de rechazo:</strong>{" "}
-                        {solicitud.motivoRechazo?.trim() ||
-                          "No se dio motivo de rechazo."}
+                        <strong>Motivo de rechazo:</strong> {solicitud.motivoRechazo?.trim() || "No se dio motivo de rechazo."}
                       </p>
                     )}
 
                     {solicitud.estado === "ACEPTADA" && (
                       <>
                         <div className={styles.separador}>
-                          <p className={styles.datos}>
-                            {" "}
-                            Datos de Contacto del Solicitante:{" "}
-                          </p>
+                          <p className={styles.datos}> Datos de Contacto del Solicitante: </p>
                           <p>
-                            <strong>Nombre:</strong>{" "}
-                            {solicitud.solicitante?.nombre}
+                            <strong>Nombre:</strong> {solicitud.solicitante?.nombre}
                           </p>
 
                           <p>
-                            <strong>Correo:</strong>{" "}
-                            {solicitud.solicitante?.email}
+                            <strong>Correo:</strong> {solicitud.solicitante?.email}
                           </p>
 
                           <p>
-                            <strong>Teléfono:</strong>{" "}
-                            {solicitud.solicitante?.telefono}
+                            <strong>Teléfono:</strong> {solicitud.solicitante?.telefono}
                           </p>
                         </div>
                       </>
                     )}
                     {solicitud.estado === "PENDIENTE" &&
                       (() => {
-                        const tieneOtraSolicitudAceptada =
-                          solicitudesRecibidas.some(
-                            (otraSolicitud) =>
-                              otraSolicitud.publicacionId ===
-                                solicitud.publicacionId &&
-                              otraSolicitud.id !== solicitud.id &&
-                              otraSolicitud.estado === "ACEPTADA",
-                          );
+                        const tieneOtraSolicitudAceptada = solicitudesRecibidas.some(
+                          (otraSolicitud) => otraSolicitud.publicacionId === solicitud.publicacionId && otraSolicitud.id !== solicitud.id && otraSolicitud.estado === "ACEPTADA",
+                        );
 
                         return (
                           <div className={styles.acciones}>
-                            <button
-                              type="button"
-                              className={styles.botonAceptar}
-                              disabled={tieneOtraSolicitudAceptada}
-                              onClick={() => aceptarSolicitud(solicitud.id)}
-                            >
-                              {tieneOtraSolicitudAceptada
-                                ? "Solicitud ya reservada"
-                                : "Aceptar"}
+                            <button type="button" className={styles.botonAceptar} disabled={tieneOtraSolicitudAceptada} onClick={() => aceptarSolicitud(solicitud.id)}>
+                              {tieneOtraSolicitudAceptada ? "Solicitud ya reservada" : "Aceptar"}
                             </button>
 
                             <div className={styles.inputConBoton}>
@@ -434,11 +382,7 @@ export default function SolicitudesPage() {
                                 className={styles.inputMotivo}
                               />
 
-                              <button
-                                type="button"
-                                className={styles.botonRechazar}
-                                onClick={() => rechazarSolicitud(solicitud.id)}
-                              >
+                              <button type="button" className={styles.botonRechazar} onClick={() => rechazarSolicitud(solicitud.id)}>
                                 Rechazar
                               </button>
                             </div>

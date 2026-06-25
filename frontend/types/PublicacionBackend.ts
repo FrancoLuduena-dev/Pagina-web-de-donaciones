@@ -1,3 +1,6 @@
+/**
+ * Datos de una publicación recibida desde el backend.
+ */
 export type PublicacionBackend = {
   id: string;
   titulo: string;
@@ -12,6 +15,9 @@ export type PublicacionBackend = {
   creadorNombreCompleto?: string;
 };
 
+/**
+ * Datos requeridos para crear una nueva publicación.
+ */
 export type CrearPublicacionPayload = {
   titulo: string;
   descripcion: string;
@@ -21,4 +27,7 @@ export type CrearPublicacionPayload = {
   imagenUrls: string[];
 };
 
+/**
+ * Payload para editar una publicación existente.
+ */
 export type EditarPublicacionPayload = Partial<CrearPublicacionPayload>;

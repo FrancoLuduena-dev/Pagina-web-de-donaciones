@@ -1,3 +1,6 @@
+/**
+ * Estructura de una solicitud recibida desde el backend.
+ */
 export type SolicitudBackend = {
   id: string;
   publicacionId: string;
@@ -8,11 +11,19 @@ export type SolicitudBackend = {
   createdAt: string;
 };
 
+/**
+ * Payload para crear una nueva solicitud.
+ */
 export type CrearSolicitudPayload = {
   publicacionId: string;
   mensaje?: string;
 };
 
+/**
+ * Obtiene el token de acceso actual desde localStorage.
+ * @returns Token de autorización.
+ * @throws Error si no hay sesión iniciada.
+ */
 function getToken(): string {
   const token = localStorage.getItem("access_token");
   if (!token) {
@@ -21,6 +32,11 @@ function getToken(): string {
   return token;
 }
 
+/**
+ * Envía una solicitud para crear una nueva reserva.
+ * @param payload Datos necesarios para crear la solicitud.
+ * @returns Respuesta de la solicitud creada.
+ */
 export async function crearSolicitudRequest(
   payload: CrearSolicitudPayload,
 ): Promise<SolicitudBackend> {
@@ -51,6 +67,10 @@ export async function crearSolicitudRequest(
 }
 
 export async function listarMisSolicitudesRequest(): Promise<SolicitudBackend[]> {
+  /**
+   * Lista las solicitudes realizadas por el usuario actual.
+   * @returns Arreglo de solicitudes del usuario.
+   */
   const res = await fetch("/api/solicitudes/mias", {
     headers: { Authorization: `Bearer ${getToken()}` },
   });
@@ -75,6 +95,11 @@ export async function listarMisSolicitudesRequest(): Promise<SolicitudBackend[]>
 
 export const ESTADOS_SOLICITUD_ACTIVA = ["PENDIENTE", "ACEPTADA"];
 
+/**
+ * Marca una publicación como entregada en una solicitud.
+ * @param publicacionId ID de la publicación entregada.
+ * @returns Solicitud actualizada tras la entrega.
+ */
 export async function entregarPublicacionRequest(
   publicacionId: string,
 ): Promise<SolicitudBackend> {
@@ -103,6 +128,12 @@ export async function entregarPublicacionRequest(
   return data;
 }
 
+/**
+ * Cancela una reserva de publicación.
+ * @param publicacionId ID de la publicación cuya reserva se cancela.
+ * @param motivo Motivo opcional de cancelación.
+ * @returns Solicitud actualizada tras la cancelación.
+ */
 export async function cancelarReservaPublicacionRequest(
   publicacionId: string,
   motivo?: string,

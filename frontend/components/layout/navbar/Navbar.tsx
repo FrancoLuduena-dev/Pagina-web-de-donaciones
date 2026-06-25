@@ -3,8 +3,10 @@ import { tituloPagina } from "@/constants/site";
 import styles from "./Navbar.module.css";
 import MenuUsuario from "@/components/layout/navbar/botonUsuario/MenuUsuario";
 
-/** Navbar principal para usuarios logueados. */
-
+/**
+ * Navbar principal para usuarios logueados.
+ * @returns Barra de navegación con enlaces y menú de usuario.
+ */
 export default function Navbar() {
   return (
     <nav className={styles.navbar}>

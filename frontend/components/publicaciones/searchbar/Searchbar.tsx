@@ -4,6 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "./Searchbar.module.css";
 
+/**
+ * Barra de búsqueda para filtrar publicaciones.
+ * @returns Formulario que redirige a resultados según el texto ingresado.
+ */
 export default function Searchbar() {
   const router = useRouter();
   const [busqueda, setBusqueda] = useState("");
@@ -17,7 +21,6 @@ export default function Searchbar() {
     }
 
     router.push(`/publicaciones?q=${encodeURIComponent(texto)}`);
-
   };
 
   return (
@@ -42,26 +45,10 @@ export default function Searchbar() {
           onChange={(e) => setBusqueda(e.target.value)}
         />
 
-        <button
-          type="submit"
-          className={styles.botonBuscar}
-          aria-label="Buscar"
-        >
-          <img
-            src="/icons/search.png"
-            alt="Buscar"
-            width={24}
-            height={24}
-            className={styles.iconoNormal}
-          />
+        <button type="submit" className={styles.botonBuscar} aria-label="Buscar">
+          <img src="/icons/search.png" alt="Buscar" width={24} height={24} className={styles.iconoNormal} />
 
-          <img
-            src="/icons/search.png"
-            alt=""
-            width={24}
-            height={24}
-            className={styles.iconoHover}
-          />
+          <img src="/icons/search.png" alt="" width={24} height={24} className={styles.iconoHover} />
         </button>
       </div>
     </form>

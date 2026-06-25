@@ -1,40 +1,35 @@
 import { NextResponse } from "next/server";
 
-const backendBase =
-  process.env.API_URL?.replace(/\/$/, "") ??
-  "http://localhost:3000";
+const backendBase = process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
+/**
+ * Obtiene las denuncias desde el backend.
+ * @param request Solicitud entrante con cabecera Authorization.
+ * @returns Respuesta con la lista de denuncias o error de autenticación/servidor.
+ */
 export async function GET(request: Request) {
-  const authToken = request.headers
-    .get("Authorization")
-    ?.replace(/^Bearer\s+/, "");
+  const authToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/, "");
 
   if (!authToken) {
     return NextResponse.json(
       {
-        message:
-          "Token de autenticación faltante.",
+        message: "Token de autenticación faltante.",
       },
       { status: 401 },
     );
   }
 
   try {
-    const res = await fetch(
-      `${backendBase}/denuncias`,
-      {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-        cache: "no-store",
+    const res = await fetch(`${backendBase}/denuncias`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
       },
-    );
+      cache: "no-store",
+    });
 
     const text = await res.text();
 
-    const contentType =
-      res.headers.get("content-type") ??
-      "application/json";
+    const contentType = res.headers.get("content-type") ?? "application/json";
 
     return new NextResponse(text, {
       status: res.status,
@@ -45,24 +40,25 @@ export async function GET(request: Request) {
   } catch {
     return NextResponse.json(
       {
-        message:
-          "No se pudo conectar con el servidor. ¿Está corriendo el backend?",
+        message: "No se pudo conectar con el servidor. ¿Está corriendo el backend?",
       },
       { status: 503 },
     );
   }
 }
 
+/**
+ * Crea una nueva denuncia en el backend.
+ * @param request Solicitud entrante con token y cuerpo JSON.
+ * @returns Respuesta del backend al crear la denuncia o error de autenticación.
+ */
 export async function POST(request: Request) {
-  const authToken = request.headers
-    .get("Authorization")
-    ?.replace(/^Bearer\s+/, "");
+  const authToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/, "");
 
   if (!authToken) {
     return NextResponse.json(
       {
-        message:
-          "Token de autenticación faltante.",
+        message: "Token de autenticación faltante.",
       },
       { status: 401 },
     );
@@ -82,24 +78,18 @@ export async function POST(request: Request) {
   }
 
   try {
-    const res = await fetch(
-      `${backendBase}/denuncias`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify(body),
+    const res = await fetch(`${backendBase}/denuncias`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`,
       },
-    );
+      body: JSON.stringify(body),
+    });
 
     const text = await res.text();
 
-    const contentType =
-      res.headers.get("content-type") ??
-      "application/json";
+    const contentType = res.headers.get("content-type") ?? "application/json";
 
     return new NextResponse(text, {
       status: res.status,
@@ -110,8 +100,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json(
       {
-        message:
-          "No se pudo conectar con el servidor. ¿Está corriendo el backend?",
+        message: "No se pudo conectar con el servidor. ¿Está corriendo el backend?",
       },
       { status: 503 },
     );

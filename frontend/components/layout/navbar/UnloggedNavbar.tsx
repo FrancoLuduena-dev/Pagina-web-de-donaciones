@@ -4,9 +4,8 @@ import styles from "./UnloggedNavbar.module.css";
 
 /**
  * Barra de navegación para usuarios no autenticados.
- *
- * Muestra el nombre o logo del sitio y accesos
- * a inicio de sesión y registro.
+ * Muestra el nombre y accesos a inicio de sesión y registro.
+ * @returns Barra de navegación para visitantes sin sesión.
  */
 
 export default function UnloggedNavbar() {
