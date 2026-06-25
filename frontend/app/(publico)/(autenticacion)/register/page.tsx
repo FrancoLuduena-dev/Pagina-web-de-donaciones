@@ -10,7 +10,17 @@ import styles from "./register.module.css"
 /**
  * Página de registro de usuarios.
  *
- * @returns Formulario de registro.
+ * Renderiza un formulario que permite:
+ * - Crear una cuenta nueva
+ * - Validar datos en el cliente
+ * - Enviar datos al backend
+ *
+ * Incluye manejo de:
+ * - Estados de carga
+ * - Mensajes de error
+ * - Redirección tras registro exitoso
+ *
+ * @returns Componente de formulario de registro
  */
 export default function RegisterPage() {
 
@@ -26,10 +36,21 @@ export default function RegisterPage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     /**
-     * Maneja el envío del formulario.
-     *
-     * @param e Evento de envío del formulario.
-     */
+ * Maneja el envío del formulario de registro.
+ *
+ * Realiza:
+ * - Validaciones en frontend (correo, contraseñas, formato)
+ * - Llamada al backend para registrar el usuario
+ * - Redirección al login en caso de éxito
+ *
+ * @param e Evento de submit del formulario
+ *
+ * @throws Error si:
+ * - Los correos no coinciden
+ * - Las contraseñas no coinciden
+ * - Formato inválido
+ * - Error del backend
+ */
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
     
@@ -39,6 +60,16 @@ export default function RegisterPage() {
 
         try {
             // validaciones front
+            // validaciones front
+            /**
+             * Validaciones del formulario:
+             * - Coincidencia de contraseñas
+             * - Coincidencia de correos
+             * - Formato de correo válido
+             * - Formato de contraseña segura:
+             *   - mínimo 8 caracteres
+             *   - al menos una mayúscula, una minúscula y un número
+             */
             const contraseniasCoinciden = contrasenia === contraseniaDos;
             const correosCoinciden = correo.trim() === correoDos.trim();
             const contraseniaFormato = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/.test(contrasenia);
@@ -70,7 +101,11 @@ export default function RegisterPage() {
                 numeroTelefono: numeroTelefono.replace(/\s+/g, ''),
             });
 
-          //caso exito redirige al login
+            /**
+   * En caso de registro exitoso:
+   * - Redirige al usuario a la página de login
+   * - Refresca el estado de la app
+   */
             router.push("/login");
             router.refresh();
         } catch (err) {
@@ -83,6 +118,18 @@ export default function RegisterPage() {
             setLoading(false);
         }
     }
+
+    /**
+ * Flujo de registro:
+ *
+ * 1. Usuario completa formulario
+ * 2. Se validan datos en frontend
+ * 3. Se envía request al backend
+ * 4. Si es exitoso:
+ *    - Se redirige a login
+ * 5. Si falla:
+ *    - Se muestra error en pantalla
+ */
 
     return (
         <main className={styles.main}>
