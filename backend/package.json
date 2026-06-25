@@ -87,7 +87,26 @@
   "collectCoverageFrom": [
     "**/*.(t|j)s"
   ],
+
+  
   "coverageDirectory": "../coverage",
+
+  "coveragePathIgnorePatterns": [
+  "/node_modules/",
+  "src/usuario/dtos",
+  "src/notificacion/dtos",
+  "src/notificacion/module",
+  "src/publicacion/dtos",
+  "src/publicacion/module",
+  "src/solicitud/module",
+  "src/solicitud/dtos",
+  "src/usuario/module",
+  "src/denuncia/dtos",
+  "src/denuncia/module",
+  "main.ts",
+  ".*\\.module\\.ts$"
+  ],
+
   "testEnvironment": "node"
 }
 }
