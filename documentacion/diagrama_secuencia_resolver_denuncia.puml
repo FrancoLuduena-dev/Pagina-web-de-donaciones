@@ -1,5 +1,4 @@
-@startuml
-title Secuencia: Resolver denuncia
+@startuml "Secuencia: Resolver denuncia"
 actor Moderador
 participant "Frontend (API)" as Front
 participant "DenunciaController" as Controller

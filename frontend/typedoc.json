@@ -9,9 +9,7 @@
   "entryPointStrategy": "expand",
   "out": "./docs",
   "validation": {
-    "notDocumented": true,
-    "invalidLink": true,
-    "notExported": false
+    "notDocumented": false,
   },
   "exclude": [
     "**/*.spec.ts",

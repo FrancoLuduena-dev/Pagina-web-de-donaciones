@@ -35,7 +35,7 @@ npm install
     
         DB_NAME=tp_donaciones
         
-        JWT_SECRET=test123
+        JWT_SECRET=**[poner su propio JWT secret]**
 
 * configuración de la base de datos
     * correr en root el script "npm run setup-db" o manualmente crear la base de datos en postgres con el nombre puesto en DB_NAME

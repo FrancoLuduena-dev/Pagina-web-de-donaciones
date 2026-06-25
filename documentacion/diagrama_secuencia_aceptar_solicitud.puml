@@ -1,0 +1,33 @@
+@startuml "Secuencia: Aceptar solicitud"
+actor Creador
+participant "Frontend (API)" as Front
+participant "SolicitudController" as Controller
+participant "SolicitudService" as Service
+database "Base de datos" as DB
+participant "PublicacionService" as PubService
+participant "EventEmitter" as EventBus
+
+Creador -> Front: PATCH /solicitudes/{id}/aceptar
+Front -> Controller: aceptarSolicitud(req, user, id)
+Controller -> Service: aceptarSolicitud(id, user.id)
+activate Service
+Service -> DB: SELECT FOR UPDATE solicitud (obtener solicitud por id)
+DB --> Service: solicitud
+Service -> Service: validarCreadorPublicacion
+Service -> DB: SELECT FOR UPDATE publicacion (obtener publicacion por id)
+DB --> Service: publicacion
+Service -> Service: validarPuedeRecibirSolicitudes
+Service -> Service: solicitud.aceptar()
+Service -> Service: publicacion.reservar()
+Service -> DB: save(publicacion)
+DB --> Service: publicacion guardada
+Service -> DB: save(solicitud)
+DB --> Service: solicitud guardada
+Service -> EventBus: emitir SOLICITUD_ACEPTADA
+Service -> DB: fetch solicitud completa
+DB --> Service: solicitud completa
+Service --> Controller: SolicitudResponseDto
+deactivate Service
+Controller --> Front: 200 OK (detalle)
+Front --> Creador: respuesta
+@enduml
