@@ -1,5 +1,37 @@
 import { NextResponse } from "next/server";
 
+/**
+ * Proxy PATCH para restablecer la contraseña del usuario autenticado.
+ *
+ * Recibe un cuerpo con los datos necesarios para el cambio de contraseña
+ * y lo reenvía al backend `/usuario/resetearContrasenia`.
+ *
+ * @param request - Request HTTP entrante de Next.js
+ *
+ * @returns
+ * - 200: Respuesta del backend si el cambio fue exitoso
+ * - 400: Cuerpo inválido
+ * - 500: Error interno o fallo en la operación
+ *
+ * @remarks
+ * Flujo del endpoint:
+ * 1. Intenta parsear el body como JSON.
+ * 2. Obtiene el header Authorization si existe.
+ * 3. Reenvía la solicitud al backend con el token.
+ * 4. Si el backend responde con error, se propaga como excepción.
+ * 5. Devuelve la respuesta cruda del backend manteniendo status y headers.
+ *
+ * Este endpoint actúa como proxy transparente entre frontend y backend.
+ *
+ * @example
+ * PATCH /api/usuario/resetear-contrasenia
+ * Authorization: Bearer <token>
+ * Body:
+ * {
+ *   "contraseniaActual": "123",
+ *   "nuevaContrasenia": "456"
+ * }
+ */
 const backendBase =
 process.env.API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 
