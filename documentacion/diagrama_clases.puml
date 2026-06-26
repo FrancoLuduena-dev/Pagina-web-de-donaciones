@@ -356,19 +356,4 @@ NotificacionService ..> CrearNotificacionDto
 NotificacionService ..> NotificacionResponseDto
 UsuarioService ..> CrearUsuarioDTO
 UsuarioService ..> BloquearUsuarioDTO
-
-note bottom
-Este diagrama representa una vista simplificada del backend actual.
-
-Las relaciones con línea continua reflejan asociaciones modeladas directamente
-como relaciones entre clases/entidades.
-
-Las relaciones punteadas reflejan asociaciones lógicas por identificador UUID.
-Por ejemplo, Publicacion.creadorId y varios campos de Denuncia son UUID usados
-por la lógica de negocio, pero no necesariamente relaciones @ManyToOne en TypeORM.
-
-Los DTOs se incluyen como clases principales para mostrar la entrada y salida
-de los servicios, sin detallar todos sus campos para mantener el diagrama legible.
-end note
-
 @enduml
