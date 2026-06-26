@@ -23,7 +23,6 @@ component "Backend API NestJS" as Backend {
 [DTOs y Validaciones]
 [Eventos / Listeners internos]
 
-```
 package "Módulos funcionales" {
   [UsuarioModule]
   [PublicacionModule]
@@ -31,7 +30,6 @@ package "Módulos funcionales" {
   [DenunciaModule]
   [NotificacionModule]
 }
-```
 
 }
 }
