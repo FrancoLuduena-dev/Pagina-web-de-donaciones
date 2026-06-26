@@ -54,13 +54,6 @@ type DataSourceMock = {
   >;
 };
 
-type SolicitudServiceConPrivados = SolicitudService & {
-  rechazarSolicitudesPendientesRestantes: (
-    publicacionId: string,
-    solicitudFinalizadaId: string,
-  ) => Promise<void>;
-};
-
 describe('SolicitudService', () => {
   let service: SolicitudService;
   let repository: SolicitudRepositoryMock;
@@ -684,7 +677,10 @@ describe('SolicitudService', () => {
       repository.buscarAceptadaPorPublicacion.mockResolvedValue(
         solicitudAceptada,
       );
-      jest.spyOn(service, 'finalizarSolicitud').mockResolvedValue(respuesta);
+
+      const finalizarSolicitudSpy = jest
+        .spyOn(service, 'finalizarSolicitud')
+        .mockResolvedValue(respuesta);
 
       await expect(
         service.finalizarEntregaPorPublicacion(
@@ -696,7 +692,7 @@ describe('SolicitudService', () => {
       expect(repository.buscarAceptadaPorPublicacion).toHaveBeenCalledWith(
         solicitudAceptada.publicacionId,
       );
-      expect(service.finalizarSolicitud).toHaveBeenCalledWith(
+      expect(finalizarSolicitudSpy).toHaveBeenCalledWith(
         solicitudAceptada.id,
         'usuario-creador',
       );
@@ -726,7 +722,10 @@ describe('SolicitudService', () => {
       repository.buscarAceptadaPorPublicacion.mockResolvedValue(
         solicitudAceptada,
       );
-      jest.spyOn(service, 'cancelarSolicitud').mockResolvedValue(respuesta);
+
+      const cancelarSolicitudSpy = jest
+        .spyOn(service, 'cancelarSolicitud')
+        .mockResolvedValue(respuesta);
 
       await expect(
         service.cancelarReservaPorPublicacion(
@@ -739,7 +738,7 @@ describe('SolicitudService', () => {
       expect(repository.buscarAceptadaPorPublicacion).toHaveBeenCalledWith(
         solicitudAceptada.publicacionId,
       );
-      expect(service.cancelarSolicitud).toHaveBeenCalledWith(
+      expect(cancelarSolicitudSpy).toHaveBeenCalledWith(
         solicitudAceptada.id,
         'usuario-creador',
         dto,

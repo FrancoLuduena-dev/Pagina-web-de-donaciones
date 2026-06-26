@@ -1,298 +1,374 @@
 @startuml
-' Diagrama de clases simplificado generado desde backend
+title Diagrama de clases - Plataforma de Donaciones
+
+skinparam classAttributeIconSize 0
+
 package "Entidades" {
-  class Usuario {
-    +id: uuid
-    +nombreCompleto: string
-    +nombreUsuario: string
-    +correo: string
-    -contrasenia: string
-    +numeroTelefono: string
-    +rol: rolUsuario
-    +estado: estadosUsuario
-    +creadoEn: Date
-    +actualizadoEn: Date
-  }
 
-  class Publicacion {
-    +id: uuid
-    +creadorId: uuid
-    +titulo: string
-    +descripcion: text
-    +categoriaId: uuid
-    +localidadId: uuid
-    +condicion: CondicionObjeto
-    +imagenUrls: string[]
-    +estado: EstadoPublicacion
-    +version: int
-    +createdAt: Date
-    +updatedAt: Date
-    +deletedAt: Date
-  }
-
-  class Solicitud {
-    +id: uuid
-    +publicacionId: uuid
-    +solicitanteId: uuid
-    +creadorPublicacionId: uuid
-    +mensaje: string
-    +estado: EstadoSolicitud
-    +version: int
-    +createdAt: Date
-    +updatedAt: Date
-  }
-
-  class Denuncia {
-    +id: uuid
-    +publicacionId: uuid
-    +denuncianteId: uuid
-    +creadorPublicacionId: uuid
-    +motivo: MotivoDenuncia
-    +comentario?: string
-    +estado: EstadoDenuncia
-    +moderadorAsignadoId?: uuid
-    +tipoResolucion?: TipoResolucion
-    +detalleResolucion?: string
-    +fechaResolucion?: Date
-    +version: int
-    +fechaCreacion: Date
-    +fechaActualizacion: Date
-    +tomar(moderadorId: string)
-    +resolver(moderadorId: string, tipoResolucion: TipoResolucion, detalle: string)
-  }
-
-  class Notificacion {
-    +id: uuid
-    +destinatarioId: uuid
-    +tipo: TipoNotificacion
-    +titulo: string
-    +mensaje: text
-    +leidaEn?: Date
-    +solicitudId?: uuid
-    +publicacionId?: uuid
-    +denunciaId?: uuid
-    +creadaEn: Date
-    +marcarComoLeida()
-  }
+class Usuario {
++id: string
++nombreCompleto: string
++nombreUsuario: string
++correo: string
+-contrasenia: string
++numeroTelefono: string
++rol: rolUsuario
++estado: estadosUsuario
++bloqueador?: Usuario
++razonBloqueo: string | null
++cantidadPublicacionesBloqueadas: number
++creadoEn: Date
++actualizadoEn: Date
 }
 
-package "Servicios / Controllers" {
-  class DenunciaController {
-    +resolverDenuncia(req, id, dto)
-    +tomarDenuncia(...)
-  }
+class Publicacion {
++id: string
++creadorId: string
++titulo: string
++descripcion: string
++categoriaId: string
++localidadId: string
++condicion: CondicionObjeto
++imagenUrls: string[]
++estado: EstadoPublicacion
++version: number
++createdAt: Date
++updatedAt: Date
++deletedAt: Date
++solicitudes: Solicitud[]
 
-  class DenunciaService {
-    +crearDenuncia(...)
-    +listar(...)
-    +buscarDetallePorId(...)
-    +tomarDenuncia(...)
-    +resolverDenuncia(denunciaId, moderadorId, dto)
-    -ejecutarAccionResolucion(...)
-  }
+```
++validarCreador(usuarioId: string, mensaje?: string): void
++validarNoEsCreador(usuarioId: string, mensaje?: string): void
++validarPuedeSerGestionadaPor(usuarioId: string, usuarioRol: rolUsuario, mensaje?: string): void
++validarPuedeRecibirSolicitudes(): void
++puedeEditar(): boolean
++editar(datos: EditarPublicacionDto): void
++reservar(): void
++pausar(): void
++reactivar(): void
++entregar(): void
++eliminar(): void
++eliminarPorModeracion(): void
++cancelarReserva(): void
+-transicionarA(nuevoEstado: EstadoPublicacion): void
+```
 
-  class PublicacionService {
-    +buscarPublicacionPorId(id)
-    +pausar(...)
-    +eliminar(...)
-    +otrasOperaciones(...)
-  }
-
-  class UsuarioService {
-    +BloquearUsuario(usuarioId, moderadorId, datos)
-    +otrasOperaciones(...)
-  }
 }
 
-' Enums principales
+class Solicitud {
++id: string
++publicacionId: string
++publicacion: Publicacion
++solicitanteId: string
++solicitante: Usuario
++creadorPublicacionId: string
++creadorPublicacion: Usuario
++mensaje?: string | null
++estado: EstadoSolicitud
++motivoRechazo?: string | null
++motivoCancelacion?: string | null
++version: number
++createdAt: Date
++updatedAt: Date
+
+```
++validarCreadorPublicacion(usuarioId: string, mensaje?: string): void
++validarParticipante(usuarioId: string, mensaje?: string): void
++validarPuedeCancelarsePor(usuarioId: string): void
++aceptar(): void
++rechazar(motivo?: string): void
++cancelar(motivo?: string): void
++cancelarAceptada(motivo?: string): void
++finalizar(): void
++expirar(): void
+-transicionarA(nuevoEstado: EstadoSolicitud): void
+```
+
+}
+
+class Denuncia {
++id: string
++publicacionId: string
++denuncianteId: string
++creadorPublicacionId: string
++motivo: MotivoDenuncia
++comentario?: string | null
++estado: EstadoDenuncia
++moderadorAsignadoId?: string | null
++tipoResolucion?: TipoResolucion | null
++detalleResolucion?: string | null
++fechaResolucion?: Date | null
++version: number
++fechaCreacion: Date
++fechaActualizacion: Date
+
+```
++validarNoEsCreadorPublicacion(usuarioId: string, mensaje?: string): void
++validarModeradorAsignado(moderadorId: string, mensaje?: string): void
++validarPuedeResolver(moderadorId: string): void
++tomar(moderadorId: string): void
++resolver(moderadorId: string, tipoResolucion: TipoResolucion, detalleResolucion: string): void
+-cambiarEstado(nuevoEstado: EstadoDenuncia): void
+```
+
+}
+
+class Notificacion {
++id: string
++destinatarioId: string
++destinatario: Usuario
++tipo: TipoNotificacion
++titulo: string
++mensaje: string
++leidaEn: Date | null
++solicitudId: string | null
++solicitud: Solicitud | null
++publicacionId: string | null
++publicacion: Publicacion | null
++denunciaId: string | null
++denuncia: Denuncia | null
++creadaEn: Date
+
+```
++marcarComoLeida(): void
+```
+
+}
+}
+
+package "Servicios" {
+
+class UsuarioService {
++CrearUsuario(usuario: CrearUsuarioDTO): Promise<Usuario>
++EliminarUsuario(idUsuario: string, contrasenia: string): Promise<void>
++EliminarUsuarioAdmin(idUsuario: string, idAdmin: string): Promise<void>
++ActualizarUsuario(idUsuario: string, datos: actualizarUsuarioDTO): Promise<void>
++obtenerUsuarioPorId(idUsuario: string): Promise<Usuario>
++ObtenerUsuarioPorNombreUsuario(nombreUsuario: string): Promise<Usuario | null>
++ObtenerUsuarioPorCorreo(correo: string): Promise<Usuario | null>
++CambiarRolUsuario(idUsuario: string, idAdmin: string, datos: CambiarRolDTO): Promise<void>
++registrarPublicacionEliminadaPorModeracion(idUsuario: string, idModerador: string): Promise<void>
++ResetearContraseniaUsuario(idUsuario: string, dto: actualizarContraseniaDTO): Promise<void>
++BloquearUsuario(idUsuario: string, idModerador: string, datos: BloquearUsuarioDTO): Promise<void>
++ListarUsuarios(): Promise<Usuario[]>
+}
+
+class PublicacionService {
++crearPublicacion(dto: CrearPublicacionDto, creadorId: string): Promise<Publicacion>
++listarPublico(filtros: FiltrosPublicacionDto): Promise<Publicacion[]>
++listarMisPublicaciones(creadorId: string, estado?: EstadoPublicacion): Promise<Publicacion[]>
++editar(id: string, dto: EditarPublicacionDto, usuarioId: string): Promise<Publicacion>
++buscarPublicacionPorId(id: string): Promise<Publicacion>
++buscarPublicacionPorIdConCreador(id: string): Promise<PublicacionConCreador>
++reservar(id: string, usuarioId: string): Promise<Publicacion>
++cancelarReserva(id: string, usuarioId: string): Promise<Publicacion>
++pausar(id: string, usuarioId: string, usuarioRol: rolUsuario): Promise<Publicacion>
++reactivar(id: string, usuarioId: string, usuarioRol: rolUsuario): Promise<Publicacion>
++eliminar(id: string, usuarioId: string, usuarioRol: rolUsuario): Promise<Publicacion>
++guardar(publicacion: Publicacion): Promise<Publicacion>
+}
+
+class SolicitudService {
++crearSolicitud(dto: CrearSolicitudDto, solicitanteId: string): Promise<SolicitudResponseDto>
++listarMisSolicitudes(usuarioId: string): Promise<SolicitudResponseDto[]>
++listarSolicitudesRecibidas(usuarioId: string): Promise<SolicitudResponseDto[]>
++rechazarSolicitud(solicitudId: string, usuarioId: string, dto: RechazarSolicitudDto): Promise<SolicitudResponseDto>
++aceptarSolicitud(solicitudId: string, usuarioId: string): Promise<SolicitudResponseDto>
++finalizarSolicitud(solicitudId: string, usuarioId: string): Promise<SolicitudResponseDto>
++finalizarEntregaPorPublicacion(publicacionId: string, usuarioId: string): Promise<SolicitudResponseDto>
++cancelarReservaPorPublicacion(publicacionId: string, usuarioId: string, motivo?: string): Promise<SolicitudResponseDto>
++cancelarSolicitud(solicitudId: string, usuarioId: string, motivo?: string): Promise<SolicitudResponseDto>
++resolverSolicitudesPorPublicacionEliminada(publicacionId: string): Promise<void>
+}
+
+class DenunciaService {
++crearDenuncia(denuncianteId: string, dto: CrearDenunciaDto): Promise<DenunciaResponseDto>
++listar(filtros: FiltroDenunciaDto): Promise<DenunciaResponseDto[]>
++buscarDetallePorId(denunciaId: string): Promise<DenunciaDetalleResponseDto>
++tomarDenuncia(denunciaId: string, moderadorId: string, dto: TomarDenunciaDto): Promise<DenunciaResponseDto>
++resolverDenuncia(denunciaId: string, moderadorId: string, dto: ResolverDenunciaDto): Promise<DenunciaDetalleResponseDto>
+-ejecutarAccionResolucion(tipoResolucion: TipoResolucion, publicacionId: string, creadorPublicacionId: string, moderadorId: string, detalleResolucion: string): Promise<void>
+}
+
+class NotificacionService {
++crear(dto: CrearNotificacionDto): Promise<NotificacionResponseDto>
++listarPropias(destinatarioId: string, paginacion: PaginacionNotificacionDto): Promise<ListadoNotificacionesResponseDto>
++marcarComoLeida(notificacionId: string, destinatarioId: string): Promise<NotificacionResponseDto>
++marcarTodasComoLeidas(destinatarioId: string): Promise<void>
+}
+}
+
+package "Controllers" {
+
+class UsuarioController
+class PublicacionController
+class SolicitudController
+class DenunciaController
+class NotificacionController
+}
+
+package "DTOs principales" {
+
+class CrearPublicacionDto
+class EditarPublicacionDto
+class FiltrosPublicacionDto
+class PublicacionResponseDto
+
+class CrearSolicitudDto
+class RechazarSolicitudDto
+class CancelarSolicitudDto
+class SolicitudResponseDto
+
+class CrearDenunciaDto
+class TomarDenunciaDto
+class ResolverDenunciaDto
+class FiltroDenunciaDto
+class DenunciaResponseDto
+class DenunciaDetalleResponseDto
+
+class CrearNotificacionDto
+class PaginacionNotificacionDto
+class NotificacionResponseDto
+class ListadoNotificacionesResponseDto
+class CantidadNoLeidasResponseDto
+
+class CrearUsuarioDTO
+class actualizarUsuarioDTO
+class actualizarContraseniaDTO
+class CambiarRolDTO
+class BloquearUsuarioDTO
+}
+
 package "Enums" {
-  enum rolUsuario {
-    usuarioModerador
-    usuarioNormal
-    usuarioAdministrador
-  }
 
-  enum estadosUsuario {
-    ACTIVO
-    BLOQUEADO
-  }
-
-  enum EstadoPublicacion {
-    DISPONIBLE
-    RESERVADA
-    ENTREGADA
-    PAUSADA
-    ELIMINADA
-  }
-
-  enum CondicionObjeto {
-    NUEVO
-    USADO_BUENO
-    USADO_REGULAR
-  }
-
-  enum EstadoSolicitud {
-    PENDIENTE
-    ACEPTADA
-    RECHAZADA
-    CANCELADA
-    FINALIZADA
-    EXPIRADA
-  }
-
-  enum MotivoDenuncia {
-    CONTENIDO_INAPROPIADO
-    PUBLICACION_FALSA
-    OBJETO_PROHIBIDO
-    OTRO
-  }
-
-  enum EstadoDenuncia {
-    PENDIENTE
-    EN_REVISION
-    RESUELTA
-  }
-
-  enum TipoResolucion {
-    DESCARTADA
-    PUBLICACION_PAUSADA
-    PUBLICACION_ELIMINADA
-    USUARIO_BLOQUEADO
-  }
-
-  enum TipoNotificacion {
-    SOLICITUD_CREADA
-    SOLICITUD_ACEPTADA
-    SOLICITUD_RECHAZADA
-    SOLICITUD_ACEPTADA_CANCELADA
-    SOLICITUD_FINALIZADA
-    DENUNCIA_RESUELTA
-    PUBLICACION_PAUSADA
-    PUBLICACION_REACTIVADA
-    PUBLICACION_ELIMINADA
-    USUARIO_BLOQUEADO
-  }
+enum rolUsuario {
+usuarioModerador
+usuarioNormal
+usuarioAdministrador
 }
 
-package "DTOs" {
-  class ResolverDenunciaDto {
-    +version: int
-    +tipoResolucion: TipoResolucion
-    +detalleResolucion: string
-  }
-
-  class CrearDenunciaDto {
-    +publicacionId: uuid
-    +motivo: MotivoDenuncia
-    +comentario?: string
-  }
-
-  class DenunciaResponseDto {
-    +id: uuid
-    +publicacionId: uuid
-    +denuncianteId: uuid
-    +creadorPublicacionId: uuid
-    +moderadorAsignadoId?: uuid
-    +motivo: MotivoDenuncia
-    +comentario?: string
-    +estado: EstadoDenuncia
-    +tipoResolucion?: TipoResolucion
-    +fechaCreacion: Date
-    +fechaActualizacion: Date
-    +version: int
-  }
-
-  class DenunciaDetalleResponseDto {
-    +id: uuid
-    +publicacionId: uuid
-    +denuncianteId: uuid
-    +creadorPublicacionId: uuid
-    +moderadorAsignadoId?: uuid
-    +motivo: MotivoDenuncia
-    +comentario?: string
-    +estado: EstadoDenuncia
-    +tipoResolucion?: TipoResolucion
-    +detalleResolucion?: string
-    +fechaResolucion?: Date
-    +fechaCreacion: Date
-    +fechaActualizacion: Date
-    +version: int
-  }
-
-  class SolicitudResponseDto {
-    +id: uuid
-    +publicacionId: uuid
-    +solicitanteId: uuid
-    +creadorPublicacionId: uuid
-    +estado: EstadoSolicitud
-    +mensaje: string|null
-    +motivoRechazo: string|null
-    +motivoCancelacion: string|null
-    +createdAt: Date
-    +updatedAt: Date
-    +publicacion?: { id: string, titulo: string }
-    +solicitante?: { id: string, nombre: string, email?: string, telefono?: string }
-    +creadorPublicacion?: { id: string, nombre: string, email?: string, telefono?: string }
-  }
-
-  class CrearSolicitudDto {
-    +publicacionId: uuid
-    +mensaje?: string
-  }
-
-  class RechazarSolicitudDto {
-    +motivo?: string
-  }
-
-  class PublicacionResponseDto {
-    +id: uuid
-    +titulo: string
-    +descripcion: string
-    +categoriaId: uuid
-    +localidadId: uuid
-    +condicion: string
-    +imagenUrls: string[]
-    +estado: string
-    +creadorId: uuid
-    +creadorNombreUsuario: string
-    +creadorNombreCompleto: string
-    +createdAt: Date
-  }
-
-  class UsuarioResponseDto {
-    +id: uuid
-    +nombreUsuario: string
-    +nombreCompleto: string
-  }
-
-  class NotificacionResponseDto {
-    +id: uuid
-    +tipo: TipoNotificacion
-    +titulo: string
-    +mensaje: string
-    +leida: boolean
-    +leidaEn: Date|null
-    +solicitudId: uuid|null
-    +publicacionId: uuid|null
-    +denunciaId: uuid|null
-    +creadaEn: Date
-  }
+enum estadosUsuario {
+ACTIVO
+BLOQUEADO
 }
 
-' Relaciones (basadas en FK en entities)
-Usuario "1" -- "*" Publicacion : crea >
-Usuario "1" -- "*" Solicitud : solicita >
-Usuario "1" -- "*" Denuncia : denuncia >
-Usuario "1" -- "*" Notificacion : recibe >
-Publicacion "1" -- "*" Solicitud : tiene >
-Publicacion "1" -- "*" Denuncia : referenciada por >
-Denuncia "*" --> "1" Publicacion : publicacionId >
-Solicitud "*" --> "1" Publicacion : publicacionId >
-Notificacion "*" --> "1" Usuario : destinatarioId >
+enum EstadoPublicacion {
+DISPONIBLE
+RESERVADA
+ENTREGADA
+PAUSADA
+ELIMINADA
+}
 
-' Notificacion puede referenciar opcionalmente otras entidades
-Notificacion "*" --> "0..1" Solicitud : solicitudId
-Notificacion "*" --> "0..1" Publicacion : publicacionId
-Notificacion "*" --> "0..1" Denuncia : denunciaId
+enum CondicionObjeto {
+NUEVO
+USADO_BUENO
+USADO_REGULAR
+}
+
+enum EstadoSolicitud {
+PENDIENTE
+ACEPTADA
+RECHAZADA
+CANCELADA
+FINALIZADA
+EXPIRADA
+}
+
+enum MotivoDenuncia {
+CONTENIDO_INAPROPIADO
+PUBLICACION_FALSA
+OBJETO_PROHIBIDO
+OTRO
+}
+
+enum EstadoDenuncia {
+PENDIENTE
+EN_REVISION
+RESUELTA
+}
+
+enum TipoResolucion {
+DESCARTADA
+PUBLICACION_PAUSADA
+PUBLICACION_ELIMINADA
+USUARIO_BLOQUEADO
+}
+
+enum TipoNotificacion {
+SOLICITUD_CREADA
+SOLICITUD_ACEPTADA
+SOLICITUD_RECHAZADA
+SOLICITUD_ACEPTADA_CANCELADA
+SOLICITUD_FINALIZADA
+DENUNCIA_RESUELTA
+PUBLICACION_PAUSADA
+PUBLICACION_REACTIVADA
+PUBLICACION_ELIMINADA
+USUARIO_BLOQUEADO
+}
+}
+
+' Relaciones entre entidades
+Usuario "0..1" -- "0..*" Usuario : bloqueador / bloqueados
+
+Usuario "1" ..> "0..*" Publicacion : creadorId
+Publicacion "1" -- "0..*" Solicitud : solicitudes
+
+Usuario "1" -- "0..*" Solicitud : solicitante
+Usuario "1" -- "0..*" Solicitud : creadorPublicacion
+
+Publicacion "1" ..> "0..*" Denuncia : publicacionId
+Usuario "1" ..> "0..*" Denuncia : denuncianteId
+Usuario "1" ..> "0..*" Denuncia : creadorPublicacionId
+Usuario "0..1" ..> "0..*" Denuncia : moderadorAsignadoId
+
+Usuario "1" -- "0..*" Notificacion : destinatario
+Solicitud "0..1" -- "0..*" Notificacion : solicitud
+Publicacion "0..1" -- "0..*" Notificacion : publicacion
+Denuncia "0..1" -- "0..*" Notificacion : denuncia
+
+' Dependencias controller -> service
+UsuarioController ..> UsuarioService
+PublicacionController ..> PublicacionService
+SolicitudController ..> SolicitudService
+DenunciaController ..> DenunciaService
+NotificacionController ..> NotificacionService
+
+' Dependencias principales entre servicios
+PublicacionService ..> UsuarioService : consulta creador / bloqueo automático
+SolicitudService ..> PublicacionService : reserva / entrega / cancelación
+DenunciaService ..> PublicacionService : pausa o elimina publicación
+DenunciaService ..> UsuarioService : bloquea usuario
+
+' Uso de DTOs
+PublicacionService ..> CrearPublicacionDto
+PublicacionService ..> EditarPublicacionDto
+SolicitudService ..> CrearSolicitudDto
+SolicitudService ..> RechazarSolicitudDto
+SolicitudService ..> SolicitudResponseDto
+DenunciaService ..> CrearDenunciaDto
+DenunciaService ..> ResolverDenunciaDto
+DenunciaService ..> DenunciaResponseDto
+DenunciaService ..> DenunciaDetalleResponseDto
+NotificacionService ..> CrearNotificacionDto
+NotificacionService ..> NotificacionResponseDto
+UsuarioService ..> CrearUsuarioDTO
+UsuarioService ..> BloquearUsuarioDTO
+
+note bottom
+Este diagrama representa una vista simplificada del backend actual.
+
+Las relaciones con línea continua reflejan asociaciones modeladas directamente
+como relaciones entre clases/entidades.
+
+Las relaciones punteadas reflejan asociaciones lógicas por identificador UUID.
+Por ejemplo, Publicacion.creadorId y varios campos de Denuncia son UUID usados
+por la lógica de negocio, pero no necesariamente relaciones @ManyToOne en TypeORM.
+
+Los DTOs se incluyen como clases principales para mostrar la entrada y salida
+de los servicios, sin detallar todos sus campos para mantener el diagrama legible.
+end note
 
 @enduml

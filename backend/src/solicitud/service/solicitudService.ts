@@ -42,15 +42,15 @@ export class SolicitudService {
   /**
    * Crea una nueva solicitud sobre una publicación.
    *
-   * Antes de persistirla, el servicio valida que la publicación pueda recibir
-   * solicitudes, que el usuario no sea el creador y que no exista ya una
-   * solicitud activa para esa publicación.
+   * Antes de persistirla, valida que la publicación pueda recibir solicitudes,
+   * que la publicación no pertenezca al usuario solicitante y que el mismo
+   * solicitante no tenga una solicitud activa previa para esa publicación.
    *
    * @param dto Datos de la solicitud enviada por el usuario.
-   * @param solicitanteId Identificador del usuario que realiza la solicitud.
+   * @param solicitanteId Identificador del usuario autenticado que realiza la solicitud.
    * @returns Solicitud creada serializada para la respuesta.
-   * @throws ForbiddenException Si el usuario intenta solicitar su propia publicación.
-   * @throws ConflictException Si ya existe una solicitud activa para la publicación.
+   * @throws ForbiddenException Si el usuario intenta solicitar una publicación propia.
+   * @throws ConflictException Si el mismo solicitante ya tiene una solicitud activa para esa publicación.
    */
   async crearSolicitud(
     dto: CrearSolicitudDto,

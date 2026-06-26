@@ -1,9 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
 import { rolUsuario } from 'src/usuario/enums/rolUsuario';
 
-/**
- * Clave de metadata usada para almacenar los roles requeridos por un endpoint o controlador.
- */
 export const ROLES_KEY = 'roles';
 
 /**
