@@ -89,22 +89,24 @@ describe('PublicacionRepository', () => {
   });
 
   describe('buscarPorId', () => {
+    const idValido = '11111111-1111-4111-8111-111111111111';
+
     it('busca por id excluyendo publicaciones eliminadas lógicamente', async () => {
       const publicacion = crearPublicacion({
-        id: 'publicacion-1',
+        id: idValido,
         deletedAt: undefined,
       });
 
       repository.findOne.mockResolvedValue(publicacion);
 
       await expect(
-        publicacionRepository.buscarPorId('publicacion-1'),
+        publicacionRepository.buscarPorId(idValido),
       ).resolves.toBe(publicacion);
 
       expect(repository.findOne).toHaveBeenCalledTimes(1);
       expect(repository.findOne).toHaveBeenCalledWith({
         where: {
-          id: 'publicacion-1',
+          id: idValido,
           deletedAt: IsNull(),
         },
       });
@@ -114,22 +116,32 @@ describe('PublicacionRepository', () => {
       repository.findOne.mockResolvedValue(null);
 
       await expect(
-        publicacionRepository.buscarPorId('publicacion-inexistente'),
+        publicacionRepository.buscarPorId(
+          '22222222-2222-4222-8222-222222222222',
+        ),
       ).resolves.toBeNull();
 
       expect(repository.findOne).toHaveBeenCalledWith({
         where: {
-          id: 'publicacion-inexistente',
+          id: '22222222-2222-4222-8222-222222222222',
           deletedAt: IsNull(),
         },
       });
+    });
+
+    it('devuelve null sin consultar la base cuando el id no tiene formato UUID', async () => {
+      await expect(
+        publicacionRepository.buscarPorId('id-invalido'),
+      ).resolves.toBeNull();
+
+      expect(repository.findOne).not.toHaveBeenCalled();
     });
 
     it('propaga el error si TypeORM falla al buscar por id', async () => {
       repository.findOne.mockRejectedValue(new Error('Error al buscar'));
 
       await expect(
-        publicacionRepository.buscarPorId('publicacion-1'),
+        publicacionRepository.buscarPorId(idValido),
       ).rejects.toThrow('Error al buscar');
 
       expect(repository.findOne).toHaveBeenCalledTimes(1);

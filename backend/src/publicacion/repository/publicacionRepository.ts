@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { isUUID } from 'class-validator';
 import { FindOptionsWhere, ILike, IsNull, Repository } from 'typeorm';
 import { Publicacion } from '../entity/publicacionEntity';
 import { EstadoPublicacion } from '../enums/estadoPublicacion';
@@ -41,12 +42,18 @@ export class PublicacionRepository {
   /**
    * Busca una publicación activa por su identificador.
    *
-   * Excluye las publicaciones marcadas como eliminadas de forma lógica.
+   * Excluye las publicaciones marcadas como eliminadas de forma lógica. Si el
+   * identificador no tiene formato UUID, devuelve `null` en lugar de consultar
+   * la base, evitando un error de "invalid input syntax for type uuid".
    *
    * @param id Identificador de la publicación.
-   * @returns Publicación encontrada o null si no existe.
+   * @returns Publicación encontrada o null si no existe o el id es inválido.
    */
   buscarPorId(id: string): Promise<Publicacion | null> {
+    if (!isUUID(id)) {
+      return Promise.resolve(null);
+    }
+
     return this.repository.findOne({
       where: {
         id,
