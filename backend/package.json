@@ -20,6 +20,7 @@
   "test:e2e": "jest --config ./test/jest-e2e.json",
   "setup-db": "ts-node scripts/setup-db.ts",
   "db:seed": "psql -f scripts/seed.sql",
+  "perf": "node scripts/medir-rendimiento.mjs",
   "docs": "typedoc --options typedoc.json"
 }
 ,

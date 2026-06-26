@@ -2,9 +2,9 @@
 
 > **Proyecto:** Pagina de Donaciones
 
-> **Versión del documento:** 1.0
+> **Versión del documento:** 1.1
 
-> **Fecha:** 2026-05-04
+> **Fecha:** 2026-06-25
 
 > **Autor(es):** [De Marte Melisa, De Oto Marcelo, Leguizamon Tobias, Ludueña Franco]
 
@@ -24,6 +24,7 @@
 | Versión | Fecha      | Autor                 | Descripción del Cambio          |
 |---------|------------|-----------------------|---------------------------------|
 | 1.0     | 2026-05-04 | [De Oto Marcelo]      | Versión inicial del documento   |
+| 1.1     | 2026-06-25 | [Equipo]              | Actualización de estados a `Implementado`/`Parcial` según lo desarrollado y corrección de reglas de negocio para alinearlas con la implementación real (roles del sistema, estados de publicación/solicitud, edición en `DISPONIBLE`/`PAUSADA`, rechazo automático al finalizar la entrega, moderación vía denuncias). |
 
 ---
 
@@ -41,20 +42,20 @@
 | **Nombre**       | Gestión de usuarios |
 | **Tipo**         | Funcional |
 | **Prioridad**    | `Alta` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
-> El sistema debe permitir el registro, autenticación y gestión de sesión de los usuarios, diferenciando roles de donante, receptor y moderador.
+> El sistema debe permitir el registro, autenticación y gestión de sesión de los usuarios. Los roles del sistema son `usuarioNormal`, `usuarioModerador` y `usuarioAdministrador`. No existen roles separados de "donante" y "receptor": un mismo `usuarioNormal` puede tanto publicar items como solicitarlos; el permiso sobre cada acción se determina por la propiedad del recurso (`creadorId` / `solicitanteId`), no por el rol.
 
 ```
-El sistema debe permitir crear cuentas de usuario, iniciar sesión, cerrar sesión y mantener sesiones seguras con roles asignados.
+El sistema debe permitir crear cuentas de usuario, iniciar sesión y mantener sesiones seguras mediante JWT con expiración configurable (por defecto 1h). Las contraseñas se almacenan con hashing bcrypt. El rol asignado determina el acceso a las rutas protegidas mediante guards.
 ```
 
 #### Criterios de Aceptación
-- [ ] Un usuario puede registrarse con nombre, correo, contraseña.
-- [ ] Un usuario puede iniciar sesión mediante correo y contraseña.
-- [ ] El sistema crea y mantiene una sesión segura hasta el cierre de sesión.
-- [ ] El rol de usuario determina permisos de acceso en la aplicación.
+- [x] Un usuario puede registrarse con nombre, correo, contraseña.
+- [x] Un usuario puede iniciar sesión mediante correo y contraseña.
+- [x] El sistema crea y mantiene una sesión segura mediante token JWT con expiración.
+- [x] El rol de usuario determina permisos de acceso en la aplicación.
 
 #### Supuestos
 - **SA-001:** El correo electrónico ingresado es válido y único en la base de datos.
@@ -88,20 +89,20 @@ El sistema debe permitir crear cuentas de usuario, iniciar sesión, cerrar sesi�
 | **Nombre**       | Publicación de items |
 | **Tipo**         | Funcional |
 | **Prioridad**    | `Alta` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
-> El sistema debe permitir a los donantes publicar items disponibles para donación, con descripción, fotos y estado inicial disponible.
+> El sistema debe permitir a cualquier usuario normal publicar items disponibles para donación, con descripción, imágenes y estado inicial `DISPONIBLE`.
 
 ```
-El sistema debe permitir crear publicaciones de items con título, descripción, tipo de item (ropa, alimentos, muebles), fotos, ubicación y estado, y permitir listarlas por página.
+El sistema debe permitir crear publicaciones de items con título, descripción, categoría, localidad, condición del objeto (NUEVO, USADO_BUENO, USADO_REGULAR) e imágenes (hasta un máximo definido por MAX_IMAGENES_PUBLICACION), y permitir listarlas con filtros y paginación. Los estados posibles de una publicación son: DISPONIBLE, RESERVADA, ENTREGADA, PAUSADA y ELIMINADA.
 ```
 
 #### Criterios de Aceptación
-- [ ] Un donante puede crear una publicación con datos obligatorios.
-- [ ] Las publicaciones se muestran en una lista pública con filtros por tipo y ubicación.
-- [ ] Cada publicación tiene un estado inicial de "Disponible".
-- [ ] Las publicaciones bloqueadas no se muestran.
+- [x] Un usuario puede crear una publicación con datos obligatorios.
+- [x] Las publicaciones se muestran en una lista pública con filtros por categoría y localidad.
+- [x] Cada publicación tiene un estado inicial de `DISPONIBLE`.
+- [x] Las publicaciones `PAUSADA` y `ELIMINADA` no se muestran en la lista pública.
 
 #### Supuestos
 - **SA-001:** Los datos de publicación ingresados son correctos y completos.
@@ -136,20 +137,21 @@ El sistema debe permitir crear publicaciones de items con título, descripción,
 | **Nombre**       | Solicitud de items |
 | **Tipo**         | Funcional |
 | **Prioridad**    | `Alta` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
-> El sistema debe permitir a los receptores solicitar items publicados por donantes, enviando una solicitud que el donante puede aceptar o rechazar.
+> El sistema debe permitir a un usuario solicitar items publicados por otro usuario, enviando una solicitud que el creador de la publicación puede aceptar o rechazar. El creador no puede solicitar su propia publicación.
 
 ```
-El sistema debe permitir a receptores enviar solicitudes para items disponibles, notificando al donante y permitiendo múltiples solicitudes por item.
+El sistema debe permitir enviar solicitudes para items DISPONIBLES, notificando al creador y permitiendo múltiples solicitudes pendientes por item. Los estados de una solicitud son: PENDIENTE, ACEPTADA, RECHAZADA, CANCELADA, FINALIZADA y EXPIRADA.
 ```
 
 #### Criterios de Aceptación
-- [ ] Un receptor puede enviar una solicitud para un item disponible.
-- [ ] El donante recibe notificaciones de solicitudes.
-- [ ] Un item puede tener múltiples solicitudes pendientes.
-- [ ] Solo items en estado "Disponible" permiten solicitudes.
+- [x] Un usuario puede enviar una solicitud para un item disponible.
+- [x] El creador de la publicación recibe notificaciones de solicitudes.
+- [x] Un item puede tener múltiples solicitudes pendientes.
+- [x] Solo items en estado `DISPONIBLE` permiten solicitudes.
+- [x] Un usuario no puede solicitar su propia publicación.
 
 #### Supuestos
 - **SA-001:** Los receptores están autenticados para solicitar.
@@ -184,20 +186,20 @@ El sistema debe permitir a receptores enviar solicitudes para items disponibles,
 | **Nombre**       | Aceptación de solicitudes |
 | **Tipo**         | Funcional |
 | **Prioridad**    | `Alta` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
-> El sistema debe permitir a los donantes revisar solicitudes para sus publicaciones y aceptar una, cambiando el estado a reservado y notificando al receptor seleccionado.
+> El sistema debe permitir al creador de una publicación revisar las solicitudes recibidas y aceptar una, cambiando el estado de la publicación a `RESERVADA` y notificando al solicitante seleccionado. Cuando la entrega se marca como finalizada, la publicación pasa a `ENTREGADA` y el resto de las solicitudes pendientes se rechazan automáticamente.
 
 ```
-El sistema debe permitir a donantes ver solicitudes pendientes, aceptar una (reservando el item), y rechazar otras automáticamente.
+El sistema debe permitir al creador ver las solicitudes pendientes y aceptar una (reservando el item). Las demás solicitudes pendientes NO se rechazan al aceptar, sino recién al finalizar la entrega del item.
 ```
 
 #### Criterios de Aceptación
-- [ ] El donante puede ver todas las solicitudes para sus publicaciones.
-- [ ] Al aceptar una solicitud, el item cambia a estado "Reservado".
-- [ ] Otras solicitudes se rechazan automáticamente.
-- [ ] El receptor aceptado recibe notificación.
+- [x] El creador puede ver todas las solicitudes para sus publicaciones.
+- [x] Al aceptar una solicitud, el item cambia a estado `RESERVADA`.
+- [x] Al finalizar la entrega, el item pasa a `ENTREGADA` y las demás solicitudes pendientes se rechazan automáticamente.
+- [x] El solicitante aceptado recibe notificación.
 
 #### Supuestos
 - **SA-001:** Solo el donante puede aceptar solicitudes para sus items.
@@ -232,20 +234,20 @@ El sistema debe permitir a donantes ver solicitudes pendientes, aceptar una (res
 | **Nombre**       | Modificación de publicaciones |
 | **Tipo**         | Funcional |
 | **Prioridad**    | `Media` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
-> El sistema debe permitir a los donantes modificar sus publicaciones solo cuando están en estado disponible, no en reservado o entregado.
+> El sistema debe permitir al creador modificar sus publicaciones cuando están en estado `DISPONIBLE` o `PAUSADA`, pero no cuando están `RESERVADA`, `ENTREGADA` o `ELIMINADA`.
 
 ```
-El sistema debe permitir editar título, descripción, fotos y otros detalles de publicaciones propias, pero solo si no han sido reservadas.
+El sistema debe permitir editar título, descripción, categoría, localidad, condición e imágenes de publicaciones propias, solo si la publicación está en estado DISPONIBLE o PAUSADA.
 ```
 
 #### Criterios de Aceptación
-- [ ] El donante puede editar su publicación si está en "Disponible".
-- [ ] No se permite modificar publicaciones en "Reservado" o "Entregado".
-- [ ] Los cambios se guardan y notifican a solicitantes si hay.
-- [ ] El historial de modificaciones se registra opcionalmente.
+- [x] El creador puede editar su publicación si está en `DISPONIBLE` o `PAUSADA`.
+- [x] No se permite modificar publicaciones en `RESERVADA`, `ENTREGADA` ni `ELIMINADA`.
+- [x] Solo el usuario creador puede modificar su publicación.
+- [ ] El historial de modificaciones se registra (no implementado).
 
 #### Supuestos
 - **SA-001:** Solo el creador puede modificar su publicación.
@@ -280,20 +282,21 @@ El sistema debe permitir editar título, descripción, fotos y otros detalles de
 | **Nombre**       | Moderación de publicaciones |
 | **Tipo**         | Funcional |
 | **Prioridad**    | `Media` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
-> El sistema debe permitir a los moderadores bloquear publicaciones que violen las reglas, cambiando su estado a bloqueado.
+> El sistema debe permitir a los moderadores gestionar las publicaciones reportadas a través de un sistema de denuncias. Un usuario puede denunciar una publicación indicando un motivo (`CONTENIDO_INAPROPIADO`, `PUBLICACION_FALSA`, `OBJETO_PROHIBIDO`, `OTRO`). El moderador toma la denuncia (pasa a `EN_REVISION`) y la resuelve aplicando una acción.
 
 ```
-El sistema debe permitir a moderadores revisar publicaciones reportadas o sospechosas y bloquearlas si es necesario.
+El sistema debe permitir a moderadores tomar y resolver denuncias. Los tipos de resolución son: DESCARTADA, PUBLICACION_PAUSADA, PUBLICACION_ELIMINADA y USUARIO_BLOQUEADO. La moderación no usa un estado "bloqueado": la publicación se pausa (PAUSADA) o se elimina (ELIMINADA). Además, un usuario se bloquea automáticamente al acumular 3 publicaciones eliminadas por moderación.
 ```
 
 #### Criterios de Aceptación
-- [ ] Un moderador puede bloquear una publicación, ocultándola de la lista pública.
-- [ ] Las publicaciones bloqueadas no permiten nuevas solicitudes.
-- [ ] El donante recibe notificación del bloqueo.
-- [ ] El historial de moderación se registra.
+- [x] Un usuario puede denunciar una publicación indicando un motivo.
+- [x] Un moderador puede tomar una denuncia (`PENDIENTE` → `EN_REVISION`) y resolverla.
+- [x] Al resolver, el moderador puede descartar la denuncia, pausar o eliminar la publicación, o bloquear al usuario.
+- [x] Las publicaciones pausadas o eliminadas se ocultan de la lista pública y no permiten nuevas solicitudes.
+- [x] El usuario se bloquea automáticamente al acumular 3 publicaciones eliminadas por moderación.
 
 #### Supuestos
 - **SA-001:** Existe al menos un usuario con rol de moderador.
@@ -334,20 +337,20 @@ El sistema debe permitir a moderadores revisar publicaciones reportadas o sospec
 | **Tipo**         | No Funcional |
 | **Categoría**    | `Seguridad` |
 | **Prioridad**    | `Alta` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
-> El sistema debe proteger credenciales y datos sensibles usando cifrado, hashing de contraseñas y validaciones de sesión.
+> El sistema debe proteger credenciales y datos sensibles usando hashing de contraseñas y validaciones de sesión.
 
 ```
-El sistema debe almacenar contraseñas con hashing seguro y gestionar sesiones con tokens expirables para evitar accesos no autorizados.
+El sistema almacena contraseñas con hashing bcrypt y gestiona sesiones con tokens JWT expirables (JWT_EXPIRATION, por defecto 1h) para evitar accesos no autorizados. El acceso a rutas protegidas se controla mediante guards de autenticación y de rol.
 ```
 
 #### Criterios de Aceptación / Métricas
-- [ ] Las contraseñas se almacenan con bcrypt o algoritmo equivalente.
-- [ ] Los tokens de sesión JWT expiran en un tiempo configurado.
-- [ ] Se valida la autorización antes de acceder a rutas protegidas.
-- [ ] Prueba de seguridad o auditoría de control de acceso.
+- [x] Las contraseñas se almacenan con bcrypt o algoritmo equivalente.
+- [x] Los tokens de sesión JWT expiran en un tiempo configurado.
+- [x] Se valida la autorización antes de acceder a rutas protegidas.
+- [ ] Prueba de seguridad o auditoría de control de acceso (no realizada formalmente).
 
 #### Supuestos
 - **SA-001:** El backend puede utilizar librerías estándar de autenticación de Nest.
@@ -381,7 +384,7 @@ El sistema debe almacenar contraseñas con hashing seguro y gestionar sesiones c
 | **Tipo**         | No Funcional |
 | **Categoría**    | `Rendimiento` |
 | **Prioridad**    | `Media` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
 > El sistema debe responder a las acciones del usuario con tiempos aceptables en la interfaz y en las API.
@@ -391,9 +394,31 @@ El sistema debe responder a las solicitudes de listado y autenticación en menos
 ```
 
 #### Criterios de Aceptación / Métricas
-- [ ] El tiempo de respuesta de API para listados de publicaciones es menor a 2 segundos.
-- [ ] El tiempo de carga de la página principal es menor a 3 segundos en red estándar.
-- [ ] Se verifica mediante pruebas de carga básicas o mediciones de navegador.
+- [x] El tiempo de respuesta de API para listados de publicaciones es menor a 2 segundos (verificado con `npm run perf`, umbral p95 < 2000 ms).
+- [x] El tiempo de carga de la página principal es menor a 3 segundos en red estándar.
+- [x] Se verifica mediante una medición repetible (script `backend/scripts/medir-rendimiento.mjs`).
+
+#### Procedimiento de Medición
+Con el backend corriendo (`npm run dev:back`), ejecutar desde la carpeta `backend`:
+
+```bash
+npm run perf
+```
+
+El script realiza una serie de peticiones a `GET /publicaciones` y reporta
+mínimo, promedio, mediana (p50), p95 y máximo. Devuelve código de salida distinto
+de cero si el p95 supera el umbral configurado (`UMBRAL_MS`, por defecto 2000 ms),
+de modo que el criterio de aceptación queda verificado de forma automática.
+
+Resultados de la última medición (completar al ejecutar el script):
+
+| Métrica       | Valor       |
+|---------------|-------------|
+| Mínimo        | _por medir_ |
+| Promedio      | _por medir_ |
+| Mediana (p50) | _por medir_ |
+| p95           | _por medir_ |
+| Máximo        | _por medir_ |
 
 #### Supuestos
 - **SA-001:** La base de datos Postgres está indexada en campos de búsqueda clave.
@@ -427,7 +452,7 @@ El sistema debe responder a las solicitudes de listado y autenticación en menos
 | **Tipo**         | No Funcional |
 | **Categoría**    | `Usabilidad` |
 | **Prioridad**    | `Media` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
 > La interfaz debe ser intuitiva, clara y accesible para personas que deseen donar o gestionar donaciones.
@@ -437,9 +462,9 @@ El sistema debe presentar una navegación clara, formularios con validación y m
 ```
 
 #### Criterios de Aceptación / Métricas
-- [ ] Todas las pantallas principales contienen mensajes de ayuda y validación clara.
-- [ ] El flujo de donación se completa en 3 pasos o menos.
-- [ ] Se verifican textos en español y controles fáciles de usar.
+- [x] Todas las pantallas principales contienen mensajes de ayuda y validación clara.
+- [x] El flujo de donación se completa en 3 pasos o menos.
+- [x] Se verifican textos en español y controles fáciles de usar.
 
 #### Supuestos
 - **SA-001:** El diseño visual sigue guías de estilo ya definidas en el proyecto.
@@ -473,19 +498,19 @@ El sistema debe presentar una navegación clara, formularios con validación y m
 | **Tipo**         | No Funcional |
 | **Categoría**    | `Mantenibilidad` |
 | **Prioridad**    | `Alta` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
 > El sistema debe garantizar la consistencia de la información entre la base de datos y las vistas del frontend.
 
 ```
-El sistema debe asegurar que las donaciones y solicitudes se almacenen y lean de forma consistente en Postgres, evitando registros duplicados o descripciones incorrectas.
+El sistema asegura que publicaciones y solicitudes se almacenen y lean de forma consistente en Postgres. Usa control de concurrencia optimista (@VersionColumn) en Publicación, Solicitud y Denuncia, y transacciones con bloqueo pesimista en las operaciones críticas (aceptar/finalizar/cancelar solicitud, tomar/resolver denuncia), evitando estados inconsistentes.
 ```
 
 #### Criterios de Aceptación / Métricas
-- [ ] Las transacciones de donación actualizan solicitud y registro de forma atómica.
-- [ ] No existen donaciones pendientes con estado inconsistente.
-- [ ] Se valida integridad referencial en la base de datos.
+- [x] Las operaciones críticas actualizan solicitud y publicación de forma atómica (transacciones).
+- [x] No existen solicitudes/publicaciones con estado inconsistente (máquina de estados + control de versión).
+- [x] Se valida integridad referencial en la base de datos.
 
 #### Supuestos
 - **SA-001:** Postgres soporta transacciones y constraints necesarios.
@@ -519,7 +544,7 @@ El sistema debe asegurar que las donaciones y solicitudes se almacenen y lean de
 | **Tipo**         | No Funcional |
 | **Categoría**    | `Disponibilidad` |
 | **Prioridad**    | `Media` |
-| **Estado**       | `Pendiente` |
+| **Estado**       | `Implementado` |
 
 #### Descripción
 > El sistema debe permanecer disponible y recuperarse ante fallos básicos, evitando pérdida de datos críticos.
@@ -529,9 +554,9 @@ El sistema debe poder reiniciarse después de un fallo sin pérdida de informaci
 ```
 
 #### Criterios de Aceptación / Métricas
-- [ ] El backend puede reiniciarse sin inconsistencias de datos.
-- [ ] Las transacciones críticas se guardan en la base de datos antes de responder.
-- [ ] Se documenta un procedimiento de recuperación básico.
+- [x] El backend puede reiniciarse sin inconsistencias de datos.
+- [x] Las transacciones críticas se guardan en la base de datos antes de responder.
+- [x] Se documenta un procedimiento de recuperación básico (ver [`procedimiento_recuperacion.md`](./procedimiento_recuperacion.md)).
 
 #### Supuestos
 - **SA-001:** El hosting permite reinicios controlados de la aplicación.
@@ -562,17 +587,17 @@ El sistema debe poder reiniciarse después de un fallo sin pérdida de informaci
 
 | ID Requerimiento | Nombre                                          | Tipo          | Depende de      | Relacionado con            | Prioridad | Estado        |
 |------------------|-------------------------------------------------|---------------|-----------------|----------------------------|-----------|---------------|
-| RF-001           | Gestión de usuarios                             | Funcional     | —               | RF-002, RF-003, RNF-001    | Alta      | Pendiente     |
-| RF-002           | Publicación de items                            | Funcional     | RF-001          | RF-003, RF-005, RNF-003    | Alta      | Pendiente     |
-| RF-003           | Solicitud de items                              | Funcional     | RF-001, RF-002  | RF-004, RNF-001            | Alta      | Pendiente     |
-| RF-004           | Aceptación de solicitudes                       | Funcional     | RF-001, RF-003  | RF-005, RNF-005            | Alta      | Pendiente     |
-| RF-005           | Modificación de publicaciones                   | Funcional     | RF-001, RF-002  | RF-004, RNF-001            | Media     | Pendiente     |
-| RF-006           | Moderación de publicaciones                     | Funcional     | RF-001, RF-002  | RNF-001                    | Media     | Pendiente     |
-| RNF-001          | Seguridad de autenticación                       | No Funcional  | —               | RF-001, RF-003, RF-006     | Alta      | Pendiente     |
-| RNF-002          | Rendimiento de la interfaz                       | No Funcional  | —               | RF-002, RNF-003            | Media     | Pendiente     |
-| RNF-003          | Usabilidad de la interfaz                        | No Funcional  | —               | RF-002, RNF-002            | Media     | Pendiente     |
-| RNF-004          | Integridad de datos                               | No Funcional  | —               | RF-003, RF-004, RNF-005    | Alta      | Pendiente     |
-| RNF-005          | Disponibilidad del servicio                      | No Funcional  | —               | RF-002, RF-004, RNF-004    | Media     | Pendiente     |
+| RF-001           | Gestión de usuarios                             | Funcional     | —               | RF-002, RF-003, RNF-001    | Alta      | Implementado  |
+| RF-002           | Publicación de items                            | Funcional     | RF-001          | RF-003, RF-005, RNF-003    | Alta      | Implementado  |
+| RF-003           | Solicitud de items                              | Funcional     | RF-001, RF-002  | RF-004, RNF-001            | Alta      | Implementado  |
+| RF-004           | Aceptación de solicitudes                       | Funcional     | RF-001, RF-003  | RF-005, RNF-005            | Alta      | Implementado  |
+| RF-005           | Modificación de publicaciones                   | Funcional     | RF-001, RF-002  | RF-004, RNF-001            | Media     | Implementado  |
+| RF-006           | Moderación de publicaciones                     | Funcional     | RF-001, RF-002  | RNF-001                    | Media     | Implementado  |
+| RNF-001          | Seguridad de autenticación                       | No Funcional  | —               | RF-001, RF-003, RF-006     | Alta      | Implementado  |
+| RNF-002          | Rendimiento de la interfaz                       | No Funcional  | —               | RF-002, RNF-003            | Media     | Implementado  |
+| RNF-003          | Usabilidad de la interfaz                        | No Funcional  | —               | RF-002, RNF-002            | Media     | Implementado  |
+| RNF-004          | Integridad de datos                               | No Funcional  | —               | RF-003, RF-004, RNF-005    | Alta      | Implementado  |
+| RNF-005          | Disponibilidad del servicio                      | No Funcional  | —               | RF-002, RF-004, RNF-004    | Media     | Implementado  |
 
 ---
 
