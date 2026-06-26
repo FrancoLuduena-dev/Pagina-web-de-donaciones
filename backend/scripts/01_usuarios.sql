@@ -34,7 +34,7 @@ INSERT INTO usuarios (
 )
 VALUES
 (
-  '11111111-1111-1111-1111-111111111001',
+  '452749b1-321e-4d9d-b796-878731ccc44c',
   'Usuario Uno',
   'usuario1',
   'usuario1@usuario.com',
@@ -49,7 +49,7 @@ VALUES
   NULL
 ),
 (
-  '11111111-1111-1111-1111-111111111002',
+  '52be1e16-4744-448c-910e-7a8b56546ae2',
   'Usuario Dos',
   'usuario2',
   'usuario2@usuario.com',
@@ -64,7 +64,7 @@ VALUES
   NULL
 ),
 (
-  '11111111-1111-1111-1111-111111111003',
+  '333024ac-b4cc-4c54-8487-c8defcbb03da',
   'Usuario Moderador',
   'moderador',
   'moderador@mod.com',
@@ -79,7 +79,7 @@ VALUES
   NULL
 ),
 (
-  '11111111-1111-1111-1111-111111111004',
+  '994f6191-18d5-42ab-8a74-c9237730109e',
   'Administrador',
   'admin',
   'admin@admin.com',
@@ -117,8 +117,8 @@ INSERT INTO publicacion (
 VALUES
 
 (
-  '22222222-2222-2222-2222-222222222001',
-  '11111111-1111-1111-1111-111111111001',
+  '4c13761d-afb8-4a52-a64c-b93a684efb92',
+  '452749b1-321e-4d9d-b796-878731ccc44c',
   'Campera de aviador talle L',
   'Dono campera tipo aviador talle L. Está en excelente estado, abriga mucho y ya no la utilizo. Actualmente se encuentra reservada.',
   '550e8400-e29b-41d4-a716-446655440001',
@@ -135,8 +135,8 @@ VALUES
 ),
 
 (
-  '22222222-2222-2222-2222-222222222002',
-  '11111111-1111-1111-1111-111111111001',
+  'e7a913ab-bf19-4634-8ee3-ac94efbb26c6',
+  '452749b1-321e-4d9d-b796-878731ccc44c',
   'Latas de alimento para gatos',
   'Dono varias latas de alimento húmedo para gatos. Se encuentran cerradas, en perfecto estado y dentro de la fecha de vencimiento.',
   '550e8400-e29b-41d4-a716-446655440003',
@@ -153,8 +153,8 @@ VALUES
 ),
 
 (
-  '22222222-2222-2222-2222-222222222003',
-  '11111111-1111-1111-1111-111111111001',
+  'f99a4a88-7ddb-44ba-832a-eff19e5a6f4d',
+  '452749b1-321e-4d9d-b796-878731ccc44c',
   'Jean de hombre talle 42',
   'Jean de hombre en buen estado. No tiene roturas ni manchas y todavía puede seguir utilizándose por mucho tiempo.',
   '550e8400-e29b-41d4-a716-446655440001',
@@ -171,8 +171,8 @@ VALUES
 ),
 
 (
-  '22222222-2222-2222-2222-222222222004',
-  '11111111-1111-1111-1111-111111111002',
+  '3e02505d-9971-4eb0-93f1-59089d3a043b',
+  '52be1e16-4744-448c-910e-7a8b56546ae2',
   'Cama de dos plazas con colchón',
   'Regalo cama de dos plazas con colchón incluido. Tiene algunos años de uso, pero se encuentra firme y lista para seguir utilizándose.',
   '550e8400-e29b-41d4-a716-446655440002',
@@ -189,8 +189,8 @@ VALUES
 ),
 
 (
-  '22222222-2222-2222-2222-222222222005',
-  '11111111-1111-1111-1111-111111111002',
+  'bbb419c0-3d46-4000-bc74-0a027c0d15b9',
+  '52be1e16-4744-448c-910e-7a8b56546ae2',
   'Set de pinceles para pintura',
   'Juego de pinceles de distintos tamaños para pintura artística. Ideales para estudiantes o aficionados que estén comenzando.',
   '550e8400-e29b-41d4-a716-446655440004',
@@ -207,8 +207,8 @@ VALUES
 ),
 
 (
-  '22222222-2222-2222-2222-222222222006',
-  '11111111-1111-1111-1111-111111111002',
+  '51a10ee6-ceb7-4530-8e96-2d730457b420',
+  '52be1e16-4744-448c-910e-7a8b56546ae2',
   'Colección de camisetas de Lionel Messi',
   'Dono colección de camisetas inspiradas en los distintos equipos donde jugó Lionel Messi. Incluye varias camisetas representativas de diferentes etapas de su carrera.',
   '550e8400-e29b-41d4-a716-446655440001',
