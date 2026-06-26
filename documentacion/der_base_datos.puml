@@ -3,15 +3,15 @@
 
 TABLE(usuarios) {
   id uuid PK
-  nombreCompleto varchar
-  nombreUsuario varchar
-  correo varchar
-  contrasenia varchar
-  numeroTelefono varchar
-  rol varchar
-  estado varchar
-  bloqueadorId uuid FK
-  razonBloqueo varchar
+  nombreCompleto varchar(100)
+  nombreUsuario varchar(50) UNIQUE
+  correo varchar(100) UNIQUE
+  contrasenia varchar(255)
+  numeroTelefono varchar(20)
+  rol enum
+  estado enum
+  bloqueadorId uuid FK NULL
+  razonBloqueo varchar NULL
   cantidadPublicacionesBloqueadas int
   creadoEn timestamp
   actualizadoEn timestamp
@@ -19,18 +19,18 @@ TABLE(usuarios) {
 
 TABLE(publicacion) {
   id uuid PK
-  creadorId uuid FK
-  titulo varchar
+  creadorId uuid
+  titulo varchar(100)
   descripcion text
   categoriaId uuid
   localidadId uuid
-  condicion varchar
+  condicion enum
   imagenUrls jsonb
-  estado varchar
+  estado enum
   version int
   createdAt timestamp
-  updatedAt timestamp
-  deletedAt timestamp
+  updatedAt timestamp NULL
+  deletedAt timestamp NULL
 }
 
 TABLE(solicitudes) {
@@ -38,10 +38,10 @@ TABLE(solicitudes) {
   publicacionId uuid FK
   solicitanteId uuid FK
   creadorPublicacionId uuid FK
-  mensaje varchar
-  estado varchar
-  motivoRechazo varchar
-  motivoCancelacion varchar
+  mensaje varchar(255) NULL
+  estado enum
+  motivoRechazo varchar(255) NULL
+  motivoCancelacion varchar(255) NULL
   version int
   createdAt timestamp
   updatedAt timestamp
@@ -49,16 +49,16 @@ TABLE(solicitudes) {
 
 TABLE(denuncias) {
   id uuid PK
-  publicacionId uuid FK
-  denuncianteId uuid FK
-  creadorPublicacionId uuid FK
-  motivo varchar
-  comentario varchar
-  estado varchar
-  moderadorAsignadoId uuid FK
-  tipoResolucion varchar
-  detalleResolucion varchar
-  fechaResolucion timestamp
+  publicacionId uuid
+  denuncianteId uuid
+  creadorPublicacionId uuid
+  motivo enum
+  comentario varchar(500) NULL
+  estado enum
+  moderadorAsignadoId uuid NULL
+  tipoResolucion enum NULL
+  detalleResolucion varchar(500) NULL
+  fechaResolucion timestamp NULL
   version int
   fechaCreacion timestamp
   fechaActualizacion timestamp
@@ -67,24 +67,26 @@ TABLE(denuncias) {
 TABLE(notificaciones) {
   id uuid PK
   destinatarioId uuid FK
-  tipo varchar
-  titulo varchar
+  tipo enum
+  titulo varchar(100)
   mensaje text
-  leidaEn timestamp
-  solicitudId uuid FK
-  publicacionId uuid FK
-  denunciaId uuid FK
+  leidaEn timestamp NULL
+  solicitudId uuid FK NULL
+  publicacionId uuid FK NULL
+  denunciaId uuid FK NULL
   creadaEn timestamp
 }
 
-usuarios "1" -- "*" publicacion : creadorId
-publicacion "1" -- "*" solicitudes : publicacionId
-publicacion "1" -- "*" denuncias : publicacionId
-usuarios "1" -- "*" solicitudes : solicitanteId
-usuarios "1" -- "*" denuncias : denuncianteId
-usuarios "1" -- "*" notificaciones : destinatarioId
-notificaciones "*" --> "0..1" solicitudes : solicitudId
-notificaciones "*" --> "0..1" publicacion : publicacionId
-notificaciones "*" --> "0..1" denuncias : denunciaId
+usuarios "0..1" -- "0..*" usuarios : bloqueadorId
+
+publicacion "1" -- "0..*" solicitudes : publicacionId
+usuarios "1" -- "0..*" solicitudes : solicitanteId
+usuarios "1" -- "0..*" solicitudes : creadorPublicacionId
+
+usuarios "1" -- "0..*" notificaciones : destinatarioId
+solicitudes "0..1" -- "0..*" notificaciones : solicitudId
+publicacion "0..1" -- "0..*" notificaciones : publicacionId
+denuncias "0..1" -- "0..*" notificaciones : denunciaId
+
 
 @enduml

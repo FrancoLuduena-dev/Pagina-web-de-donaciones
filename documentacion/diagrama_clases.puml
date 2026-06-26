@@ -1,0 +1,359 @@
+@startuml
+title Diagrama de clases - Plataforma de Donaciones
+
+skinparam classAttributeIconSize 0
+
+package "Entidades" {
+
+class Usuario {
++id: string
++nombreCompleto: string
++nombreUsuario: string
++correo: string
+-contrasenia: string
++numeroTelefono: string
++rol: rolUsuario
++estado: estadosUsuario
++bloqueador?: Usuario
++razonBloqueo: string | null
++cantidadPublicacionesBloqueadas: number
++creadoEn: Date
++actualizadoEn: Date
+}
+
+class Publicacion {
++id: string
++creadorId: string
++titulo: string
++descripcion: string
++categoriaId: string
++localidadId: string
++condicion: CondicionObjeto
++imagenUrls: string[]
++estado: EstadoPublicacion
++version: number
++createdAt: Date
++updatedAt: Date
++deletedAt: Date
++solicitudes: Solicitud[]
+
+```
++validarCreador(usuarioId: string, mensaje?: string): void
++validarNoEsCreador(usuarioId: string, mensaje?: string): void
++validarPuedeSerGestionadaPor(usuarioId: string, usuarioRol: rolUsuario, mensaje?: string): void
++validarPuedeRecibirSolicitudes(): void
++puedeEditar(): boolean
++editar(datos: EditarPublicacionDto): void
++reservar(): void
++pausar(): void
++reactivar(): void
++entregar(): void
++eliminar(): void
++eliminarPorModeracion(): void
++cancelarReserva(): void
+-transicionarA(nuevoEstado: EstadoPublicacion): void
+```
+
+}
+
+class Solicitud {
++id: string
++publicacionId: string
++publicacion: Publicacion
++solicitanteId: string
++solicitante: Usuario
++creadorPublicacionId: string
++creadorPublicacion: Usuario
++mensaje?: string | null
++estado: EstadoSolicitud
++motivoRechazo?: string | null
++motivoCancelacion?: string | null
++version: number
++createdAt: Date
++updatedAt: Date
+
+```
++validarCreadorPublicacion(usuarioId: string, mensaje?: string): void
++validarParticipante(usuarioId: string, mensaje?: string): void
++validarPuedeCancelarsePor(usuarioId: string): void
++aceptar(): void
++rechazar(motivo?: string): void
++cancelar(motivo?: string): void
++cancelarAceptada(motivo?: string): void
++finalizar(): void
++expirar(): void
+-transicionarA(nuevoEstado: EstadoSolicitud): void
+```
+
+}
+
+class Denuncia {
++id: string
++publicacionId: string
++denuncianteId: string
++creadorPublicacionId: string
++motivo: MotivoDenuncia
++comentario?: string | null
++estado: EstadoDenuncia
++moderadorAsignadoId?: string | null
++tipoResolucion?: TipoResolucion | null
++detalleResolucion?: string | null
++fechaResolucion?: Date | null
++version: number
++fechaCreacion: Date
++fechaActualizacion: Date
+
+```
++validarNoEsCreadorPublicacion(usuarioId: string, mensaje?: string): void
++validarModeradorAsignado(moderadorId: string, mensaje?: string): void
++validarPuedeResolver(moderadorId: string): void
++tomar(moderadorId: string): void
++resolver(moderadorId: string, tipoResolucion: TipoResolucion, detalleResolucion: string): void
+-cambiarEstado(nuevoEstado: EstadoDenuncia): void
+```
+
+}
+
+class Notificacion {
++id: string
++destinatarioId: string
++destinatario: Usuario
++tipo: TipoNotificacion
++titulo: string
++mensaje: string
++leidaEn: Date | null
++solicitudId: string | null
++solicitud: Solicitud | null
++publicacionId: string | null
++publicacion: Publicacion | null
++denunciaId: string | null
++denuncia: Denuncia | null
++creadaEn: Date
+
+```
++marcarComoLeida(): void
+```
+
+}
+}
+
+package "Servicios" {
+
+class UsuarioService {
++CrearUsuario(usuario: CrearUsuarioDTO): Promise<Usuario>
++EliminarUsuario(idUsuario: string, contrasenia: string): Promise<void>
++EliminarUsuarioAdmin(idUsuario: string, idAdmin: string): Promise<void>
++ActualizarUsuario(idUsuario: string, datos: actualizarUsuarioDTO): Promise<void>
++obtenerUsuarioPorId(idUsuario: string): Promise<Usuario>
++ObtenerUsuarioPorNombreUsuario(nombreUsuario: string): Promise<Usuario | null>
++ObtenerUsuarioPorCorreo(correo: string): Promise<Usuario | null>
++CambiarRolUsuario(idUsuario: string, idAdmin: string, datos: CambiarRolDTO): Promise<void>
++registrarPublicacionEliminadaPorModeracion(idUsuario: string, idModerador: string): Promise<void>
++ResetearContraseniaUsuario(idUsuario: string, dto: actualizarContraseniaDTO): Promise<void>
++BloquearUsuario(idUsuario: string, idModerador: string, datos: BloquearUsuarioDTO): Promise<void>
++ListarUsuarios(): Promise<Usuario[]>
+}
+
+class PublicacionService {
++crearPublicacion(dto: CrearPublicacionDto, creadorId: string): Promise<Publicacion>
++listarPublico(filtros: FiltrosPublicacionDto): Promise<Publicacion[]>
++listarMisPublicaciones(creadorId: string, estado?: EstadoPublicacion): Promise<Publicacion[]>
++editar(id: string, dto: EditarPublicacionDto, usuarioId: string): Promise<Publicacion>
++buscarPublicacionPorId(id: string): Promise<Publicacion>
++buscarPublicacionPorIdConCreador(id: string): Promise<PublicacionConCreador>
++reservar(id: string, usuarioId: string): Promise<Publicacion>
++cancelarReserva(id: string, usuarioId: string): Promise<Publicacion>
++pausar(id: string, usuarioId: string, usuarioRol: rolUsuario): Promise<Publicacion>
++reactivar(id: string, usuarioId: string, usuarioRol: rolUsuario): Promise<Publicacion>
++eliminar(id: string, usuarioId: string, usuarioRol: rolUsuario): Promise<Publicacion>
++guardar(publicacion: Publicacion): Promise<Publicacion>
+}
+
+class SolicitudService {
++crearSolicitud(dto: CrearSolicitudDto, solicitanteId: string): Promise<SolicitudResponseDto>
++listarMisSolicitudes(usuarioId: string): Promise<SolicitudResponseDto[]>
++listarSolicitudesRecibidas(usuarioId: string): Promise<SolicitudResponseDto[]>
++rechazarSolicitud(solicitudId: string, usuarioId: string, dto: RechazarSolicitudDto): Promise<SolicitudResponseDto>
++aceptarSolicitud(solicitudId: string, usuarioId: string): Promise<SolicitudResponseDto>
++finalizarSolicitud(solicitudId: string, usuarioId: string): Promise<SolicitudResponseDto>
++finalizarEntregaPorPublicacion(publicacionId: string, usuarioId: string): Promise<SolicitudResponseDto>
++cancelarReservaPorPublicacion(publicacionId: string, usuarioId: string, motivo?: string): Promise<SolicitudResponseDto>
++cancelarSolicitud(solicitudId: string, usuarioId: string, motivo?: string): Promise<SolicitudResponseDto>
++resolverSolicitudesPorPublicacionEliminada(publicacionId: string): Promise<void>
+}
+
+class DenunciaService {
++crearDenuncia(denuncianteId: string, dto: CrearDenunciaDto): Promise<DenunciaResponseDto>
++listar(filtros: FiltroDenunciaDto): Promise<DenunciaResponseDto[]>
++buscarDetallePorId(denunciaId: string): Promise<DenunciaDetalleResponseDto>
++tomarDenuncia(denunciaId: string, moderadorId: string, dto: TomarDenunciaDto): Promise<DenunciaResponseDto>
++resolverDenuncia(denunciaId: string, moderadorId: string, dto: ResolverDenunciaDto): Promise<DenunciaDetalleResponseDto>
+-ejecutarAccionResolucion(tipoResolucion: TipoResolucion, publicacionId: string, creadorPublicacionId: string, moderadorId: string, detalleResolucion: string): Promise<void>
+}
+
+class NotificacionService {
++crear(dto: CrearNotificacionDto): Promise<NotificacionResponseDto>
++listarPropias(destinatarioId: string, paginacion: PaginacionNotificacionDto): Promise<ListadoNotificacionesResponseDto>
++marcarComoLeida(notificacionId: string, destinatarioId: string): Promise<NotificacionResponseDto>
++marcarTodasComoLeidas(destinatarioId: string): Promise<void>
+}
+}
+
+package "Controllers" {
+
+class UsuarioController
+class PublicacionController
+class SolicitudController
+class DenunciaController
+class NotificacionController
+}
+
+package "DTOs principales" {
+
+class CrearPublicacionDto
+class EditarPublicacionDto
+class FiltrosPublicacionDto
+class PublicacionResponseDto
+
+class CrearSolicitudDto
+class RechazarSolicitudDto
+class CancelarSolicitudDto
+class SolicitudResponseDto
+
+class CrearDenunciaDto
+class TomarDenunciaDto
+class ResolverDenunciaDto
+class FiltroDenunciaDto
+class DenunciaResponseDto
+class DenunciaDetalleResponseDto
+
+class CrearNotificacionDto
+class PaginacionNotificacionDto
+class NotificacionResponseDto
+class ListadoNotificacionesResponseDto
+class CantidadNoLeidasResponseDto
+
+class CrearUsuarioDTO
+class actualizarUsuarioDTO
+class actualizarContraseniaDTO
+class CambiarRolDTO
+class BloquearUsuarioDTO
+}
+
+package "Enums" {
+
+enum rolUsuario {
+usuarioModerador
+usuarioNormal
+usuarioAdministrador
+}
+
+enum estadosUsuario {
+ACTIVO
+BLOQUEADO
+}
+
+enum EstadoPublicacion {
+DISPONIBLE
+RESERVADA
+ENTREGADA
+PAUSADA
+ELIMINADA
+}
+
+enum CondicionObjeto {
+NUEVO
+USADO_BUENO
+USADO_REGULAR
+}
+
+enum EstadoSolicitud {
+PENDIENTE
+ACEPTADA
+RECHAZADA
+CANCELADA
+FINALIZADA
+EXPIRADA
+}
+
+enum MotivoDenuncia {
+CONTENIDO_INAPROPIADO
+PUBLICACION_FALSA
+OBJETO_PROHIBIDO
+OTRO
+}
+
+enum EstadoDenuncia {
+PENDIENTE
+EN_REVISION
+RESUELTA
+}
+
+enum TipoResolucion {
+DESCARTADA
+PUBLICACION_PAUSADA
+PUBLICACION_ELIMINADA
+USUARIO_BLOQUEADO
+}
+
+enum TipoNotificacion {
+SOLICITUD_CREADA
+SOLICITUD_ACEPTADA
+SOLICITUD_RECHAZADA
+SOLICITUD_ACEPTADA_CANCELADA
+SOLICITUD_FINALIZADA
+DENUNCIA_RESUELTA
+PUBLICACION_PAUSADA
+PUBLICACION_REACTIVADA
+PUBLICACION_ELIMINADA
+USUARIO_BLOQUEADO
+}
+}
+
+' Relaciones entre entidades
+Usuario "0..1" -- "0..*" Usuario : bloqueador / bloqueados
+
+Usuario "1" ..> "0..*" Publicacion : creadorId
+Publicacion "1" -- "0..*" Solicitud : solicitudes
+
+Usuario "1" -- "0..*" Solicitud : solicitante
+Usuario "1" -- "0..*" Solicitud : creadorPublicacion
+
+Publicacion "1" ..> "0..*" Denuncia : publicacionId
+Usuario "1" ..> "0..*" Denuncia : denuncianteId
+Usuario "1" ..> "0..*" Denuncia : creadorPublicacionId
+Usuario "0..1" ..> "0..*" Denuncia : moderadorAsignadoId
+
+Usuario "1" -- "0..*" Notificacion : destinatario
+Solicitud "0..1" -- "0..*" Notificacion : solicitud
+Publicacion "0..1" -- "0..*" Notificacion : publicacion
+Denuncia "0..1" -- "0..*" Notificacion : denuncia
+
+' Dependencias controller -> service
+UsuarioController ..> UsuarioService
+PublicacionController ..> PublicacionService
+SolicitudController ..> SolicitudService
+DenunciaController ..> DenunciaService
+NotificacionController ..> NotificacionService
+
+' Dependencias principales entre servicios
+PublicacionService ..> UsuarioService : consulta creador / bloqueo automático
+SolicitudService ..> PublicacionService : reserva / entrega / cancelación
+DenunciaService ..> PublicacionService : pausa o elimina publicación
+DenunciaService ..> UsuarioService : bloquea usuario
+
+' Uso de DTOs
+PublicacionService ..> CrearPublicacionDto
+PublicacionService ..> EditarPublicacionDto
+SolicitudService ..> CrearSolicitudDto
+SolicitudService ..> RechazarSolicitudDto
+SolicitudService ..> SolicitudResponseDto
+DenunciaService ..> CrearDenunciaDto
+DenunciaService ..> ResolverDenunciaDto
+DenunciaService ..> DenunciaResponseDto
+DenunciaService ..> DenunciaDetalleResponseDto
+NotificacionService ..> CrearNotificacionDto
+NotificacionService ..> NotificacionResponseDto
+UsuarioService ..> CrearUsuarioDTO
+UsuarioService ..> BloquearUsuarioDTO
+@enduml

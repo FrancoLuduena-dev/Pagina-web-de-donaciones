@@ -1,24 +1,71 @@
-@startuml diagrama_componentes
-package "Sistema" {
-  [Frontend Next.js] as Frontend
-  [Backend API (NestJS)] as Backend
-  database "Postgres (TypeORM)" as DB
-  [Servicios externos] as External
+@startuml
+title Diagrama de componentes - Plataforma Web de Donaciones
+
+skinparam componentStyle rectangle
+
+actor "Usuario" as Usuario
+
+package "Cliente" {
+component "Frontend Next.js" as Frontend {
+[Páginas / Rutas]
+[Componentes UI]
+[Servicios de API]
+[Gestión de sesión JWT]
+}
 }
 
-Frontend --> Backend: HTTP/REST
-Backend --> DB: TypeORM (queries)
-Backend --> External: Envío de eventos / emails
+package "Servidor" {
+component "Backend API NestJS" as Backend {
+[Controllers REST]
+[Services]
+[Repositories]
+[Guards y Decorators]
+[DTOs y Validaciones]
+[Eventos / Listeners internos]
 
-component Frontend {
-  [App pages]
-  [Componentes UI]
+package "Módulos funcionales" {
+  [UsuarioModule]
+  [PublicacionModule]
+  [SolicitudModule]
+  [DenunciaModule]
+  [NotificacionModule]
 }
-component Backend {
-  [Controllers]
-  [Services]
-  [Repositories]
-  [Eventos / Listeners]
+
 }
+}
+
+database "PostgreSQL" as DB
+
+component "Documentación Swagger" as Swagger
+
+Usuario --> Frontend : Interacción web
+Frontend --> Backend : HTTP/REST + JWT
+Backend --> DB : TypeORM
+Backend --> Swagger : Expone documentación API
+
+[Controllers REST] --> [Services]
+[Services] --> [Repositories]
+[Repositories] --> DB
+[Guards y Decorators] --> [Controllers REST]
+[DTOs y Validaciones] --> [Controllers REST]
+[Services] --> [Eventos / Listeners internos]
+
+[UsuarioModule] --> [Controllers REST]
+[PublicacionModule] --> [Controllers REST]
+[SolicitudModule] --> [Controllers REST]
+[DenunciaModule] --> [Controllers REST]
+[NotificacionModule] --> [Controllers REST]
+
+note right of Backend
+El backend está organizado en módulos NestJS.
+Los eventos y listeners se procesan dentro de la aplicación,
+por ejemplo para generar notificaciones ante cambios de solicitudes,
+publicaciones o denuncias.
+end note
+
+note bottom of DB
+La persistencia se realiza en PostgreSQL
+mediante TypeORM.
+end note
 
 @enduml
