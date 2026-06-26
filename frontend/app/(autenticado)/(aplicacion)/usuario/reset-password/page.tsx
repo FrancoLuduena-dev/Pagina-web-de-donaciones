@@ -10,23 +10,44 @@ import { resetPasswordRequest } from "@/lib/auth";
 /**
  * Página de restablecimiento de contraseña.
  *
- * @returns Formulario de restablecimiento de contraseña.
+ * Permite al usuario cambiar su contraseña actual por una nueva.
+ * Requiere ingresar la contraseña actual y confirmar la nueva contraseña.
+ *
+ * @component
+ * @returns {JSX.Element} Formulario de restablecimiento de contraseña.
  */
 
 export default function ResetPasswordPage() {
 
     const router = useRouter();
 
+    /** Contraseña actual del usuario */
     const [contraseniaActual, setContraseniaActual] = useState("");
+
+    /** Nueva contraseña ingresada */
     const [contraseniaNueva, setContraseniaNueva] = useState("");
+
+    /** Confirmación de la nueva contraseña */
     const [contraseniaNuevaDos, setContraseniaNuevaDos] = useState("");
+
+    /** Mensaje de error a mostrar en la UI */
     const [error, setError] = useState<string | null>(null);
+
+    /** Indica si la solicitud está en proceso */
     const [loading, setLoading] = useState(false);
 
     /**
-     * Maneja el envío del formulario.
+     * Maneja el envío del formulario de restablecimiento.
      *
-     * @param e Evento de envío del formulario.
+     * Realiza las siguientes acciones:
+     * - Previene el comportamiento por defecto del formulario.
+     * - Valida que las contraseñas nuevas coincidan.
+     * - Envía la solicitud al backend para actualizar la contraseña.
+     * - Redirige al usuario al login en caso de éxito.
+     * - Muestra errores en caso de fallo.
+     *
+     * @param {FormEvent} e Evento de envío del formulario.
+     * @returns {Promise<void>}
      */
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
@@ -35,43 +56,53 @@ export default function ResetPasswordPage() {
         setLoading(true);
 
         try {
-            // validar que la contraseña nueva tenga al menos 6 caracteres
+            /**
+       * Enviar solicitud al backend para actualizar contraseña
+       */
             const data = await resetPasswordRequest({
                 contraseniaActual: contraseniaActual.trim(),
                 contraseniaNueva: contraseniaNueva.trim(),
             });
 
-
+            /**
+  * Redirigir al login luego de cambiar la contraseña
+  */
             router.push("/login");
             router.refresh();
         } catch (err) {
+            /**
+      * Manejo de errores
+      */
             setError(
                 err instanceof Error
                     ? err.message
                     : "Error desconocido."
             );
         } finally {
+            /**
+      * Finaliza estado de carga
+      */
             setLoading(false);
         }
     }
 
-  return (
-      <main className={styles.main}>
-          <div className={styles.container}>
+    return (
+        <main className={styles.main}>
+            <div className={styles.container}>
 
-              <div className={styles.header}>
-                  <h1 className={styles.title}>Restablecer contraseña</h1>
-                  <p className={styles.subtitle}>
-                      Para restablecer tu contraseña, por favor llene los siguientes campos.
-                  </p>
-              </div>
+                <div className={styles.header}>
+                    <h1 className={styles.title}>Restablecer contraseña</h1>
+                    <p className={styles.subtitle}>
+                        Para restablecer tu contraseña, por favor llene los siguientes campos.
+                    </p>
+                </div>
 
-              <form
-                  onSubmit={handleSubmit}
-                  className={styles.form}>
+                <form
+                    onSubmit={handleSubmit}
+                    className={styles.form}>
                     <div className={styles.field}>
                         <label className={styles.label} htmlFor="contraseñaActual">
-                            ingrese la contraseña actual 
+                            ingrese la contraseña actual
                         </label>
                         <input
                             id="contraseniaActual"
@@ -129,17 +160,17 @@ export default function ResetPasswordPage() {
                         {loading ? "Restableciendo..." : "Restablecer"}
                     </button>
 
-              </form>
+                </form>
 
-              <p className={styles.backLinkContainer}>
-                  <Link
-                      href="/usuario/editar"
-                      className={styles.backLink}
-                  >
-                      Volver atras
-                  </Link>
-              </p>
-      </div>
-    </main>
-  );
+                <p className={styles.backLinkContainer}>
+                    <Link
+                        href="/usuario/editar"
+                        className={styles.backLink}
+                    >
+                        Volver atras
+                    </Link>
+                </p>
+            </div>
+        </main>
+    );
 }

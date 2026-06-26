@@ -1,30 +1,98 @@
-import styles from "./categoria.module.css"
+import Link from "next/link";
+
+import PublicacionCard from "@/components/PublicacionCard";
+import {
+  CATEGORIA_IDS,
+  mapPublicacionBackendToResumen,
+} from "@/constants/publicacionesBackend";
+import { listarPublicacionesDesdeBackend } from "@/lib/publicaciones";
+import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
+
+import styles from "./categoria.module.css";
 
 type Props = {
   params: Promise<{
     categoria: string;
   }>;
+
+  searchParams: Promise<{
+    q?: string;
+    condicion?: string;
+    estado?: string;
+  }>;
+};
+
+const categoriasPorRuta: Record<string, CategoriaPublicacion> = {
+  indumentaria: CategoriaPublicacion.INDUMENTARIA,
+  muebles: CategoriaPublicacion.MUEBLES,
+  alimentos: CategoriaPublicacion.ALIMENTOS,
+  otros: CategoriaPublicacion.OTROS,
 };
 
 /**
- * Página dinámica de categorías de donaciones.
- *
- * Muestra el nombre de la categoría obtenida desde la URL.
- *
- * @param params - Parámetros dinámicos de la ruta.
- * @returns Página de categoría.
+ * Página de publicaciones filtradas por categoría.
  */
-export default async function CategoriaPage({
-  params,
-}: Props) {
+export default async function CategoriaPage({ params, searchParams }: Props) {
   const { categoria } = await params;
 
+  const categoriaSeleccionada = categoriasPorRuta[categoria];
+  const categoriaId = categoriaSeleccionada
+    ? CATEGORIA_IDS[categoriaSeleccionada]
+    : undefined;
+
+  let publicaciones: ReturnType<typeof mapPublicacionBackendToResumen>[] = [];
+  let error = ""; 
+  const { q, condicion, estado } = await searchParams;
+
+  try {
+    const data = await listarPublicacionesDesdeBackend(
+      categoriaId,
+      condicion,
+      estado,
+      q,
+    );
+    
+    publicaciones = data.map(mapPublicacionBackendToResumen);
+  } catch {
+    error =
+      "No se pudieron cargar las publicaciones. ¿Está corriendo el backend?";
+  }
+
   return (
-    <main>
-      <h1 className={styles.titulo}>
-        {" "}
-        {categoria.charAt(0).toUpperCase() + categoria.slice(1)}
-      </h1>
-    </main>
+    <section className={styles.contenido}>
+      <div className={styles.header}>
+        <h1 className={styles.titulo}>
+          {categoria.charAt(0).toUpperCase() + categoria.slice(1)}
+        </h1>
+
+        <Link href="/publicaciones/crear" className={styles.crearButton}>
+          + Crear publicación
+        </Link>
+      </div>
+
+      {error ? (
+        <p className={styles.descripcion}>{error}</p>
+      ) : publicaciones.length === 0 ? (
+        <p className={styles.descripcion}>
+          No hay publicaciones para esta categoría.
+        </p>
+      ) : (
+        <>
+          <p className={styles.descripcion}>
+            {publicaciones.length} publicación
+            {publicaciones.length === 1 ? "" : "es"} en esta categoría.
+          </p>
+
+          <div className={styles.grid}>
+            {publicaciones.map((publicacion) => (
+              <PublicacionCard
+                key={publicacion.idPublicacion}
+                publicacion={publicacion}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </section>
   );
 }

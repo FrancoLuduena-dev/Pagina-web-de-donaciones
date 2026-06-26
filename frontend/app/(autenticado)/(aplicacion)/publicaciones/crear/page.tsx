@@ -8,11 +8,37 @@ import {
   CATEGORIA_IDS,
   CONDICIONES_OBJETO,
   LOCALIDAD_ID_DEFAULT,
+  MAX_IMAGENES_PUBLICACION,
   type CondicionObjeto,
 } from "@/constants/publicacionesBackend";
-import { crearPublicacionRequest, subirImagenPublicacionRequest } from "@/lib/publicaciones";
+import {
+  LOCALIDADES_VICENTE_LOPEZ,
+  MUNICIPIO_VICENTE_LOPEZ,
+} from "@/constants/localidadesVicenteLopez";
+import {
+  crearPublicacionRequest,
+  obtenerUrlsImagenInvalidas,
+  subirImagenesPublicacionRequest,
+} from "@/lib/publicaciones";
 import { CategoriaPublicacion } from "@/types/CategoriaPublicacion";
 
+function parseUrlsTexto(texto: string): string[] {
+  return texto
+    .split("\n")
+    .map((linea) => linea.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Página para crear una nueva publicación.
+ *
+ * Gestiona el formulario de alta: datos básicos, categoría, localidad,
+ * condición y hasta `MAX_IMAGENES_PUBLICACION` imágenes (subidas como archivo o
+ * por URL). Al guardar, sube las imágenes, crea la publicación y redirige a su
+ * detalle.
+ *
+ * @returns Formulario de creación de publicación.
+ */
 export default function CrearPublicacionPage() {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -20,21 +46,39 @@ export default function CrearPublicacionPage() {
     descripcion: "",
     categoria: CategoriaPublicacion.INDUMENTARIA,
     condicion: "USADO_BUENO" as CondicionObjeto,
-    imagenUrl: "",
+    localidadId: LOCALIDAD_ID_DEFAULT,
+    urlsImagen: "",
   });
-  const [imagenPreview, setImagenPreview] = useState<string>("");
-  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+  const [archivosImagen, setArchivosImagen] = useState<File[]>([]);
+  const [previewsArchivos, setPreviewsArchivos] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
 
-  const manejarArchivo = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const manejarArchivos = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length) return;
 
-    setArchivoImagen(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagenPreview(String(reader.result ?? ""));
-    reader.readAsDataURL(file);
+    const combinados = [...archivosImagen, ...files].slice(0, MAX_IMAGENES_PUBLICACION);
+    setArchivosImagen(combinados);
+
+    combinados.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewsArchivos((prev) => {
+          const next = [...prev];
+          next[index] = String(reader.result ?? "");
+          return next;
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    event.target.value = "";
+  };
+
+  const quitarArchivo = (index: number) => {
+    setArchivosImagen((prev) => prev.filter((_, i) => i !== index));
+    setPreviewsArchivos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const guardar = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -43,23 +87,39 @@ export default function CrearPublicacionPage() {
     setGuardando(true);
 
     try {
-      let imagenUrl = form.imagenUrl.trim();
+      const urlsManuales = parseUrlsTexto(form.urlsImagen);
 
-      if (archivoImagen) {
-        imagenUrl = await subirImagenPublicacionRequest(archivoImagen);
+      if (urlsManuales.length > 0) {
+        const urlsInvalidas = await obtenerUrlsImagenInvalidas(urlsManuales);
+        if (urlsInvalidas.length > 0) {
+          throw new Error(
+            `Estas URLs no son imágenes válidas: ${urlsInvalidas.join(", ")}`,
+          );
+        }
       }
 
-      if (!imagenUrl) {
-        throw new Error("Subí una imagen o ingresá una URL de imagen.");
+      const urlsSubidas =
+        archivosImagen.length > 0
+          ? await subirImagenesPublicacionRequest(archivosImagen)
+          : [];
+
+      const imagenUrls = [...urlsSubidas, ...urlsManuales];
+
+      if (!imagenUrls.length) {
+        throw new Error("Subí al menos una imagen o ingresá una URL.");
+      }
+
+      if (imagenUrls.length > MAX_IMAGENES_PUBLICACION) {
+        throw new Error(`Podés agregar hasta ${MAX_IMAGENES_PUBLICACION} imágenes.`);
       }
 
       const creada = await crearPublicacionRequest({
         titulo: form.titulo.trim(),
         descripcion: form.descripcion.trim(),
         categoriaId: CATEGORIA_IDS[form.categoria],
-        localidadId: LOCALIDAD_ID_DEFAULT,
+        localidadId: form.localidadId,
         condicion: form.condicion,
-        imagenUrl,
+        imagenUrls,
       });
 
       router.push(`/publicaciones/publicacion/${creada.id}`);
@@ -70,11 +130,14 @@ export default function CrearPublicacionPage() {
     }
   };
 
+  const urlsManualesCount = parseUrlsTexto(form.urlsImagen).length;
+  const totalImagenes = archivosImagen.length + urlsManualesCount;
+
   return (
     <main style={{ padding: "2rem", maxWidth: 760, margin: "0 auto" }}>
       <h1>Crear publicación</h1>
       <p style={{ color: "#4b5563", marginBottom: "1rem" }}>
-        La publicación se guarda en el backend. Tenés que estar logueado.
+        Podés subir hasta {MAX_IMAGENES_PUBLICACION} imágenes. Tenés que estar logueado.
       </p>
 
       {error ? (
@@ -123,6 +186,22 @@ export default function CrearPublicacionPage() {
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
+          Localidad ({MUNICIPIO_VICENTE_LOPEZ})
+          <select
+            value={form.localidadId}
+            onChange={(e) => setForm({ ...form, localidadId: e.target.value })}
+            style={inputStyle}
+            required
+          >
+            {LOCALIDADES_VICENTE_LOPEZ.map((localidad) => (
+              <option key={localidad.id} value={localidad.id}>
+                {localidad.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label style={{ display: "grid", gap: "0.25rem" }}>
           Condición del objeto
           <select
             value={form.condicion}
@@ -140,33 +219,49 @@ export default function CrearPublicacionPage() {
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
-          URL de imagen (opcional si subís un archivo)
-          <input
-            value={form.imagenUrl}
-            onChange={(e) => setForm({ ...form, imagenUrl: e.target.value })}
+          URLs de imagen (opcional, una por línea)
+          <textarea
+            value={form.urlsImagen}
+            onChange={(e) => setForm({ ...form, urlsImagen: e.target.value })}
+            rows={3}
             style={inputStyle}
-            placeholder="https://..."
+            placeholder={"https://...\nhttps://..."}
           />
         </label>
 
         <label style={{ display: "grid", gap: "0.25rem" }}>
-          Subir imagen
-          <input type="file" accept="image/*" onChange={manejarArchivo} style={inputStyle} />
+          Subir imágenes ({totalImagenes}/{MAX_IMAGENES_PUBLICACION})
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={manejarArchivos}
+            style={inputStyle}
+            disabled={totalImagenes >= MAX_IMAGENES_PUBLICACION}
+          />
         </label>
 
-        {imagenPreview ? (
-          <Image
-            src={imagenPreview}
-            alt="Vista previa"
-            width={320}
-            height={220}
-            style={{
-              width: "100%",
-              maxWidth: 320,
-              borderRadius: "1rem",
-              objectFit: "cover",
-            }}
-          />
+        {previewsArchivos.length ? (
+          <div style={previewGridStyle}>
+            {previewsArchivos.map((preview, index) => (
+              <div key={`${preview}-${index}`} style={previewItemStyle}>
+                <Image
+                  src={preview}
+                  alt={`Vista previa ${index + 1}`}
+                  width={140}
+                  height={100}
+                  style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: "0.75rem" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => quitarArchivo(index)}
+                  style={removeButtonStyle}
+                >
+                  Quitar
+                </button>
+              </div>
+            ))}
+          </div>
         ) : null}
 
         <div style={actionsStyle}>
@@ -187,6 +282,26 @@ const inputStyle: React.CSSProperties = {
   borderRadius: "0.75rem",
   padding: "0.75rem 0.9rem",
   fontSize: "1rem",
+};
+
+const previewGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+  gap: "0.75rem",
+};
+
+const previewItemStyle: React.CSSProperties = {
+  display: "grid",
+  gap: "0.35rem",
+};
+
+const removeButtonStyle: React.CSSProperties = {
+  border: "1px solid #d1d5db",
+  borderRadius: "999px",
+  padding: "0.25rem 0.5rem",
+  background: "white",
+  cursor: "pointer",
+  fontSize: "0.85rem",
 };
 
 const actionsStyle: React.CSSProperties = {

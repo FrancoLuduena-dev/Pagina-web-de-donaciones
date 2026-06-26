@@ -13,29 +13,37 @@ import actualizarUsuarioDTO from '../dtos/actualizarUsuarioDto';
 import actualizarContraseniaDTO from '../dtos/actualizarContraseniaDto';
 import { CambiarRolDTO } from '../dtos/cambiarRolDto';
 import { BloquearUsuarioDTO } from '../dtos/bloquearUsuarioDto';
+import actualizarPublicacionesBloqueadasDto from '../dtos/actualizarPublicacionesBloqueadasDto';
 
 import bcrypt from 'bcrypt';
 
 import { estadosUsuario } from '../enums/estadosUsuario';
 import { rolUsuario } from '../enums/rolUsuario';
 
+/** 
+ * * Servicio encargado de la lógica de negocio relacionada con usuarios. * 
+ * * Contiene validaciones, reglas de negocio y comunicación con el repositorio. 
+ * */
+
 @Injectable()
 export default class UsuarioService {
   constructor(private readonly repo: UsuarioRepository) {}
 
-  /*
-
- to do: ver especificamente las excepciones en base a que error salio en la ejecucion de cada metodo.
-        tal vez crear excepciones personalizadas para cada caso.
-     */
-
+  /** * Crea un nuevo usuario. * * Reglas: * 
+   * - El nombre completo es obligatorio. * 
+   * - El correo debe ser único. * - El nombre de usuario debe ser único. * * 
+   * @param usuario DTO con los datos del usuario a crear * 
+   * @returns Usuario creado * 
+   * @throws BadRequestException si faltan datos obligatorios * 
+   * @throws ConflictException si el correo o username ya existen */
   public async CrearUsuario(usuario: CrearUsuarioDTO): Promise<Usuario> {
-    /*
-        validar nombre usuario unico
-        validar correo unico
-        validar formato de correo
 
-        */
+    if (!usuario.nombreCompleto) {
+      throw new BadRequestException(
+        'Debe completar el campo de nombre de usuario',
+      );
+    }
+
     const existeCorreo = await this.repo.buscarPorEmail(usuario.correo);
 
     if (existeCorreo) {
@@ -50,6 +58,15 @@ export default class UsuarioService {
 
     return this.repo.crearUsuario(usuario);
   }
+
+  /** * Elimina un usuario validando su contraseña. * * 
+   * Reglas: * - El usuario debe existir. * 
+   * - La contraseña ingresada debe ser correcta. * * 
+   * @param idUsuario ID del usuario * 
+   * @param contrasenia contraseña en texto plano * 
+   * @throws NotFoundException si el usuario no existe * 
+   * @throws BadRequestException si la contraseña es incorrecta */
+
   public async EliminarUsuario(
     idUsuario: string,
     contrasenia: string,
@@ -57,7 +74,11 @@ export default class UsuarioService {
     /* validar que el usuario exista */
     /* pedirle que confirme la contrasenia al usuario*/
 
-    const usuario = await this.obtenerUsuarioPorId(idUsuario);
+    const usuario = await this.repo.buscarPorIdConContrasenia(idUsuario);
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con id ${idUsuario} no encontrado`);
+    }
 
     const contraseniaValida = await bcrypt.compare(
       contrasenia,
@@ -70,6 +91,11 @@ export default class UsuarioService {
 
     await this.repo.eliminarUsuario(idUsuario);
   }
+
+  /** * Elimina un usuario mediante un administrador. * 
+   * * Reglas: * - El usuario a eliminar debe existir. * 
+   * - El ejecutor debe ser administrador. * * 
+   * @throws ForbiddenException si el ejecutor no es admin */
 
   public async EliminarUsuarioAdmin(
     idUsuario: string,
@@ -90,19 +116,57 @@ export default class UsuarioService {
     await this.repo.eliminarUsuario(idUsuario);
   }
 
+  /** * Actualiza datos de un usuario. * 
+   * * Reglas: * 
+   * - Debe enviarse al menos un campo. * 
+   * - Si se cambia el correo o username, deben ser únicos. * 
+   * - Se limpian y normalizan los datos (trim, lowercase). * * 
+   * @throws BadRequestException si no se envían datos * 
+   * @throws ConflictException si hay duplicados */
+
   public async ActualizarUsuario(
     idUsuario: string,
     datos: actualizarUsuarioDTO,
   ): Promise<void> {
-
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
 
-    const datosFiltrados = Object.fromEntries(
-      Object.entries(datos).filter(([_, value]) => value !== "")
-    );
+    if (
+      !datos.nombreCompleto &&
+      !datos.nombreUsuario &&
+      !datos.correo &&
+      !datos.numeroTelefono
+    ) {
+      throw new BadRequestException(
+        'Debe completar al menos un campo para actualizar',
+      );
+    }
 
-    if (datos.correo && datos.correo !== usuario.correo) {
-      const existeCorreo = await this.repo.buscarPorEmail(datos.correo);
+    const datosFiltrados = {
+      nombreCompleto:
+        typeof datos.nombreCompleto === 'string' &&
+        datos.nombreCompleto.trim() !== ''
+          ? datos.nombreCompleto.trim()
+          : usuario.nombreCompleto,
+      nombreUsuario:
+        typeof datos.nombreUsuario === 'string' &&
+        datos.nombreUsuario.trim() !== ''
+          ? datos.nombreUsuario.trim()
+          : usuario.nombreUsuario,
+      correo:
+        typeof datos.correo === 'string' && datos.correo.trim() !== ''
+          ? datos.correo.trim().toLowerCase()
+          : usuario.correo,
+      numeroTelefono:
+        typeof datos.numeroTelefono === 'string' &&
+        datos.numeroTelefono.trim() !== ''
+          ? datos.numeroTelefono.trim()
+          : usuario.numeroTelefono,
+    };
+
+    if (datosFiltrados.correo !== usuario.correo) {
+      const existeCorreo = await this.repo.buscarPorEmail(
+        datosFiltrados.correo,
+      );
 
       if (existeCorreo) {
         throw new ConflictException(
@@ -111,8 +175,10 @@ export default class UsuarioService {
       }
     }
 
-    if (datos.nombreUsuario && datos.nombreUsuario !== usuario.nombreUsuario) {
-      const existeUser = await this.repo.buscarPorUsername(datos.nombreUsuario);
+    if (datosFiltrados.nombreUsuario !== usuario.nombreUsuario) {
+      const existeUser = await this.repo.buscarPorUsername(
+        datosFiltrados.nombreUsuario,
+      );
 
       if (existeUser) {
         throw new ConflictException(
@@ -126,6 +192,9 @@ export default class UsuarioService {
     await this.repo.actualizarUsuario(idUsuario, datosFiltrados);
   }
 
+  /** * Obtiene un usuario por ID. * * 
+   * @throws NotFoundException si no existe */
+
   public async obtenerUsuarioPorId(idUsuario: string): Promise<Usuario> {
     const usuario = await this.repo.buscarPorId(idUsuario);
 
@@ -136,17 +205,27 @@ export default class UsuarioService {
     return usuario;
   }
 
+  /** * Busca un usuario por nombre de usuario. */
+
   public async ObtenerUsuarioPorNombreUsuario(
     nombreUsuario: string,
   ): Promise<Usuario | null> {
     return this.repo.buscarPorUsername(nombreUsuario);
   }
 
+  /** * Busca un usuario por correo. */
+
   public async ObtenerUsuarioPorCorreo(
     correo: string,
   ): Promise<Usuario | null> {
-    return this.repo.buscarPorEmail(correo);
+    return this.repo.buscarPorEmailConContrasenia(correo);
   }
+
+  /** * Cambia el rol de un usuario. * 
+   * * Reglas: * 
+   * - No puede modificarse a sí mismo. * 
+   * - No se puede modificar a otro admin. * 
+   * - No se puede asignar rol admin. */
 
   public async CambiarRolUsuario(
     idUsuario: string,
@@ -181,6 +260,54 @@ export default class UsuarioService {
     await this.repo.cambiarRolUsuario(idUsuario, datos.rol);
   }
 
+  /** * Registra publicaciones eliminadas por moderación. * 
+   * * Reglas: * 
+   * - Solo moderadores o admins pueden hacerlo. * 
+   * - Al llegar a 3 publicaciones eliminadas → usuario bloqueado automáticamente. */
+
+  public async registrarPublicacionEliminadaPorModeracion(
+    idUsuario: string,
+    idModerador: string,
+  ): Promise<void> {
+    const usuario = await this.obtenerUsuarioPorId(idUsuario);
+    const usuarioModerador = await this.obtenerUsuarioPorId(idModerador);
+
+    if (
+      usuarioModerador.rol !== rolUsuario.usuarioModerador &&
+      usuarioModerador.rol !== rolUsuario.usuarioAdministrador
+    ) {
+      throw new ForbiddenException(
+        'Solo un moderador o administrador puede registrar publicaciones eliminadas por moderación',
+      );
+    }
+
+    if (usuario.estado === estadosUsuario.BLOQUEADO) {
+      return;
+    }
+
+    const nuevaCantidad = (usuario.cantidadPublicacionesBloqueadas ?? 0) + 1;
+
+    const datosActualizacion: actualizarPublicacionesBloqueadasDto = {
+      cantidadPublicacionesBloqueadas: nuevaCantidad,
+      estado: usuario.estado,
+      razonBloqueo: usuario.razonBloqueo ?? null,
+    };
+
+    if (nuevaCantidad >= 3) {
+      datosActualizacion.estado = estadosUsuario.BLOQUEADO;
+      datosActualizacion.razonBloqueo =
+        'Bloqueado automáticamente tras 3 publicaciones eliminadas por moderación';
+    }
+
+    await this.repo.actualizarUsuario(idUsuario, datosActualizacion);
+  }
+
+  /** * Permite cambiar la contraseña de un usuario. * 
+   * * Reglas: * 
+   * - Debe existir. * 
+   * - La contraseña actual debe ser válida. * 
+   * - La nueva contraseña no puede ser igual a la anterior. */
+
   public async ResetearContraseniaUsuario(
     idUsuario: string,
     actualizarContraseniaDto: actualizarContraseniaDTO,
@@ -190,7 +317,11 @@ export default class UsuarioService {
     validar que la contrasenia nueva no sea igual a la actual
     */
 
-    const usuario = await this.obtenerUsuarioPorId(idUsuario);
+    const usuario = await this.repo.buscarPorIdConContrasenia(idUsuario);
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con id ${idUsuario} no encontrado`);
+    }
 
     const contraseniaValida = await bcrypt.compare(
       actualizarContraseniaDto.contraseniaActual,
@@ -220,16 +351,19 @@ export default class UsuarioService {
     await this.repo.resetearContraseniaUsuario(idUsuario, hashNueva);
   }
 
+  /** * Bloquea un usuario. * 
+   * * Reglas: * 
+   * - Solo moderadores o admins pueden bloquear. * 
+   * - Moderador → solo usuarios normales. * 
+   * - Admin → no puede bloquear a otro admin. * 
+   * - No puede bloquearse a sí mismo. * 
+   * - Debe existir una razón válida. */
+
   public async BloquearUsuario(
     idUsuario: string,
     idModerador: string,
     datos: BloquearUsuarioDTO,
   ): Promise<void> {
-    /* verfifcar que el usuario tenga rol mod o admin
-    verificar que el usuario bloqueador no sea el mismo que el bloqueado
-    validar que el usuario bloqueado no este ya bloqueado
-    validar que la razon de bloqueo no este vacia
-    */
 
     const usuario = await this.obtenerUsuarioPorId(idUsuario);
 
@@ -242,6 +376,22 @@ export default class UsuarioService {
       throw new ForbiddenException(
         'Solo un moderador o administrador puede bloquear usuarios',
       );
+    }
+
+    if (usuarioModerador.rol === rolUsuario.usuarioModerador) {
+      if (usuario.rol !== rolUsuario.usuarioNormal) {
+        throw new ForbiddenException(
+          'Un moderador solo puede bloquear usuarios normales',
+        );
+      }
+    }
+
+    if (usuarioModerador.rol === rolUsuario.usuarioAdministrador) {
+      if (usuario.rol === rolUsuario.usuarioAdministrador) {
+        throw new ForbiddenException(
+          'Un administrador no puede bloquear a otro administrador',
+        );
+      }
     }
 
     if (usuario.estado === estadosUsuario.BLOQUEADO) {
@@ -263,9 +413,13 @@ export default class UsuarioService {
     await this.repo.bloquearUsuario(
       usuario,
       usuarioModerador,
-      datos.razonBloqueo,
+      datos.razonBloqueo.trim(),
     );
   }
+
+  /** * Lista todos los usuarios. 
+   * - Solo un admin o moderador en estado ACTIVO pueden hacerlo
+  */
 
   public async ListarUsuarios(): Promise<Usuario[]> {
     return this.repo.listarUsuarios();

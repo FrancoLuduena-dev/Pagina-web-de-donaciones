@@ -1,24 +1,44 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import bcrypt from 'bcrypt';
-import { sign, verify, Secret, SignOptions } from 'jsonwebtoken';
+import { sign, SignOptions } from 'jsonwebtoken';
 
 import Usuario_Service from '../service/usuarioService';
-import Usuario from '../entity/usuarioEntity';
+import { estadosUsuario } from '../enums/estadosUsuario';
 
 import crearUsuarioDTO from '../dtos/usuarioDto';
 import logearUsuarioDTO from '../dtos/logearUsuarioDto';
-
-import { JWT_SECRET, JWT_EXPIRATION } from './authConstants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export default class autenticacionUsuario {
-  constructor(private readonly service: Usuario_Service) {}
+  constructor(
+    private readonly service: Usuario_Service,
+    private readonly config: ConfigService,
+  ) {}
 
   async registrarUsuario(usuario: crearUsuarioDTO) {
+    if (
+      !usuario ||
+      !usuario.contrasenia ||
+      !usuario.nombreCompleto ||
+      !usuario.nombreUsuario ||
+      !usuario.correo ||
+      !usuario.numeroTelefono
+    ) {
+      throw new UnauthorizedException('Error al registrar el usuario');
+    }
+
     const hashedPassword = await bcrypt.hash(usuario.contrasenia, 10);
 
     const newUser = await this.service.CrearUsuario({
-      ...usuario,
+      nombreCompleto: usuario.nombreCompleto.trim(),
+      nombreUsuario: usuario.nombreUsuario.trim(),
+      correo: usuario.correo.trim().toLowerCase(),
+      numeroTelefono: usuario.numeroTelefono.trim(),
       contrasenia: hashedPassword,
     });
 
@@ -26,12 +46,20 @@ export default class autenticacionUsuario {
       throw new UnauthorizedException('Error al registrar el usuario');
     }
 
-    return newUser;
+    return {
+      message: 'Usuario registrado correctamente',
+      user: {
+        id: newUser.id,
+        correo: newUser.correo,
+        nombreUsuario: newUser.nombreUsuario,
+      },
+    };
   }
 
   public async logearUsuario(datos: logearUsuarioDTO): Promise<string> {
+    const correoNormalizado = datos.correo.trim().toLowerCase();
     const usuario = await this.service.ObtenerUsuarioPorCorreo(
-      datos.correo,
+      correoNormalizado,
     );
 
     if (!usuario) {
@@ -47,10 +75,22 @@ export default class autenticacionUsuario {
       throw new UnauthorizedException('Correo o contrasenia incorrectos');
     }
 
-    const secret: Secret = JWT_SECRET;
+    if (usuario.estado === estadosUsuario.BLOQUEADO) {
+      const razon = usuario.razonBloqueo?.trim() || 'Sin razón especificada';
+      throw new UnauthorizedException(`Cuenta bloqueada: ${razon}`);
+    }
+
+    const secret = this.config.get<string>('JWT_SECRET');
+    const expiration = this.config.get<string>('JWT_EXPIRATION') || '1h';
+
+    if (!secret) {
+      throw new InternalServerErrorException(
+        'JWT no configurado en el servidor',
+      );
+    }
 
     const options: SignOptions = {
-      expiresIn: JWT_EXPIRATION as SignOptions['expiresIn'],
+      expiresIn: expiration as SignOptions['expiresIn'],
     };
 
     return sign(
@@ -62,21 +102,5 @@ export default class autenticacionUsuario {
       secret,
       options,
     );
-  }
-
-  public async validarToken(token: string): Promise<Usuario> {
-    try {
-      const decoded = verify(token, JWT_SECRET) as { id: string };
-
-      const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
-
-      if (!usuario) {
-        throw new UnauthorizedException('Usuario no encontrado');
-      }
-
-      return usuario;
-    } catch {
-      throw new UnauthorizedException('Token inválido');
-    }
   }
 }

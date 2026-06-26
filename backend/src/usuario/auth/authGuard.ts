@@ -3,16 +3,20 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
 import Usuario_Service from '../service/usuarioService';
-import { JWT_SECRET } from './authConstants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly service: Usuario_Service) {}
+  constructor(
+    private readonly service: Usuario_Service,
+    private readonly config: ConfigService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -25,28 +29,36 @@ export class AuthGuard implements CanActivate {
 
     const token = authHeader.replace('Bearer ', '').trim();
 
+    const secret = this.config.get<string>('JWT_SECRET');
+
+    if (!secret) {
+      throw new InternalServerErrorException('JWT no configurado en el servidor');
+    }
+
+    let decoded: { id: string; correo: string; rol: string };
+
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as {
+      decoded = jwt.verify(token, secret) as {
         id: string;
         correo: string;
         rol: string;
       };
-
-      const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
-
-      if (!usuario) {
-        throw new UnauthorizedException('Usuario no encontrado');
-      }
-
-      const requestWithUser = request as Request & {
-        user?: unknown;
-      };
-
-      requestWithUser.user = usuario;
-
-      return true;
     } catch {
       throw new UnauthorizedException('Token inválido');
     }
+
+    const usuario = await this.service.obtenerUsuarioPorId(decoded.id);
+
+    if (!usuario) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+
+    const requestWithUser = request as Request & {
+      user?: unknown;
+    };
+
+    requestWithUser.user = usuario;
+
+    return true;
   }
 }

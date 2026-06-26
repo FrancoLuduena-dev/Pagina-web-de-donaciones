@@ -1,4 +1,4 @@
 export enum estadosUsuario {
-    ACTIVO = 'ACTIVO',
-    BLOQUEADO = 'BLOQUEADO',
+  ACTIVO = 'ACTIVO',
+  BLOQUEADO = 'BLOQUEADO',
 }

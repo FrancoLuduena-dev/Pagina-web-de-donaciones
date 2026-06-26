@@ -1,404 +1,359 @@
-@startuml Web Donaciones
-'left to right direction
+@startuml
+title Diagrama de clases - Plataforma de Donaciones
 
+skinparam classAttributeIconSize 0
+
+package "Entidades" {
 
 class Usuario {
-    - idUsuario: UUID
-    - nombreCompleto: string
-    - nombreUsuario: string
-    - email: string
-    - password: hash
-    - numeroTelefono: string
-    - rolUsuario: string
-    - estadoCuenta: EstadoCuenta
-    .. Solo moderadores ..
-    - cantidadPublicacionesBloqueadas: int
-    - razonBloqueo: string
-    - idBloqueador: UUID
-    + getters()
-    + setters()
++id: string
++nombreCompleto: string
++nombreUsuario: string
++correo: string
+-contrasenia: string
++numeroTelefono: string
++rol: rolUsuario
++estado: estadosUsuario
++bloqueador?: Usuario
++razonBloqueo: string | null
++cantidadPublicacionesBloqueadas: number
++creadoEn: Date
++actualizadoEn: Date
 }
-'(rol: moderador, admin, normal) (estado: activo, bloqueado) (id es la key)
-'id no tiene setter
-'lios setters y getters solo se consumen en dto y services
-
-class UsuarioService {
-    .. Usuarios ..
-    + crearUsuario (datos: CrearUsuarioDTO)
-    + eliminarUsuario (user: idUsuario)
-    + resetearPasswordUsuario (user: idUsuario, datos: ActualizarPasswordDto)
-    + actualizarPerfil (user: idUsuario, datos: ActualizarPerfilDto)
-    .. Solo moderadores ..
-    + listarUsuarios()
-    + cambiarRolUsuario (user: usuario, id: idUsuario, rolNuevo: RolUsuario)
-    + bloquearUsuarios (user: idUsuario, mod:idUsuario)
-}
-'el bloqueo de usuariose hace automatico cuando tiene 3 publicaciones bloqueadas
 
 class Publicacion {
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - tituloPublicacion: string
-    - descripcionPublicacion: string
-    - urlFoto: string
-    - categoria: CategoriaPublicacion
-    - zonaRetiro: string
-    - entrega: TipoEntrega
-    - estadoPublicacion: EstadoPublicacion
-    - estadoDonacion: estadoDonacion
-    - idBloqueador: UUID
-    - motivoBloqueo: string
-    + setters()
-    + getters()
++id: string
++creadorId: string
++titulo: string
++descripcion: string
++categoriaId: string
++localidadId: string
++condicion: CondicionObjeto
++imagenUrls: string[]
++estado: EstadoPublicacion
++version: number
++createdAt: Date
++updatedAt: Date
++deletedAt: Date
++solicitudes: Solicitud[]
+
+```
++validarCreador(usuarioId: string, mensaje?: string): void
++validarNoEsCreador(usuarioId: string, mensaje?: string): void
++validarPuedeSerGestionadaPor(usuarioId: string, usuarioRol: rolUsuario, mensaje?: string): void
++validarPuedeRecibirSolicitudes(): void
++puedeEditar(): boolean
++editar(datos: EditarPublicacionDto): void
++reservar(): void
++pausar(): void
++reactivar(): void
++entregar(): void
++eliminar(): void
++eliminarPorModeracion(): void
++cancelarReserva(): void
+-transicionarA(nuevoEstado: EstadoPublicacion): void
+```
+
 }
 
-class PublicacionService {
-    + crearPublicacion (user: usuario, datos: CrearPublicacionDto)
-    + abrirPublicacion (user: usuario, id: idPublicacion)
-    .. solo creador de publicacion ..
-    + editarPublicacion (user: usuario, id: idPublicacion, datos: EditarPublicacionDto)
-    + activarPublicacion (user: usuario, id: idPublicacion, datos: ActivarPublicacionDto)
-    + cancelarPublicacion (user: usuario, id: idPublicacion, datos: CancelarPublicacionDto)
-    + finalizarPublicacion (user: usuario, id: idPublicacion, datos: FinalizarPublicacionDto)
-    + pausarPublicacion (user: usuario, id: idPublicacion, datos: PausarPublicacionDto)
-    + reservarPublicacion (user: usuario, id: idPublicacion, datos: ReservarPublicacionDto)
-    + eliminarPublicacion (user: usuario, id: idPublicacion, datos: EliminarPublicacionDto)
-    .. Todos los usuarios ..
-    .. Solo Usuarios no creadores de la publicacion ..
-    + denunciarPublicacion (user: usuario, id: idPublicacion, datos: DenunciarPublicacionDto)
-    .. Solo moderadores..
-    + bloquearPublicacion (user: usuario, id: idPublicacion, datos: BloquearPublicacionDto)
+class Solicitud {
++id: string
++publicacionId: string
++publicacion: Publicacion
++solicitanteId: string
++solicitante: Usuario
++creadorPublicacionId: string
++creadorPublicacion: Usuario
++mensaje?: string | null
++estado: EstadoSolicitud
++motivoRechazo?: string | null
++motivoCancelacion?: string | null
++version: number
++createdAt: Date
++updatedAt: Date
 
-}
-' para mi, pausarPublicacion, activarPublicacion, cancelarPublicacion, reservarPublicacion y finalizarPublicacion deberian condensarse en una sola cambiarEstadoPublicacion() porque todos los dtos son iguales, y todos estos metodos harian lo mismo, cambiar el publicacion.estadoPublicacion a otro parametro del enum
+```
++validarCreadorPublicacion(usuarioId: string, mensaje?: string): void
++validarParticipante(usuarioId: string, mensaje?: string): void
++validarPuedeCancelarsePor(usuarioId: string): void
++aceptar(): void
++rechazar(motivo?: string): void
++cancelar(motivo?: string): void
++cancelarAceptada(motivo?: string): void
++finalizar(): void
++expirar(): void
+-transicionarA(nuevoEstado: EstadoSolicitud): void
+```
 
-class Solicitud{
-    - idSolicitud: UUID
-    - idSolicitante: UUID
-    - idPublicacionSolicitada: UUID
-    - idCreadorPublicacion: UUID
-    - estadoSolicitud: EstadoSolicitud
-    - datosSolicitud: string
-}
-
-class SolicitudService {
-    + crearSolicitud ( user: usuario, id: idPublicacionSolicitada, datos: crearSolicitudDto, SolicitudResponseDto)
-    + cancelarSolicitud (user: usuario, id: idSolicitud, datos: cancelarSolicitudDto, SolicitudResponseDto)
-    + listarSolicitudesPendientesPorUsuario (user: usuario, datos: SolicitudResponseDto)
-    + listarSolicitudesRecibidasPorUsuario (solicita: usuario, datos: SolicitudResponseDto)
-    + listarSolicitudesRealizadasPorUsuario (user: usuario, datos: SolicitudResponseDto)
-    .. Solo creador publicacion..
-    + listarSolicitudesPorPublicacion (user: usuario, idPublicacion, datos: SolicitudResponseDto)
-    ..Solo creador publicacion..
-    + aceptarSolicitud (user: usuario, id: idPublicacion, datos: AceptarSolicitudDTO, SolicitudResponseDto)
-    ' al ser aceptada, rechaza todas las otras solicitudes pendientes automaticamente
-    + rechazarSolicitud (user: usuario, id: idPublicacion, datos: RechazarSolicitudDto, SolicitudResponseDto)
 }
 
 class Denuncia {
-    - idDenuncia: UUID
-    - idPublicacion : UUID
-    - idUsuario: UUID
-    - estadoDenuncia: EstadoDenuncia
++id: string
++publicacionId: string
++denuncianteId: string
++creadorPublicacionId: string
++motivo: MotivoDenuncia
++comentario?: string | null
++estado: EstadoDenuncia
++moderadorAsignadoId?: string | null
++tipoResolucion?: TipoResolucion | null
++detalleResolucion?: string | null
++fechaResolucion?: Date | null
++version: number
++fechaCreacion: Date
++fechaActualizacion: Date
+
+```
++validarNoEsCreadorPublicacion(usuarioId: string, mensaje?: string): void
++validarModeradorAsignado(moderadorId: string, mensaje?: string): void
++validarPuedeResolver(moderadorId: string): void
++tomar(moderadorId: string): void
++resolver(moderadorId: string, tipoResolucion: TipoResolucion, detalleResolucion: string): void
+-cambiarEstado(nuevoEstado: EstadoDenuncia): void
+```
+
+}
+
+class Notificacion {
++id: string
++destinatarioId: string
++destinatario: Usuario
++tipo: TipoNotificacion
++titulo: string
++mensaje: string
++leidaEn: Date | null
++solicitudId: string | null
++solicitud: Solicitud | null
++publicacionId: string | null
++publicacion: Publicacion | null
++denunciaId: string | null
++denuncia: Denuncia | null
++creadaEn: Date
+
+```
++marcarComoLeida(): void
+```
+
+}
+}
+
+package "Servicios" {
+
+class UsuarioService {
++CrearUsuario(usuario: CrearUsuarioDTO): Promise<Usuario>
++EliminarUsuario(idUsuario: string, contrasenia: string): Promise<void>
++EliminarUsuarioAdmin(idUsuario: string, idAdmin: string): Promise<void>
++ActualizarUsuario(idUsuario: string, datos: actualizarUsuarioDTO): Promise<void>
++obtenerUsuarioPorId(idUsuario: string): Promise<Usuario>
++ObtenerUsuarioPorNombreUsuario(nombreUsuario: string): Promise<Usuario | null>
++ObtenerUsuarioPorCorreo(correo: string): Promise<Usuario | null>
++CambiarRolUsuario(idUsuario: string, idAdmin: string, datos: CambiarRolDTO): Promise<void>
++registrarPublicacionEliminadaPorModeracion(idUsuario: string, idModerador: string): Promise<void>
++ResetearContraseniaUsuario(idUsuario: string, dto: actualizarContraseniaDTO): Promise<void>
++BloquearUsuario(idUsuario: string, idModerador: string, datos: BloquearUsuarioDTO): Promise<void>
++ListarUsuarios(): Promise<Usuario[]>
+}
+
+class PublicacionService {
++crearPublicacion(dto: CrearPublicacionDto, creadorId: string): Promise<Publicacion>
++listarPublico(filtros: FiltrosPublicacionDto): Promise<Publicacion[]>
++listarMisPublicaciones(creadorId: string, estado?: EstadoPublicacion): Promise<Publicacion[]>
++editar(id: string, dto: EditarPublicacionDto, usuarioId: string): Promise<Publicacion>
++buscarPublicacionPorId(id: string): Promise<Publicacion>
++buscarPublicacionPorIdConCreador(id: string): Promise<PublicacionConCreador>
++reservar(id: string, usuarioId: string): Promise<Publicacion>
++cancelarReserva(id: string, usuarioId: string): Promise<Publicacion>
++pausar(id: string, usuarioId: string, usuarioRol: rolUsuario): Promise<Publicacion>
++reactivar(id: string, usuarioId: string, usuarioRol: rolUsuario): Promise<Publicacion>
++eliminar(id: string, usuarioId: string, usuarioRol: rolUsuario): Promise<Publicacion>
++guardar(publicacion: Publicacion): Promise<Publicacion>
+}
+
+class SolicitudService {
++crearSolicitud(dto: CrearSolicitudDto, solicitanteId: string): Promise<SolicitudResponseDto>
++listarMisSolicitudes(usuarioId: string): Promise<SolicitudResponseDto[]>
++listarSolicitudesRecibidas(usuarioId: string): Promise<SolicitudResponseDto[]>
++rechazarSolicitud(solicitudId: string, usuarioId: string, dto: RechazarSolicitudDto): Promise<SolicitudResponseDto>
++aceptarSolicitud(solicitudId: string, usuarioId: string): Promise<SolicitudResponseDto>
++finalizarSolicitud(solicitudId: string, usuarioId: string): Promise<SolicitudResponseDto>
++finalizarEntregaPorPublicacion(publicacionId: string, usuarioId: string): Promise<SolicitudResponseDto>
++cancelarReservaPorPublicacion(publicacionId: string, usuarioId: string, motivo?: string): Promise<SolicitudResponseDto>
++cancelarSolicitud(solicitudId: string, usuarioId: string, motivo?: string): Promise<SolicitudResponseDto>
++resolverSolicitudesPorPublicacionEliminada(publicacionId: string): Promise<void>
 }
 
 class DenunciaService {
-    - crearDenuncia(usuario: idUsuario, publicacion: idPublicacion)
-    .. Solo Moderadores ..
-    - resolverDenuncia( denuncia: idDenuncia, publicacion: id.publicacion, estado: estadoDenuncia)
-    - ListarDenuncias()
++crearDenuncia(denuncianteId: string, dto: CrearDenunciaDto): Promise<DenunciaResponseDto>
++listar(filtros: FiltroDenunciaDto): Promise<DenunciaResponseDto[]>
++buscarDetallePorId(denunciaId: string): Promise<DenunciaDetalleResponseDto>
++tomarDenuncia(denunciaId: string, moderadorId: string, dto: TomarDenunciaDto): Promise<DenunciaResponseDto>
++resolverDenuncia(denunciaId: string, moderadorId: string, dto: ResolverDenunciaDto): Promise<DenunciaDetalleResponseDto>
+-ejecutarAccionResolucion(tipoResolucion: TipoResolucion, publicacionId: string, creadorPublicacionId: string, moderadorId: string, detalleResolucion: string): Promise<void>
 }
 
-class Buscador{
-    + busquedaCategoria (publicacion: publicacion[], categoria: CategoriPublicacion)
-    + busquedaNombre (publicacion: publicacion[], nombre: string)
-    + busquedaEstadoPublicacion (publicacion: publicacion[], estado: EstadoPublicacion)
-    + busquedaEntrega (publicacion: publicacion[], entrega: TipoEntrega)
+class NotificacionService {
++crear(dto: CrearNotificacionDto): Promise<NotificacionResponseDto>
++listarPropias(destinatarioId: string, paginacion: PaginacionNotificacionDto): Promise<ListadoNotificacionesResponseDto>
++marcarComoLeida(notificacionId: string, destinatarioId: string): Promise<NotificacionResponseDto>
++marcarTodasComoLeidas(destinatarioId: string): Promise<void>
+}
 }
 
-class Estadisticas {
-    logCantidadDonaciones
-    logSolicitudes
-    logPorcentajeEntregado
-    logPorcentajeCategoria
-    logCrearUsuario
-    logCantidadPublicacionesActivas
-    logCantidadUsuariosBloqueados
-    logCantidadPublicacionesBloqueadas
-}
-'todavia no estoy seguro si estos logs no deberia ser una clase log, con diferentes datos, y con atributos, opcionales, que pueda dar esta info.
+package "Controllers" {
 
-'--- DTOS ---
-    ' --- DTOS UsuarioService ---
-
-class CrearUsuarioDto <<DTO>>{
-    - nombreUsuario: string
-    - email: string
-    - password: hash
+class UsuarioController
+class PublicacionController
+class SolicitudController
+class DenunciaController
+class NotificacionController
 }
 
-class ActualizarPerfilDto <<DTO>>{
-    - nombreCompleto: string
-    - email: string
-    - numeroTelefono: string
+package "DTOs principales" {
+
+class CrearPublicacionDto
+class EditarPublicacionDto
+class FiltrosPublicacionDto
+class PublicacionResponseDto
+
+class CrearSolicitudDto
+class RechazarSolicitudDto
+class CancelarSolicitudDto
+class SolicitudResponseDto
+
+class CrearDenunciaDto
+class TomarDenunciaDto
+class ResolverDenunciaDto
+class FiltroDenunciaDto
+class DenunciaResponseDto
+class DenunciaDetalleResponseDto
+
+class CrearNotificacionDto
+class PaginacionNotificacionDto
+class NotificacionResponseDto
+class ListadoNotificacionesResponseDto
+class CantidadNoLeidasResponseDto
+
+class CrearUsuarioDTO
+class actualizarUsuarioDTO
+class actualizarContraseniaDTO
+class CambiarRolDTO
+class BloquearUsuarioDTO
 }
 
-class ActualizarPasswordDto <<DTO>> {
-    - idUsuario: UUID
-    - passwordNueva: hash
-    - passwordActual: hash
+package "Enums" {
+
+enum rolUsuario {
+usuarioModerador
+usuarioNormal
+usuarioAdministrador
 }
 
-    ' --- DTOS PublicacionService ---
-
-
-class CrearPublicacionDto <<DTO>>{
-    - idCreador: UUID
-    - tituloPublicacion: string
-    - descripcionPublicacion: string
-    - urlFoto: string
-    - categoria: CategoriaPublicacion
-    - zonaRetiro: string
-    - entrega: TipoEntrega
-    - estadoDonacion: EstadoDonacion
+enum estadosUsuario {
+ACTIVO
+BLOQUEADO
 }
 
-class  EditarPublicacionDto <<DTO>>{
-    - idCreador: UUID
-    - tituloPublicacion: string
-    - descripcionPublicacion: string
-    - urlFoto: string
-    - categoria: CategoriaPublicacion
-    - zonaRetiro: string
-    - entrega: TipoEntrega
-    - estadoDonacion: EstadoDonacion
+enum EstadoPublicacion {
+DISPONIBLE
+RESERVADA
+ENTREGADA
+PAUSADA
+ELIMINADA
 }
 
-
-class EliminarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
+enum CondicionObjeto {
+NUEVO
+USADO_BUENO
+USADO_REGULAR
 }
 
-
-class ActivarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
+enum EstadoSolicitud {
+PENDIENTE
+ACEPTADA
+RECHAZADA
+CANCELADA
+FINALIZADA
+EXPIRADA
 }
 
-class CancelarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
+enum MotivoDenuncia {
+CONTENIDO_INAPROPIADO
+PUBLICACION_FALSA
+OBJETO_PROHIBIDO
+OTRO
 }
 
-class FinalizarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
+enum EstadoDenuncia {
+PENDIENTE
+EN_REVISION
+RESUELTA
 }
 
-
-class PausarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
+enum TipoResolucion {
+DESCARTADA
+PUBLICACION_PAUSADA
+PUBLICACION_ELIMINADA
+USUARIO_BLOQUEADO
 }
 
-class ReservarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idCreador: UUID
-    - estadoPublicacion: EstadoPublicacion
+enum TipoNotificacion {
+SOLICITUD_CREADA
+SOLICITUD_ACEPTADA
+SOLICITUD_RECHAZADA
+SOLICITUD_ACEPTADA_CANCELADA
+SOLICITUD_FINALIZADA
+DENUNCIA_RESUELTA
+PUBLICACION_PAUSADA
+PUBLICACION_REACTIVADA
+PUBLICACION_ELIMINADA
+USUARIO_BLOQUEADO
+}
 }
 
+' Relaciones entre entidades
+Usuario "0..1" -- "0..*" Usuario : bloqueador / bloqueados
 
-class DenunciarPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-}
+Usuario "1" ..> "0..*" Publicacion : creadorId
+Publicacion "1" -- "0..*" Solicitud : solicitudes
 
+Usuario "1" -- "0..*" Solicitud : solicitante
+Usuario "1" -- "0..*" Solicitud : creadorPublicacion
 
-class BloquearPublicacionDto <<DTO>>{
-    - idPublicacion: UUID
-    - idBloqueador: UUID
-    - motivoBloqueo: string
-    - estadoDenuncia: EstadoDenuncia
-}
+Publicacion "1" ..> "0..*" Denuncia : publicacionId
+Usuario "1" ..> "0..*" Denuncia : denuncianteId
+Usuario "1" ..> "0..*" Denuncia : creadorPublicacionId
+Usuario "0..1" ..> "0..*" Denuncia : moderadorAsignadoId
 
-    ' --- DTOS SolicitudService
+Usuario "1" -- "0..*" Notificacion : destinatario
+Solicitud "0..1" -- "0..*" Notificacion : solicitud
+Publicacion "0..1" -- "0..*" Notificacion : publicacion
+Denuncia "0..1" -- "0..*" Notificacion : denuncia
 
-class SolicitudResponseDto <<DTO>>{
-    - idSolicitud: UUID
-    - idPublicacion: UUID
-    - tituloPublicacion: string
-    - idSolicitante: UUID
-    - nombreUsuarioSolicitante: string
-    - mensajeSolicitud: string
-    - EstadoSolicitud: EstadoSolicitud
-    - fechaCreacionSolicitud: Date
-    - fechaActualizacionSolicitud: Date
-}
+' Dependencias controller -> service
+UsuarioController ..> UsuarioService
+PublicacionController ..> PublicacionService
+SolicitudController ..> SolicitudService
+DenunciaController ..> DenunciaService
+NotificacionController ..> NotificacionService
 
-class CrearSolicitudDto <<DTO>> {
-    - idUsuario: UUID
-    - idPublicacion: UUID
-    - idCreadorPublicacion: UUID
-    - datosSolicitud: string
-}
+' Dependencias principales entre servicios
+PublicacionService ..> UsuarioService : consulta creador / bloqueo automático
+SolicitudService ..> PublicacionService : reserva / entrega / cancelación
+DenunciaService ..> PublicacionService : pausa o elimina publicación
+DenunciaService ..> UsuarioService : bloquea usuario
 
-class AceptarSolicitudDTO <<DTO>> {
-    - idUsuario: UUID
-    - idPublicacion: UUID
-}
-
-class RechazarSolicitudDto<<DTO>> {
-    - idUsuario: UUID
-    - idPublicacion: UUID
-}
-
-class CancelarSolicitudDto <<DTO>> {
-    - idUsuario: UUID
-    - idPublicacion: UUID
-}
-
-'-- ENUMS -- 
-    '--- ENUMS Usuario --- 
-
-enum RolUsuario <<enum>>{
-    COMUN
-    MODERADOR
-    ADMIN
-}
-
-enum EstadoCuenta <<enum>>{
-    ACTIVA
-    BLOQUEADA
-}
-
-    '--- ENUMS Publicacion ---
-
-enum CategoriaPublicacion <<enum>>{
-    INDUMENTARIA
-    MUEBLES
-    ALIMENTOS
-    OTROS
-}
-
-enum TipoEntrega <<enum>>{
-    RETIRO
-    ENTREGA
-    RETIRO_O_ENTREGA
-}
-
-enum EstadoPublicacion <<enum>>{
-    DISPONIBLE
-    RESERVADO
-    ENTREGADO
-    PAUSADO
-    ELIMINADO
-}
-
-enum EstadoDonacion <<enum>>{
-    NUEVO
-    USADO
-}
-
-    ' --- ENUMS Solicitud ---
-
-enum EstadoSolicitud <<enum>>{
-    PENDIENTE
-    ACEPTADA
-    RECHAZADA
-}
-    ' --- ENUMS Denuncia ---
-enum EstadoDenuncia <<enum>>{
-    PENDIENTE
-    EN_REVISION
-    RESUELTA
-}
-
-' --- Uso de DTOs en Services ---
-
-UsuarioService ..> CrearUsuarioDto : usa
-UsuarioService ..> ActualizarPerfilDto : usa
-UsuarioService ..> ActualizarPasswordDto : usa
-
-PublicacionService ..> CrearPublicacionDto : usa
-PublicacionService ...> EditarPublicacionDto : usa
-PublicacionService ..> EliminarPublicacionDto : usa
-PublicacionService ...> ActivarPublicacionDto : usa
-PublicacionService ..> CancelarPublicacionDto : usa
-PublicacionService ...> FinalizarPublicacionDto : usa
-PublicacionService ..> PausarPublicacionDto : usa
-PublicacionService ...> ReservarPublicacionDto : usa
-PublicacionService ..> DenunciarPublicacionDto : usa
-PublicacionService ...> BloquearPublicacionDto : usa
-
-SolicitudService ..> SolicitudResponseDto : usa
-SolicitudService ..> CrearSolicitudDto: usa
-SolicitudService ..> AceptarSolicitudDTO: usa
-SolicitudService ..> RechazarSolicitudDto: usa
-SolicitudService ..> CancelarSolicitudDto: usa
-
-' --- Gestión de Entidades ---
-UsuarioService -u-> Usuario : gestiona >
-PublicacionService --> Publicacion : gestiona >
-SolicitudService --> Solicitud : gestiona >
-DenunciaService -u-> Denuncia : gestiona >
-
-' --- Conexiones de Asociación (Lógica de Negocio) ---
-Usuario "1" -- "*" Publicacion : crea >
-Usuario "1" -- "*" Solicitud : realiza >
-Usuario "1" -- "*" Denuncia : reporta >
-
-Publicacion "1" ---- "*" Solicitud : recibe >
-Publicacion "1" ---- "*" Denuncia : tiene >
-
-' --- Relaciones con Enums ---
-Usuario --> RolUsuario
-Usuario --> EstadoCuenta
-Publicacion --> CategoriaPublicacion
-Publicacion --> TipoEntrega
-Publicacion --> EstadoPublicacion
-Publicacion --> EstadoDonacion
-Solicitud---> EstadoSolicitud
-Denuncia -r-> EstadoDenuncia
-
-' --- Otros ---
-Buscador .u....> Publicacion : busca en >
-Estadisticas .u....> Usuario : trackea >
-Estadisticas .u....> Publicacion : trackea >
-
-
-' --- Diseño ---
-skinparam roundcorner 20
-skinparam classFontColor automatic
-
-' -- Colores de Clases y Entidades --
-skinparam class {
-    BackgroundColor #TECHNOLOGY
-    HeaderBackgroundColor #444
-    BorderColor #333
-}
-
-skinparam class<<enum>> {
-    BackgroundColor #LightSalmon
-    HeaderBackgroundColor #444
-    BorderColor #333
-}
-
-skinparam class<<DTO>>{
-    BackgroundColor #lightblue
-    HeaderBackgroundColor #444
-    BorderColor #333
-}
-
-
-
-
+' Uso de DTOs
+PublicacionService ..> CrearPublicacionDto
+PublicacionService ..> EditarPublicacionDto
+SolicitudService ..> CrearSolicitudDto
+SolicitudService ..> RechazarSolicitudDto
+SolicitudService ..> SolicitudResponseDto
+DenunciaService ..> CrearDenunciaDto
+DenunciaService ..> ResolverDenunciaDto
+DenunciaService ..> DenunciaResponseDto
+DenunciaService ..> DenunciaDetalleResponseDto
+NotificacionService ..> CrearNotificacionDto
+NotificacionService ..> NotificacionResponseDto
+UsuarioService ..> CrearUsuarioDTO
+UsuarioService ..> BloquearUsuarioDTO
 @enduml
-
-' notas: cambie snake case por Pascal case en los nombres de las clases (porque next y nest recomiendan eso para que funcione y a camel case para los atributos
-' para normalizar base de datos, todos los atributos especifican que son: rol -> rolUsuario, zona -> zonaRetiro, titulo -> tituloPublicacion, etc.
-
-

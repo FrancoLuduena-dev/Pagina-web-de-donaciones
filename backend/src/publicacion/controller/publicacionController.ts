@@ -2,59 +2,139 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
-  UseGuards,
   Query,
-  Delete,
   Req,
-  UploadedFile,
+  UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
-import { Request } from 'express';
+import type { RequestConUsuario } from 'src/compartidos/tipo/requestConUsuario';
+import { StatusGuard } from 'src/compartidos/guards/statusGuard';
+import { AuthGuard } from 'src/usuario/auth/authGuard';
+
+import { CrearPublicacionDto } from '../dtos/crearPublicacionDto';
+import { EditarPublicacionDto } from '../dtos/editarPublicacionDto';
+import { FiltrosPublicacionDto } from '../dtos/filtrosPublicacionDto';
+import { Publicacion } from '../entity/publicacionEntity';
+import { EstadoPublicacion } from '../enums/estadoPublicacion';
 import { PublicacionService } from '../service/publicacionService';
 import {
   buildPublicacionImagenUrl,
+  MAX_IMAGENES_PUBLICACION,
   publicacionUploadMulterOptions,
+  validarImagenesSubidas,
 } from '../service/publicacionUploadService';
-import { CrearPublicacionDto } from '../DTOS/crearPublicacionDto';
-import { Publicacion } from '../entity/publicacionEntity';
-import { EstadoPublicacion } from '../enums/estadoPublicacion';
-import { EditarPublicacionDto } from '../DTOS/editarPublicacionDto';
-import { AuthGuard } from 'src/usuario/auth/authGuard';
-import { rolUsuario } from 'src/usuario/enums/rolUsuario';
-import { FiltrosPublicacionDto } from '../DTOS/filtrosPublicacionDto';
 
-interface RequestConUsuario extends Request {
-  user: {
-    id: string;
-    rol: rolUsuario;
-  };
-}
-
+/**
+ * Controlador responsable de exponer las operaciones de publicaciones.
+ *
+ * Recibe las peticiones HTTP del frontend y delega en el servicio las reglas
+ * de negocio del ciclo de vida de una publicación.
+ */
+@ApiTags('Publicaciones')
 @Controller('publicaciones')
 export class PublicacionController {
   constructor(private readonly publicacionService: PublicacionService) {}
 
-  @UseGuards(AuthGuard)
+  /**
+   * Sube imágenes para una publicación antes de crearla.
+   *
+   * Este endpoint valida el lote de archivos y devuelve las URLs públicas que
+   * luego se asignan a la publicación durante su creación.
+   */
+  @UseGuards(AuthGuard, StatusGuard)
   @Post('upload')
-  @UseInterceptors(FileInterceptor('imagen', publicacionUploadMulterOptions))
-  subirImagen(
-    @UploadedFile() file: Express.Multer.File,
-  ): { imagenUrl: string } {
-    if (!file) {
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Subir imágenes para una publicación' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Imágenes de la publicación',
+    schema: {
+      type: 'object',
+      properties: {
+        imagenes: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+      required: ['imagenes'],
+    },
+  })
+  @ApiCreatedResponse({
+    description: 'Imágenes subidas correctamente',
+    schema: {
+      example: {
+        imagenUrls: ['/uploads/publicaciones/imagen-123.jpg'],
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'No se recibieron imágenes o las imágenes no son válidas',
+  })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })
+  @ApiForbiddenResponse({ description: 'Usuario sin permiso para operar' })
+  @UseInterceptors(
+    FilesInterceptor(
+      'imagenes',
+      MAX_IMAGENES_PUBLICACION,
+      publicacionUploadMulterOptions,
+    ),
+  )
+  async subirImagenes(
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<{ imagenUrls: string[] }> {
+    if (!files?.length) {
       throw new BadRequestException('No se recibió ninguna imagen');
     }
 
-    return { imagenUrl: buildPublicacionImagenUrl(file.filename) };
+    await validarImagenesSubidas(files);
+
+    return {
+      imagenUrls: files.map((file) => buildPublicacionImagenUrl(file.filename)),
+    };
   }
 
-  @UseGuards(AuthGuard)
+  /**
+   * Crea una nueva publicación a partir de los datos enviados por el usuario.
+   *
+   * El usuario autenticado queda asociado como creador de la publicación y el
+   * servicio se encarga de aplicar las reglas del dominio.
+   */
+  @UseGuards(AuthGuard, StatusGuard)
   @Post()
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Crear una publicación' })
+  @ApiCreatedResponse({
+    description: 'Publicación creada correctamente',
+    type: Publicacion,
+  })
+  @ApiBadRequestResponse({ description: 'Datos inválidos' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })
+  @ApiForbiddenResponse({ description: 'Usuario sin permiso para operar' })
   crearPublicacion(
     @Body() dto: CrearPublicacionDto,
     @Req() req: RequestConUsuario,
@@ -62,15 +142,47 @@ export class PublicacionController {
     return this.publicacionService.crearPublicacion(dto, req.user.id);
   }
 
+  /**
+   * Devuelve el feed público de publicaciones filtradas.
+   *
+   * Este endpoint expone las publicaciones que pueden ser visualizadas por el
+   * público general, respetando los filtros recibidos desde el cliente.
+   */
   @Get()
+  @ApiOperation({ summary: 'Listar publicaciones públicas disponibles' })
+  @ApiOkResponse({
+    description: 'Listado público de publicaciones obtenido correctamente',
+    type: Publicacion,
+    isArray: true,
+  })
   listarFeedPublico(
     @Query() filtros: FiltrosPublicacionDto,
   ): Promise<Publicacion[]> {
     return this.publicacionService.listarPublico(filtros);
   }
 
+  /**
+   * Lista las publicaciones propias del usuario autenticado.
+   *
+   * Permite consultar el estado de las publicaciones del creador para
+   * supervisar su ciclo de vida desde su cuenta.
+   */
   @UseGuards(AuthGuard)
   @Get('mias')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Listar mis publicaciones' })
+  @ApiQuery({
+    name: 'estado',
+    enum: EstadoPublicacion,
+    required: false,
+    description: 'Estado por el cual filtrar las publicaciones propias',
+  })
+  @ApiOkResponse({
+    description: 'Listado de publicaciones del usuario autenticado',
+    type: Publicacion,
+    isArray: true,
+  })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })
   listarMisPublicaciones(
     @Req() req: RequestConUsuario,
     @Query('estado') estado?: EstadoPublicacion,
@@ -78,13 +190,48 @@ export class PublicacionController {
     return this.publicacionService.listarMisPublicaciones(req.user.id, estado);
   }
 
+  /**
+   * Busca una publicación por su identificador.
+   *
+   * El detalle incluye información del creador para que la vista pueda
+   * contextualizar correctamente la publicación.
+   */
   @Get(':id')
-  buscarPublicacionPorId(@Param('id') id: string): Promise<Publicacion> {
-    return this.publicacionService.buscarPublicacionPorId(id);
+  @ApiOperation({ summary: 'Buscar publicación por ID' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la publicación',
+    example: 'b3b8d1c2-4a5f-4f3a-9d7e-123456789abc',
+  })
+  @ApiOkResponse({
+    description: 'Publicación encontrada',
+    type: Publicacion,
+  })
+  buscarPublicacionPorId(@Param('id') id: string) {
+    return this.publicacionService.buscarPublicacionPorIdConCreador(id);
   }
 
-  @UseGuards(AuthGuard)
+  /**
+   * Pausa una publicación para desactivarla temporalmente.
+   *
+   * Esta acción se usa cuando la publicación debe dejar de estar operativa
+   * sin eliminarla definitivamente.
+   */
+  @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id/pausar')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Pausar una publicación' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la publicación a pausar',
+  })
+  @ApiOkResponse({
+    description: 'Publicación pausada correctamente',
+    type: Publicacion,
+  })
+  @ApiBadRequestResponse({ description: 'La publicación no puede pausarse' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })
+  @ApiForbiddenResponse({ description: 'Usuario sin permiso para operar' })
   pausar(
     @Param('id') id: string,
     @Req() req: RequestConUsuario,
@@ -92,8 +239,27 @@ export class PublicacionController {
     return this.publicacionService.pausar(id, req.user.id, req.user.rol);
   }
 
-  @UseGuards(AuthGuard)
+  /**
+   * Reactiva una publicación previamente pausada.
+   *
+   * Permite devolver la publicación a un estado activo cuando la situación
+   * que motivó la pausa ya fue resuelta.
+   */
+  @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id/reactivar')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Reactivar una publicación' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la publicación a reactivar',
+  })
+  @ApiOkResponse({
+    description: 'Publicación reactivada correctamente',
+    type: Publicacion,
+  })
+  @ApiBadRequestResponse({ description: 'La publicación no puede reactivarse' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })
+  @ApiForbiddenResponse({ description: 'Usuario sin permiso para operar' })
   reactivar(
     @Param('id') id: string,
     @Req() req: RequestConUsuario,
@@ -101,8 +267,27 @@ export class PublicacionController {
     return this.publicacionService.reactivar(id, req.user.id, req.user.rol);
   }
 
-  @UseGuards(AuthGuard)
+  /**
+   * Elimina una publicación de forma lógica o por moderación.
+   *
+   * La acción deja a la publicación fuera del flujo operativo del sistema y,
+   * en caso de moderación, marca la decisión como externa al creador.
+   */
+  @UseGuards(AuthGuard, StatusGuard)
   @Delete(':id/eliminar')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Eliminar una publicación' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la publicación a eliminar',
+  })
+  @ApiOkResponse({
+    description: 'Publicación eliminada correctamente',
+    type: Publicacion,
+  })
+  @ApiBadRequestResponse({ description: 'La publicación no puede eliminarse' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })
+  @ApiForbiddenResponse({ description: 'Usuario sin permiso para operar' })
   eliminar(
     @Param('id') id: string,
     @Req() req: RequestConUsuario,
@@ -110,8 +295,27 @@ export class PublicacionController {
     return this.publicacionService.eliminar(id, req.user.id, req.user.rol);
   }
 
-  @UseGuards(AuthGuard)
+  /**
+   * Edita una publicación cuando el usuario tiene permiso para hacerlo.
+   *
+   * La edición está restringida al creador y solo es válida si la publicación
+   * se encuentra en un estado que lo permita.
+   */
+  @UseGuards(AuthGuard, StatusGuard)
   @Patch(':id')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Editar una publicación' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la publicación a editar',
+  })
+  @ApiOkResponse({
+    description: 'Publicación editada correctamente',
+    type: Publicacion,
+  })
+  @ApiBadRequestResponse({ description: 'Datos inválidos' })
+  @ApiUnauthorizedResponse({ description: 'Usuario no autenticado' })
+  @ApiForbiddenResponse({ description: 'Usuario sin permiso para operar' })
   editar(
     @Param('id') id: string,
     @Body() dto: EditarPublicacionDto,

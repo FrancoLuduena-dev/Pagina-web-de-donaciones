@@ -6,10 +6,13 @@ type BotonLinkProps = {
   texto: string;
 };
 
-export default function BotonLink({
-  href,
-  texto,
-}: BotonLinkProps) {
+/**
+ * Botón de navegación que redirige a otra ruta.
+ * @param href Ruta de destino del enlace.
+ * @param texto Texto mostrado en el botón.
+ * @returns Componente `Link` estilizado como botón.
+ */
+export default function BotonLink({ href, texto }: BotonLinkProps) {
   return (
     <Link href={href} className={styles.button}>
       {texto}

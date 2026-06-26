@@ -1,0 +1,161 @@
+.main {
+  min-height: 100%;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.titulo {
+  margin-bottom: 1.5rem;
+  color: var(--color-texto-principal);
+}
+
+.lista {
+  display: grid;
+  gap: 1rem;
+}
+
+.card {
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+
+}
+
+.estado {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.estadoAceptada {
+  background-color: var(--color-exito);
+  color: var(--color-texto-primario);
+}
+
+.estadoRechazada {
+  background-color: var(--color-alertas);
+  color: var(--color-texto-primario);
+}
+
+.estadoCancelada{
+  background-color: var(--color-alertas);
+  color: var(--color-texto-primario);
+}
+
+.estadoPendiente {
+  background-color: var(--color-warning);
+  color: var(--color-texto-primario);
+}
+
+.contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vacio {
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.botonExpandir:hover {
+  color: var(--color-texto-secundario);
+}
+
+.subtitulo{
+  margin-top: 20px;
+}
+
+.acciones {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.botonAceptar,
+.botonRechazar {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.botonAceptar {
+  background-color: var(--color-exito);
+  color: var(--color-texto-blanco);
+}
+
+.botonAceptar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--color-alertas)
+}
+
+.inputConBoton {
+  flex: 1;
+  display: flex;
+}
+
+.inputMotivo {
+  flex: 1;
+  padding: 0 1rem;
+  border: 1px solid var(--color-borde);
+  border-right: none;
+  border-radius: 0.5rem 0 0 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--color-texto-blanco);
+}
+
+.botonRechazar{
+  border: none;
+  padding: 0 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  background-color: var(--color-alertas);
+  color: var(--color-texto-blanco);
+  cursor: pointer;
+}
+
+.botonCancelar {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background-color: var(--color-warning);
+  color: var(--color-tarjeta);
+  font-weight: 600;
+}
+
+.linkPublicacion {
+  color: var(--color-primario);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.linkPublicacion:hover {
+  color: var(--color-primario-hover);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.separador{
+  border: 2px solid var(--color-borde);
+  padding: 0.5rem 1rem;
+}
+
+.datos{
+  font-weight: 600;
+}

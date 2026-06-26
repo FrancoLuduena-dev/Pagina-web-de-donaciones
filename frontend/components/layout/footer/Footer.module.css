@@ -28,7 +28,7 @@
 .links a {
   text-decoration: none;
   color: var(--color-primario);
-  font-size: clamp(1rem, 1.2vw, 1.5vw);
+  font-size: clamp(1rem, 1.0vw, 1.2vw);
   font-weight: 600;
   transition: color 0.2s ease;
 }

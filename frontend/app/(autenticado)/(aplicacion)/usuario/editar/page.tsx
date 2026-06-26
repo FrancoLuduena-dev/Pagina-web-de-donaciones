@@ -19,11 +19,23 @@ export default function EditarUsuarioPage() {
   const [loading, setLoading] = useState(false);
 
   /**
-   * Maneja el envío del formulario.
-   *
-   * @param e Evento de envío del formulario.
-   */
+ * Página para editar la información del usuario.
+ *
+ * Permite modificar datos del perfil como correo, nombre,
+ * usuario y teléfono. Los campos vacíos no se actualizan.
+ *
+ * @returns Formulario de edición de perfil.
+ */
   async function handleSubmit(e: FormEvent) {
+    /**
+ * Maneja el envío del formulario de edición de perfil.
+ *
+ * Valida que los correos coincidan (si se ingresan),
+ * envía los datos al backend y actualiza la información del usuario.
+ * Luego redirige a la página de perfil.
+ *
+ * @param e Evento de envío del formulario.
+ */
     e.preventDefault();
 
     setError(null);
@@ -34,18 +46,12 @@ export default function EditarUsuarioPage() {
       if (correo && correoDos && correo.trim() !== correoDos.trim()) {
         throw new Error("Los correos no coinciden.");
       }
-
-      const isMailValid = /^\S+@\S+\.\S+$/.test(correo.trim());
-
-      if (!isMailValid) {
-        throw new Error("El formato del correo no es válido.");
-      }
       
       const data = await editarRequest({
         correo: correo.trim(),
         nombreUsuario,
         nombreCompleto,
-        numeroTelefono,
+        numeroTelefono: numeroTelefono.replace(/\D/g, ''),
       });
 
       router.push("/usuario");
@@ -186,6 +192,8 @@ export default function EditarUsuarioPage() {
               name="numeroTelefono"
               type="tel"
               autoComplete="tel"
+              pattern="^\+?[0-9\s]{8,20}$"
+              placeholder="Ejemplo de formato: +54 9 11 1234 5678 o 1234 5678"
               value={numeroTelefono}
               onChange={(e) =>
                 setNumeroTelefono(e.target.value)

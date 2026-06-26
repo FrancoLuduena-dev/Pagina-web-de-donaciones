@@ -11,19 +11,20 @@ type Usuario = {
   correo: string;
   publicacionesActivas: number;
   solicitudesPendientes: number;
+  solicitudesPorRevisar: number;
   notificaciones: number;
 };
 
-// Pagina principal del usuario autenticado.
+/**
+ * Página principal del usuario autenticado.
+ * @returns Perfil y accesos rápidos del usuario.
+ */
 export default function UsuarioPage() {
   const router = useRouter();
-
   // Estado del usuario
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-
   // Estado de carga
   const [loading, setLoading] = useState(true);
-
   // Estado de error
   const [error, setError] = useState("");
 
@@ -37,60 +38,69 @@ export default function UsuarioPage() {
           return;
         }
 
-        const usuarioResponse = await fetch(
-          "/api/auth/me",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const usuarioResponse = await fetch("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!usuarioResponse.ok) {
           router.push("/login");
           return;
         }
 
-        const usuarioData =
-          await usuarioResponse.json();
+        const usuarioData = await usuarioResponse.json();
 
-        const publicacionesResponse =
-          await fetch(
-            "/api/publicaciones/mias",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+        const publicacionesResponse = await fetch("/api/publicaciones/mias", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         let publicacionesActivas = 0;
+        let solicitudesPendientes = 0;
+        let solicitudesPorRevisar = 0;
 
         if (publicacionesResponse.ok) {
-          const publicaciones =
-            await publicacionesResponse.json();
+          const publicaciones = await publicacionesResponse.json();
 
-          publicacionesActivas =
-            publicaciones.length;
+          publicacionesActivas = publicaciones.length;
         }
 
-        // MOCK_BORRAR
-        const solicitudesPendientes = 2;
-        const notificaciones = 7;
-        // END_MOCK_BORRAR
+        const solicitudesResponse = await fetch("/api/solicitudes/mias", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (solicitudesResponse.ok) {
+          const solicitudes = await solicitudesResponse.json();
+          solicitudesPendientes = solicitudes.filter((solicitud: { estado: string }) => solicitud.estado === "PENDIENTE").length;
+        }
+
+        const solicitudesRecibidasResponse = await fetch("/api/solicitudes/recibidas", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (solicitudesRecibidasResponse.ok) {
+          const solicitudesRecibidas = await solicitudesRecibidasResponse.json();
+
+          solicitudesPorRevisar = solicitudesRecibidas.filter((solicitud: { estado: string }) => solicitud.estado === "PENDIENTE").length;
+        }
 
         setUsuario({
-          nombre:
-            usuarioData.nombreUsuario,
+          nombre: usuarioData.nombreUsuario,
           correo: usuarioData.correo,
           publicacionesActivas,
           solicitudesPendientes,
-          notificaciones,
+          solicitudesPorRevisar,
+          notificaciones: 0,
         });
-      } catch {
-        setError(
-          "Ocurrió un error al cargar el perfil."
-        );
+      } catch (error) {
+        console.error(error);
+        setError("Ocurrió un error al cargar el perfil.");
       } finally {
         setLoading(false);
       }
@@ -126,67 +136,34 @@ export default function UsuarioPage() {
     <main className={styles.main}>
       <div className={styles.container}>
         <section className={styles.header}>
-          <div className={styles.avatar}>
-            {usuario.nombre
-              .charAt(0)
-              .toUpperCase()}
-          </div>
+          <div className={styles.avatar}>{usuario.nombre.charAt(0).toUpperCase()}</div>
 
           <div>
-            <h1 className={styles.title}>
-              Hola, {usuario.nombre}
-            </h1>
+            <h1 className={styles.title}>Hola, {usuario.nombre}</h1>
 
-            <p className={styles.email}>
-              {usuario.correo}
-            </p>
+            <p className={styles.email}>{usuario.correo}</p>
           </div>
         </section>
 
         <section className={styles.summaryGrid}>
-          <TarjetaResumen
-            titulo="Publicaciones activas"
-            valor={
-              usuario.publicacionesActivas
-            }
-          />
+          <TarjetaResumen titulo="Publicaciones activas" valor={usuario.publicacionesActivas} />
 
-          <TarjetaResumen
-            titulo="Solicitudes pendientes"
-            valor={
-              usuario.solicitudesPendientes
-            }
-          />
+          <TarjetaResumen titulo="Mis Solicitudes pendientes" valor={usuario.solicitudesPendientes} />
 
-          <TarjetaResumen
-            titulo="Notificaciones nuevas"
-            valor={usuario.notificaciones}
-          />
+          <TarjetaResumen titulo="Solicitudes recibidas pendientes" valor={usuario.solicitudesPorRevisar} />
         </section>
 
         <section className={styles.actions}>
           <h2>Accesos rápidos</h2>
 
           <div className={styles.buttonGrid}>
-            <BotonLink
-              href="/usuario/editar"
-              texto="Editar perfil"
-            />
+            <BotonLink href="/usuario/editar" texto="Editar perfil" />
 
-            <BotonLink
-              href="/usuario/publicaciones"
-              texto="Mis publicaciones"
-            />
+            <BotonLink href="/usuario/publicaciones" texto="Mis publicaciones" />
 
-            <BotonLink
-              href="/usuario/notificaciones"
-              texto="Notificaciones"
-            />
+            <BotonLink href="/usuario/notificaciones" texto="Notificaciones" />
 
-            <BotonLink
-              href="/publicaciones/crear"
-              texto="Crear publicación"
-            />
+            <BotonLink href="/publicaciones/crear" texto="Crear publicación" />
           </div>
         </section>
       </div>

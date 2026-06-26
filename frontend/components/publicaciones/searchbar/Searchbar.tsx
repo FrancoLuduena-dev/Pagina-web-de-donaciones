@@ -1,20 +1,26 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "./Searchbar.module.css";
-// Use plain <img> to avoid next/image wrappers that may alter rendering
 
+/**
+ * Barra de búsqueda para filtrar publicaciones.
+ * @returns Formulario que redirige a resultados según el texto ingresado.
+ */
 export default function Searchbar() {
+  const router = useRouter();
   const [busqueda, setBusqueda] = useState("");
 
   const manejarBusqueda = () => {
-    console.log("Buscar:", busqueda);
+    const texto = busqueda.trim();
 
-    /*
-    Conexion real cuando este conectado front y back
+    if (!texto) {
+      router.push("/publicaciones");
+      return;
+    }
 
-    buscarPublicaciones(busqueda);
-    */
+    router.push(`/publicaciones?q=${encodeURIComponent(texto)}`);
   };
 
   return (
@@ -39,26 +45,10 @@ export default function Searchbar() {
           onChange={(e) => setBusqueda(e.target.value)}
         />
 
-        <button
-          type="submit"
-          className={styles.botonBuscar}
-          aria-label="Buscar"
-        >
-          <img
-            src="/icons/search.png"
-            alt="Buscar"
-            width={24}
-            height={24}
-            className={styles.iconoNormal}
-          />
+        <button type="submit" className={styles.botonBuscar} aria-label="Buscar">
+          <img src="/icons/search.png" alt="Buscar" width={24} height={24} className={styles.iconoNormal} />
 
-          <img
-            src="/icons/search_hover.png"
-            alt=""
-            width={24}
-            height={24}
-            className={styles.iconoHover}
-          />
+          <img src="/icons/search.png" alt="" width={24} height={24} className={styles.iconoHover} />
         </button>
       </div>
     </form>

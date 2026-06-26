@@ -105,7 +105,10 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0 2rem 2rem;
 }
 
@@ -116,7 +119,7 @@
   padding: 0.95rem 1.4rem;
   border-radius: 0.95rem;
   background: var(--color-primario);
-  color: white;
+  color: var(--color-texto-blanco);
   font-weight: 700;
   transition: background 0.2s ease;
 }

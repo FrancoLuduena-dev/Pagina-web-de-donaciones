@@ -9,13 +9,23 @@ import styles from "./login.module.css";
 /**
  * Página de inicio de sesión.
  *
- * Permite autenticar usuarios y guardar la sesión activa.
+ * Renderiza un formulario que permite:
+ * - Autenticar usuarios existentes
+ * - Manejar errores de autenticación
+ * - Persistir la sesión del usuario
+ * - Redirigir tras login exitoso
  *
- * @returns Formulario de login.
+ * Incluye manejo de:
+ * - Estados de carga
+ * - Mensajes de error
+ *
+ * @returns Componente de formulario de login
  */
 export default function LoginPage() {
   const router = useRouter();
-
+  /**
+   * Estados del formulario de login.
+   */
   const [correo, setCorreo] = useState("");
   const [contrasenia, setContrasenia] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,14 +34,28 @@ export default function LoginPage() {
   /**
  * Maneja el envío del formulario de login.
  *
- * Autentica al usuario y redirige al inicio si el acceso es exitoso.
+ * Flujo:
+ * 1. Previene el comportamiento por defecto
+ * 2. Limpia errores previos
+ * 3. Ejecuta la autenticación contra el backend
+ * 4. Guarda la sesión en localStorage
+ * 5. Redirige al usuario a la sección principal
  *
- * @param e - Evento de envío del formulario.
+ * @param e Evento de submit del formulario
+ *
+ * @throws Error si:
+ * - Credenciales inválidas
+ * - Error de red
+ * - Error del servidor
  */
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
+    /** Mensaje de error mostrado al usuario */
     setError(null);
+
+
+    /** Indica si se está procesando el login */
     setLoading(true);
 
     try {
@@ -41,8 +65,16 @@ export default function LoginPage() {
         contrasenia,
       });
 
+      /**
+ * Persiste el token de autenticación en localStorage
+ * para mantener la sesión activa del usuario.
+ */
       persistSession(data);
 
+      /**
+ * Redirige al usuario autenticado a la sección de publicaciones
+ * y refresca el estado de la aplicación.
+ */
       router.push("/publicaciones");
       router.refresh();
     } catch (err) {
@@ -55,6 +87,18 @@ export default function LoginPage() {
       setLoading(false);
     }
   }
+
+  /**
+ * Flujo de autenticación:
+ *
+ * 1. Usuario ingresa credenciales
+ * 2. Se envía request al backend
+ * 3. Si es exitoso:
+ *    - Se guarda el token
+ *    - Se redirige a /publicaciones
+ * 4. Si falla:
+ *    - Se muestra error en pantalla
+ */
 
   return (
     <main className={styles.main}>

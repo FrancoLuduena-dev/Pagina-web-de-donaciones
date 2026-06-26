@@ -4,20 +4,35 @@ import { mapPublicacionBackendToResumen } from "@/constants/publicacionesBackend
 import { listarPublicacionesDesdeBackend } from "@/lib/publicaciones";
 import styles from "./publicaciones.module.css";
 
+type Props = {
+  searchParams: Promise<{
+    q?: string;
+    condicion?: string;
+    estado?: string;
+  }>;
+};
+
 /**
  * Página principal de publicaciones.
- *
  * @returns Listado general de publicaciones.
  */
-export default async function PublicacionesPage() {
+export default async function PublicacionesPage({ searchParams }: Props) {
   let publicaciones: ReturnType<typeof mapPublicacionBackendToResumen>[] = [];
   let error = "";
 
+  const {q, condicion, estado } = await searchParams;
+
   try {
-    const data = await listarPublicacionesDesdeBackend();
+    const data = await listarPublicacionesDesdeBackend(
+      undefined,
+      condicion,
+      estado,
+      q,
+    );
     publicaciones = data.map(mapPublicacionBackendToResumen);
   } catch {
-    error = "No se pudieron cargar las publicaciones. ¿Está corriendo el backend?";
+    error =
+      "No se pudieron cargar las publicaciones. ¿Está corriendo el backend?";
   }
 
   return (
@@ -39,7 +54,8 @@ export default async function PublicacionesPage() {
         </p>
       ) : (
         <p className={styles.descripcion}>
-          {publicaciones.length} publicación{publicaciones.length === 1 ? "" : "es"} en la base.
+          {publicaciones.length} publicación
+          {publicaciones.length === 1 ? "" : "es"} en la base.
         </p>
       )}
 

@@ -10,7 +10,17 @@ import styles from "./register.module.css"
 /**
  * Página de registro de usuarios.
  *
- * @returns Formulario de registro.
+ * Renderiza un formulario que permite:
+ * - Crear una cuenta nueva
+ * - Validar datos en el cliente
+ * - Enviar datos al backend
+ *
+ * Incluye manejo de:
+ * - Estados de carga
+ * - Mensajes de error
+ * - Redirección tras registro exitoso
+ *
+ * @returns Componente de formulario de registro
  */
 export default function RegisterPage() {
 
@@ -26,10 +36,21 @@ export default function RegisterPage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     /**
-     * Maneja el envío del formulario.
-     *
-     * @param e Evento de envío del formulario.
-     */
+ * Maneja el envío del formulario de registro.
+ *
+ * Realiza:
+ * - Validaciones en frontend (correo, contraseñas, formato)
+ * - Llamada al backend para registrar el usuario
+ * - Redirección al login en caso de éxito
+ *
+ * @param e Evento de submit del formulario
+ *
+ * @throws Error si:
+ * - Los correos no coinciden
+ * - Las contraseñas no coinciden
+ * - Formato inválido
+ * - Error del backend
+ */
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
     
@@ -38,10 +59,20 @@ export default function RegisterPage() {
         
 
         try {
-            // la contraseña tiene que tener al menos 6 caracteres y el correo tiene que ser un formato valido 
             // validaciones front
+            // validaciones front
+            /**
+             * Validaciones del formulario:
+             * - Coincidencia de contraseñas
+             * - Coincidencia de correos
+             * - Formato de correo válido
+             * - Formato de contraseña segura:
+             *   - mínimo 8 caracteres
+             *   - al menos una mayúscula, una minúscula y un número
+             */
             const contraseniasCoinciden = contrasenia === contraseniaDos;
             const correosCoinciden = correo.trim() === correoDos.trim();
+            const contraseniaFormato = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/.test(contrasenia);
 
             if (!contraseniasCoinciden) {
                 throw new Error("Las contraseñas no coinciden.");
@@ -57,31 +88,49 @@ export default function RegisterPage() {
                 throw new Error("El formato del correo no es válido.");
             }
 
-            //validaciones en el backend
-          const data = await registerRequest({
-            correo: correo.trim(),
-            contrasenia,
-            nombreUsuario,
-            nombreCompleto,
-            numeroTelefono,
-          });
+            if (!contraseniaFormato ) {
+                throw new Error("El formato de la contraseña no es valido") 
+            }
 
-          //caso exito redirige al login
-          router.push("/login");
-          router.refresh();
+            //validaciones en el backend
+            const data = await registerRequest({
+                correo: correo.trim(),
+                contrasenia,
+                nombreUsuario,
+                nombreCompleto,
+                numeroTelefono: numeroTelefono.replace(/\s+/g, ''),
+            });
+
+            /**
+   * En caso de registro exitoso:
+   * - Redirige al usuario a la página de login
+   * - Refresca el estado de la app
+   */
+            router.push("/login");
+            router.refresh();
         } catch (err) {
-          setError(
+            setError(
             err instanceof Error
-              ? err.message
-              : "Error desconocido." 
-          );
+                ? err.message
+                : "Error desconocido." 
+            );
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      }
-      // agregar texto que le diga al usuario que la contraseña tiene que tener al menos 6 caracteres y el correo tiene que ser un formato valido
-      // agregar un modal que le indique al usuario como debe ser el formato de su contraseña y correo 
-      // agregar script de comparacion entre correo y contraseña para que el usuario tenga que escribirlo dos veces y comparar ambos campos para validar que sean iguales, y mostrar un mensaje de error si no lo son
+    }
+
+    /**
+ * Flujo de registro:
+ *
+ * 1. Usuario completa formulario
+ * 2. Se validan datos en frontend
+ * 3. Se envía request al backend
+ * 4. Si es exitoso:
+ *    - Se redirige a login
+ * 5. Si falla:
+ *    - Se muestra error en pantalla
+ */
+
     return (
         <main className={styles.main}>
             <div className={styles.container}>
@@ -172,9 +221,10 @@ export default function RegisterPage() {
                         <div className={styles.guidelines}>
                             <p>Requisitos de la contraseña:</p>
                             <ul>
-                                <li>Mínimo 6 caracteres</li>
-                                <li>Usa letras y números</li>
-                                <li>No uses tu nombre completo</li>
+                                <li>Mínimo 8 caracteres</li>
+                                <li>Usar letras, números</li>
+                                <li>Usar al menos una mayuscula, una minuscula, un numero y un simbolo</li>
+                                <li>Prohibido usar # y ?</li>
                             </ul>
                         </div>
                 </div>
@@ -257,7 +307,10 @@ export default function RegisterPage() {
                         id="numeroTelefono"
                         name="numeroTelefono"
                         type="tel"
+                        inputMode="tel"
                         autoComplete="tel"
+                        pattern="^\+?[0-9\s]{8,20}$"
+                        placeholder="Ejemplo de formato: +54 9 11 1234 5678 o 1234 5678"
                         required
                         value={numeroTelefono}
                         onChange={(e) =>
@@ -288,7 +341,7 @@ export default function RegisterPage() {
                 </form>
 
                 <p className={styles.backLinkContainer}>
-                     ¿Ya tenés una cuenta?{" "}
+                    ¿Ya tenés una cuenta?{" "}
                     <Link
                         href="/login"
                         className={styles.backLink}

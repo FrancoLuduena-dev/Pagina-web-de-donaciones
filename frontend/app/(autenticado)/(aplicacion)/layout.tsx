@@ -10,11 +10,7 @@ import Navbar from "@/components/layout/navbar/Navbar";
  * @param children - Contenido renderizado dentro del layout.
  * @returns Estructura base de las páginas públicas.
  */
-export default function PublicoLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function PublicoLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={styles.layout}>
       <div className={styles.header}>

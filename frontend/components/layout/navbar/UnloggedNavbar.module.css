@@ -44,7 +44,7 @@
 
 .botonRegistro {
   background-color: var(--color-primario);
-  color: white;
+  color: var(--color-texto-blanco);
   padding: 0.6rem 1rem;
   border-radius: 0.5rem;
   text-decoration: none;
@@ -57,7 +57,7 @@
 .botonRegistro:visited,
 .botonRegistro:hover,
 .botonRegistro:active {
-  color: white;
+  color: var(--color-texto-blanco);
 }
 
 .botonRegistro:hover {
